@@ -1,0 +1,36 @@
+.toolpage {
+    .back {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        margin-bottom: 18px;
+        border-radius: 100%;
+        background-color: rgba(255, 255, 255, 1.00);
+        border: 1px solid rgb(229, 231, 235);
+        color: #000;
+        font-size: 20px;
+        font-weight: 900;
+    }
+    .title {
+        margin-bottom: 24px;
+        h1 {
+            margin-bottom: 12px;
+        }
+        p {
+            font-size: 16px;
+        }
+    }
+    .tool-container {
+        min-height: 200px;
+        padding: 24px;
+        background-color: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 26px;
+    }
+    hr {
+        margin: 52px 0;
+        color: #e5e7eb;
+    }
+}
