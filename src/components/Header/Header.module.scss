@@ -68,6 +68,24 @@
                             transform: scale(1);
                         }
                     }
+                    &.lang {
+                        select {
+                            width: 80px;
+                            max-width: 150px;
+                            padding: 7px 5px;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                            font-size: 14px;
+                            background-color: #fff;
+                            color: #000;
+                            border: none;
+                            border-radius: 8px;
+                            &:hover {
+                                background-color: #f0f0f0;
+                            }
+                        }
+                    }
                     &.buyMeACoffee {
                         a {
                             width: unset;

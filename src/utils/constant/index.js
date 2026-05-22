@@ -1,5 +1,6 @@
 import { MdOutlineDifference } from "react-icons/md";
 import { TbPasswordFingerprint } from "react-icons/tb";
+import { TbClockSearch } from "react-icons/tb";
 import { FaEye } from "react-icons/fa";
 
 
@@ -64,6 +65,16 @@ export const TOOLS = [
         icon: <TbPasswordFingerprint />,
         category: 'generators'
     },
+
+    // everyday utilities
+    {
+        id: 'time-difference-calculator',
+        name: 'Time Difference Calculator',
+        description: 'Calculate the time difference between two times.',
+        url: '/time-difference-calculator',
+        icon: <TbClockSearch />,
+        category: 'everyday-utilities'
+    }
    
 
 ];

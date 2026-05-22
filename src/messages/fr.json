@@ -1,0 +1,13 @@
+{
+    "header": {
+        "About Us": "À propos de nous",
+        "Dark Mode": "Mode Sombre",
+        "Buy me a coffee": "Acheter un café",
+        "Support Us": "Nous soutenir"
+    },
+    "home": {
+        "title": "Welcome to my app",
+        "description": "This is a Next.js app with internationalization.",
+        "cta": "Get started"
+    }
+}
