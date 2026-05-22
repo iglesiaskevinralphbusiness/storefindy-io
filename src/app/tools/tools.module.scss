@@ -8,7 +8,7 @@
         margin-bottom: 18px;
         border-radius: 100%;
         background-color: rgba(255, 255, 255, 1.00);
-        border: 1px solid rgb(229, 231, 235);
+        border: 1px solid #ced1d5;
         color: #000;
         font-size: 20px;
         font-weight: 900;
@@ -26,11 +26,20 @@
         min-height: 200px;
         padding: 24px;
         background-color: #fff;
-        border: 1px solid #e5e7eb;
+        border: 1px solid #ced1d5;
         border-radius: 26px;
     }
     hr {
-        margin: 52px 0;
-        color: #e5e7eb;
+        margin: 62px 0;
+        color: #ced1d5;
+    }
+
+    .toolDetails {
+        display: flex;
+        gap: 52px;
+        width: 100%;
+        .detailsCol {
+            flex: 1;
+        }
     }
 }

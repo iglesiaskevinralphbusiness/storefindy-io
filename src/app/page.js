@@ -16,7 +16,7 @@ export default function Home() {
     return (
         <>
         
-            <div className="pb-12">
+            <div className="pt-8 pb-12">
                 <div className={styles.search}>
                     <input type="text" placeholder="Search for a tool" value={search} onChange={(e) => setSearch(e.target.value)} />
                 </div>

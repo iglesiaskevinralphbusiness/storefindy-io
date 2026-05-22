@@ -1,13 +1,13 @@
 .search {
     input {
         width: 100%;
-        padding: 16px 32px;
+        padding: 14px 32px;
         border-radius: 26px;
-        border-color: rgb(229, 231, 235);
+        border-color: #ced1d5;
         border-width: 1px;
         border-style: solid;
         background-color: rgba(255, 255, 255, 1.00);
-        font-size: 16px;
+        font-size: 18px;
         font-weight: 400;
         color: rgb(17, 24, 39);
         box-sizing: border-box;
@@ -22,8 +22,9 @@
         a {
             position: relative;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 20px;
+            height: 100%;
             padding: 16px;
             border-radius: 26px;
             border-color: rgb(229, 231, 235);

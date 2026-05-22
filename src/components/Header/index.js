@@ -22,9 +22,6 @@ export default function Header() {
                 </div>
                 <div className={styles.headerRight}>
                     <ul>
-                        <li className={styles.lang}>
-                            <LanguageSwitcher />
-                        </li>
                         <li>
                             <Link href="/"><HiOutlineInformationCircle /></Link>
                             <span>{t('About Us')}</span>
@@ -32,6 +29,9 @@ export default function Header() {
                         <li>
                             <button><TbMoon /></button>
                             <span>{t('Dark Mode')}</span>
+                        </li>
+                        <li className={styles.lang}>
+                            <LanguageSwitcher />
                         </li>
                         <li className={styles.buyMeACoffee}>
                             <Link href="#">{t('Buy me a coffee')} <FaRegHeart /></Link>
