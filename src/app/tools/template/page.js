@@ -1,6 +1,7 @@
 import styles from '../tools.module.scss';
 import { FaAngleLeft } from "react-icons/fa6";
 import Link from 'next/link';
+import Script from 'next/script';
 
 export default function TemplatePage() {
     return (
@@ -13,8 +14,8 @@ export default function TemplatePage() {
                 </div>
                 
                 <div className={styles['tool-container']}>
-
-
+                    <Script src="/widgets.js" strategy="afterInteractive" />
+                    <my-widget title="Hello" theme="dark"></my-widget>
                 </div>
 
                 <div className={styles.toolDetails}>
