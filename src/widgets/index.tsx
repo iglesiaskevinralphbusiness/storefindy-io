@@ -1,6 +1,7 @@
 import { defineWidget } from './defineWidget';
 import MyWidget, { myWidgetStyles } from './MyWidget';
 import AnotherWidget, { anotherWidgetStyles } from './AnotherWidget';
+import TextDiffChecker, { textDiffCheckerStyles } from './TextDiffChecker';
 
 defineWidget({
 	tagName: 'my-widget',
@@ -14,4 +15,11 @@ defineWidget({
 	component: AnotherWidget,
 	observedAttributes: ['label', 'color'],
 	styles: anotherWidgetStyles,
+});
+
+defineWidget({
+	tagName: 'text-diff-checker',
+	component: TextDiffChecker,
+	observedAttributes: [],
+	styles: textDiffCheckerStyles,
 });
