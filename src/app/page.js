@@ -29,7 +29,7 @@ export default function Home() {
                         <ul className={styles.tools}>
                             {filteredTools.filter(tool => tool.category === category.id).map(tool => (
                                 <li key={tool.id}>
-                                    <Link href="/tools/template">
+                                    <Link href={`/tools${tool.url}`}>
                                         <span className={styles.icon}>
                                             {tool.icon}
                                         </span>

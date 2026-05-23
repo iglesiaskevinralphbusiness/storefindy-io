@@ -69,7 +69,7 @@ export const TOOLS = [
         id: 'text-diff checker',
         name: 'Text Diff Checker',
         description: 'Compare two texts and find the differences between them.',
-        url: '/diff-checker',
+        url: '/text-diff-checker',
         icon: <MdOutlineDifference />,
         category: 'text-tools'
     },
