@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef } from 'react';
+import PoweredBy from '../components/PoweredBy';
 
 function diffArray(a, b) {
 	const m = a.length;
@@ -180,7 +181,7 @@ export default function TextDiffChecker() {
 
 	return (
 		<div className="diff-checker">
-			<div className="powered-by">Powered by: <a href={`process.env.NEXT_PUBLIC_ROOT_URL/?ref=embedtool`} target="_blank" rel="noopener">Toolifier.com</a></div>
+			<PoweredBy />
 			<div className="grid">
 				<div className="col">
 					<label className="lbl">Original Text</label>
@@ -247,7 +248,6 @@ export default function TextDiffChecker() {
 }
 
 export const textDiffCheckerStyles = `
-	.powered-by { position: absolute; bottom: 0; right: 0; font-size: 12px; color: #6b7280; a { color: #2563eb; text-decoration: none; } }
 	.diff-checker { position: relative; padding-bottom: 20px; display: flex; flex-direction: column; gap: 12px; }
 	.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 	.grid.results { margin-top: 32px; }

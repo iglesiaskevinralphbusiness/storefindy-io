@@ -21833,9 +21833,24 @@
 	.btn:hover { opacity: 0.85; }
 `;
 
+  // src/components/PoweredBy/index.jsx
+  var import_jsx_runtime3 = __toESM(require_jsx_runtime());
+  function PoweredBy() {
+    if (true) {
+      return null;
+    }
+    return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: "powered-by", children: [
+      "Powered by: ",
+      /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("a", { href: `${"http://localhost:3000"}/?ref=embedtool`, target: "_blank", rel: "noopener", children: "Toolifier.com" })
+    ] });
+  }
+  var poweredByCheckerStyles = `
+	.powered-by { position: absolute; bottom: 0; right: 0; font-size: 12px; color: #6b7280; a { color: #2563eb; text-decoration: none; } }
+`;
+
   // src/widgets/TextDiffCheckerWidget.jsx
   var import_react3 = __toESM(require_react());
-  var import_jsx_runtime3 = __toESM(require_jsx_runtime());
+  var import_jsx_runtime4 = __toESM(require_jsx_runtime());
   function diffArray(a, b) {
     const m = a.length;
     const n = b.length;
@@ -21975,7 +21990,7 @@
       setResult({ leftRows, rightRows });
     }
     function renderRow(row, idx, sideClass) {
-      const cellContent = row.segs ? row.segs.map((s, i) => /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
+      const cellContent = row.segs ? row.segs.map((s, i) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
         "span",
         {
           className: s.kind === "rm" ? "inline-rm" : s.kind === "add" ? "inline-add" : "",
@@ -21983,22 +21998,19 @@
         },
         i
       )) : row.text === "" ? "\xA0" : row.text;
-      return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: `diff-row ${row.cls}`, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("span", { className: "diff-ln", children: row.ln === "" ? "\xA0" : row.ln }),
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("span", { className: `diff-text ${sideClass}`, children: cellContent })
+      return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: `diff-row ${row.cls}`, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "diff-ln", children: row.ln === "" ? "\xA0" : row.ln }),
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: `diff-text ${sideClass}`, children: cellContent })
       ] }, idx);
     }
-    return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: "diff-checker", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: "powered-by", children: [
-        "Powered by: ",
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("a", { href: `process.env.NEXT_PUBLIC_ROOT_URL/?ref=embedtool`, target: "_blank", rel: "noopener", children: "Toolifier.com" })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: "grid", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: "col", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("label", { className: "lbl", children: "Original Text" }),
-          /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: "ta-wrap", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: "ln-col", ref: origLnRef, children: Array.from({ length: origLineCount }, (_, i) => /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: "ln-num", children: i + 1 }, i)) }),
-            /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "diff-checker", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(PoweredBy, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "grid", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "col", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("label", { className: "lbl", children: "Original Text" }),
+          /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "ta-wrap", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "ln-col", ref: origLnRef, children: Array.from({ length: origLineCount }, (_, i) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "ln-num", children: i + 1 }, i)) }),
+            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
               "textarea",
               {
                 ref: origTaRef,
@@ -22012,11 +22024,11 @@
             )
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: "col", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("label", { className: "lbl", children: "Changed Text" }),
-          /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: "ta-wrap", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: "ln-col", ref: changedLnRef, children: Array.from({ length: changedLineCount }, (_, i) => /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: "ln-num", children: i + 1 }, i)) }),
-            /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "col", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("label", { className: "lbl", children: "Changed Text" }),
+          /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "ta-wrap", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "ln-col", ref: changedLnRef, children: Array.from({ length: changedLineCount }, (_, i) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "ln-num", children: i + 1 }, i)) }),
+            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
               "textarea",
               {
                 ref: changedTaRef,
@@ -22031,21 +22043,20 @@
           ] })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: "actions", children: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("button", { type: "button", className: "compare-btn", onClick: handleCompare, children: "Compare" }) }),
-      result && /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: "grid results", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: "col", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("label", { className: "lbl", children: "Original" }),
-          /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: "diff-view", children: result.leftRows.map((row, idx) => renderRow(row, idx, "left")) })
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "actions", children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { type: "button", className: "compare-btn", onClick: handleCompare, children: "Compare" }) }),
+      result && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "grid results", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "col", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("label", { className: "lbl", children: "Original" }),
+          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "diff-view", children: result.leftRows.map((row, idx) => renderRow(row, idx, "left")) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: "col", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("label", { className: "lbl", children: "Changed" }),
-          /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: "diff-view", children: result.rightRows.map((row, idx) => renderRow(row, idx, "right")) })
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "col", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("label", { className: "lbl", children: "Changed" }),
+          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "diff-view", children: result.rightRows.map((row, idx) => renderRow(row, idx, "right")) })
         ] })
       ] })
     ] });
   }
   var textDiffCheckerStyles = `
-	.powered-by { position: absolute; bottom: 0; right: 0; font-size: 12px; color: #6b7280; a { color: #2563eb; text-decoration: none; } }
 	.diff-checker { position: relative; padding-bottom: 20px; display: flex; flex-direction: column; gap: 12px; }
 	.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 	.grid.results { margin-top: 32px; }
@@ -22142,6 +22153,235 @@
 	.inline-add { background: #16a34a; color: #ffffff; border-radius: 2px; padding: 0 1px; }
 `;
 
+  // src/widgets/RandomPasswordGeneratorWidget.jsx
+  var import_react4 = __toESM(require_react());
+  var import_jsx_runtime5 = __toESM(require_jsx_runtime());
+  var LOWER = "abcdefghijklmnopqrstuvwxyz";
+  var UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  var DIGITS = "0123456789";
+  var SYMBOLS = "!@#$%^&*()-_=+[]{};:,.<>?/|~";
+  function getCharset(complexity) {
+    switch (complexity) {
+      case "low":
+        return LOWER + UPPER;
+      case "medium":
+        return LOWER + UPPER + DIGITS;
+      case "high":
+      default:
+        return LOWER + UPPER + DIGITS + SYMBOLS;
+    }
+  }
+  function randomInt(max) {
+    if (typeof window !== "undefined" && window.crypto && window.crypto.getRandomValues) {
+      const arr = new Uint32Array(1);
+      const limit = Math.floor(4294967295 / max) * max;
+      let x;
+      do {
+        window.crypto.getRandomValues(arr);
+        x = arr[0];
+      } while (x >= limit);
+      return x % max;
+    }
+    return Math.floor(Math.random() * max);
+  }
+  function generatePassword(length, charset) {
+    let out = "";
+    for (let i = 0; i < length; i++) {
+      out += charset.charAt(randomInt(charset.length));
+    }
+    return out;
+  }
+  function RandomPasswordGenerator() {
+    const [count, setCount] = (0, import_react4.useState)(1);
+    const [length, setLength] = (0, import_react4.useState)(12);
+    const [complexity, setComplexity] = (0, import_react4.useState)("high");
+    const [passwords, setPasswords] = (0, import_react4.useState)([]);
+    const [copiedIdx, setCopiedIdx] = (0, import_react4.useState)(null);
+    function handleGenerate() {
+      const charset = getCharset(complexity);
+      const n = Math.max(1, Math.min(100, Number(count) || 1));
+      const len = Math.max(4, Math.min(128, Number(length) || 8));
+      const list = [];
+      for (let i = 0; i < n; i++) {
+        list.push(generatePassword(len, charset));
+      }
+      setPasswords(list);
+      setCopiedIdx(null);
+    }
+    function handleCopy(text, idx) {
+      if (typeof navigator !== "undefined" && navigator.clipboard) {
+        navigator.clipboard.writeText(text);
+        setCopiedIdx(idx);
+        setTimeout(() => setCopiedIdx((current) => current === idx ? null : current), 1200);
+      }
+    }
+    function handleCopyAll() {
+      if (!passwords.length) return;
+      if (typeof navigator !== "undefined" && navigator.clipboard) {
+        navigator.clipboard.writeText(passwords.join("\n"));
+        setCopiedIdx("all");
+        setTimeout(() => setCopiedIdx((current) => current === "all" ? null : current), 1200);
+      }
+    }
+    return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "pwd-gen", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(PoweredBy, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "controls", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("label", { className: "lbl", htmlFor: "pwd-count", children: "Number of passwords" }),
+          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+            "input",
+            {
+              id: "pwd-count",
+              className: "num",
+              type: "number",
+              min: "1",
+              max: "100",
+              value: count,
+              onChange: (e) => setCount(e.target.value)
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("label", { className: "lbl", htmlFor: "pwd-length", children: [
+            "Password length: ",
+            /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("span", { className: "val", children: length })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+            "input",
+            {
+              id: "pwd-length",
+              className: "range",
+              type: "range",
+              min: "4",
+              max: "64",
+              value: length,
+              onChange: (e) => setLength(Number(e.target.value))
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("label", { className: "lbl", htmlFor: "pwd-complexity", children: "Complexity" }),
+          /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(
+            "select",
+            {
+              id: "pwd-complexity",
+              className: "sel",
+              value: complexity,
+              onChange: (e) => setComplexity(e.target.value),
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("option", { value: "low", children: "Low (letters)" }),
+                /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("option", { value: "medium", children: "Medium (letters + numbers)" }),
+                /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("option", { value: "high", children: "High (letters + numbers + symbols)" })
+              ]
+            }
+          )
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "actions", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("button", { type: "button", className: "generate-btn", onClick: handleGenerate, children: "Generate" }),
+        passwords.length > 1 && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("button", { type: "button", className: "copy-all-btn", onClick: handleCopyAll, children: copiedIdx === "all" ? "Copied!" : "Copy all" })
+      ] }),
+      passwords.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "output", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("label", { className: "lbl", children: "Generated passwords" }),
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("ul", { className: "pwd-list", children: passwords.map((p, idx) => /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("li", { className: "pwd-item", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("code", { className: "pwd-text", children: p }),
+          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+            "button",
+            {
+              type: "button",
+              className: "copy-btn",
+              onClick: () => handleCopy(p, idx),
+              "aria-label": "Copy password",
+              children: copiedIdx === idx ? "Copied!" : "Copy"
+            }
+          )
+        ] }, idx)) })
+      ] })
+    ] });
+  }
+  var randomPasswordGeneratorStyles = `
+	.powered-by { position: absolute; bottom: 0; right: 0; font-size: 12px; color: #6b7280; }
+	.powered-by a { color: #2563eb; text-decoration: none; }
+	.pwd-gen { position: relative; max-width: 400px; margin: 0 auto; padding-bottom: 20px; display: flex; flex-direction: column; gap: 16px; }
+	.controls { display: flex; flex-direction: column; gap: 22px; }
+	.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+	.lbl { font-size: 14px; font-weight: 600; color: #374151; }
+	.val { font-weight: 500; color: #2563eb; }
+	.num, .sel {
+		padding: 8px 10px;
+		border: 1px solid #d1d5db;
+		border-radius: 8px;
+		background: #ffffff;
+		font-size: 14px;
+		color: #111827;
+		outline: none;
+	}
+	.num:focus, .sel:focus { border-color: #2563eb; }
+	.range { width: 100%; accent-color: #2563eb; }
+	.actions { display: flex; gap: 8px; }
+	.generate-btn {
+		padding: 8px 18px;
+		border: none;
+		border-radius: 8px;
+		background: #2563eb;
+		color: white;
+		font-size: 14px;
+		font-weight: 500;
+		cursor: pointer;
+	}
+	.generate-btn:hover { background: #1d4ed8; }
+	.copy-all-btn {
+		padding: 8px 14px;
+		border: 1px solid #d1d5db;
+		border-radius: 8px;
+		background: #ffffff;
+		color: #374151;
+		font-size: 14px;
+		cursor: pointer;
+	}
+	.copy-all-btn:hover { background: #f3f4f6; }
+	.output { display: flex; flex-direction: column; gap: 8px; padding-top: 22px; }
+	.pwd-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		border: 1px solid #d1d5db;
+		border-radius: 8px;
+		background: #ffffff;
+		overflow: hidden;
+	}
+	.pwd-item {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		padding: 8px 12px;
+		border-bottom: 1px solid #e5e7eb;
+	}
+	.pwd-item:last-child { border-bottom: none; }
+	.pwd-text {
+		flex: 1 1 auto;
+		font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+		font-size: 14px;
+		color: #111827;
+		word-break: break-all;
+	}
+	.copy-btn {
+		flex: 0 0 auto;
+		padding: 4px 10px;
+		border: 1px solid #d1d5db;
+		border-radius: 6px;
+		background: #f9fafb;
+		color: #374151;
+		font-size: 12px;
+		cursor: pointer;
+	}
+	.copy-btn:hover { background: #f3f4f6; }
+	@media (max-width: 640px) {
+		.controls { grid-template-columns: 1fr; }
+	}
+`;
+
   // src/widgets/index.tsx
   defineWidget({
     tagName: "my-widget",
@@ -22159,7 +22399,13 @@
     tagName: "text-diff-checker",
     component: TextDiffChecker,
     observedAttributes: [],
-    styles: textDiffCheckerStyles
+    styles: textDiffCheckerStyles + poweredByCheckerStyles
+  });
+  defineWidget({
+    tagName: "random-password-generator",
+    component: RandomPasswordGenerator,
+    observedAttributes: [],
+    styles: randomPasswordGeneratorStyles + poweredByCheckerStyles
   });
 })();
 /*! Bundled license information:

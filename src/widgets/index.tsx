@@ -1,7 +1,9 @@
 import { defineWidget } from './defineWidget';
 import MyWidget, { myWidgetStyles } from './MyWidget';
 import AnotherWidget, { anotherWidgetStyles } from './AnotherWidget';
+import { poweredByCheckerStyles } from '../components/PoweredBy';
 import TextDiffChecker, { textDiffCheckerStyles } from './TextDiffCheckerWidget';
+import RandomPasswordGenerator, { randomPasswordGeneratorStyles } from './RandomPasswordGeneratorWidget';
 
 defineWidget({
 	tagName: 'my-widget',
@@ -21,5 +23,12 @@ defineWidget({
 	tagName: 'text-diff-checker',
 	component: TextDiffChecker,
 	observedAttributes: [],
-	styles: textDiffCheckerStyles,
+	styles: textDiffCheckerStyles + poweredByCheckerStyles,
+});
+
+defineWidget({
+	tagName: 'random-password-generator',
+	component: RandomPasswordGenerator,
+	observedAttributes: [],
+	styles: randomPasswordGeneratorStyles + poweredByCheckerStyles,
 });
