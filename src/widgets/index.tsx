@@ -6,6 +6,7 @@ import TextDiffChecker, { textDiffCheckerStyles } from './TextDiffCheckerWidget'
 import RandomPasswordGenerator, { randomPasswordGeneratorStyles } from './RandomPasswordGeneratorWidget';
 import PasswordStrengthMeter, { passwordStrengthMeterStyles } from './PasswordStrengthMeterWidget';
 import ContrastChecker, { contrastCheckerStyles } from './ContrastCheckerWidget';
+import CSSColorNames, { cssColorNamesStyles } from './CSSColorNamesWidget';
 
 defineWidget({
 	tagName: 'my-widget',
@@ -47,4 +48,11 @@ defineWidget({
 	component: ContrastChecker,
 	observedAttributes: [],
 	styles: contrastCheckerStyles + poweredByCheckerStyles,
+});
+
+defineWidget({
+	tagName: 'css-color-names',
+	component: CSSColorNames,
+	observedAttributes: [],
+	styles: cssColorNamesStyles + poweredByCheckerStyles,
 });
