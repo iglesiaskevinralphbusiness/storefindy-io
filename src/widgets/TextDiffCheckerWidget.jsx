@@ -180,6 +180,7 @@ export default function TextDiffChecker() {
 
 	return (
 		<div className="diff-checker">
+			<div className="powered-by">Powered by: <a href={`process.env.NEXT_PUBLIC_ROOT_URL/?ref=embedtool`} target="_blank" rel="noopener">Toolifier.com</a></div>
 			<div className="grid">
 				<div className="col">
 					<label className="lbl">Original Text</label>
@@ -246,8 +247,8 @@ export default function TextDiffChecker() {
 }
 
 export const textDiffCheckerStyles = `
-	:host { display: block; font-family: system-ui, sans-serif; color: #111827; }
-	.diff-checker { display: flex; flex-direction: column; gap: 12px; }
+	.powered-by { position: absolute; bottom: 0; right: 0; font-size: 12px; color: #6b7280; a { color: #2563eb; text-decoration: none; } }
+	.diff-checker { position: relative; padding-bottom: 12px; display: flex; flex-direction: column; gap: 12px; }
 	.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 	.grid.results { margin-top: 32px; }
 	.col { display: flex; flex-direction: column; gap: 6px; min-width: 0; }

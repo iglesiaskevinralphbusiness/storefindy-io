@@ -48,8 +48,11 @@ export default function TextDiffCheckerPage() {
                     <div className={styles.detailsCol}>
                         <hr />
                         <div>
-                            <h2>Embed Text Diff Checker</h2>
-                            <EmbedSnippet />
+                            <h2>Embed this tool on your website</h2>
+                            <EmbedSnippet>
+                                <script src="https://localhost:3000/widgets.js" />
+                                <text-diff-checker></text-diff-checker>
+                            </EmbedSnippet>
                         </div>
                     </div>
                 </div>

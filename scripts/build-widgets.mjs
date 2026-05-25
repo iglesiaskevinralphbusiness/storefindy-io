@@ -1,12 +1,40 @@
 import { build, context } from 'esbuild';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { readFileSync, existsSync } from 'node:fs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '..');
 
 const watch = process.argv.includes('--watch');
 const dev = watch || process.argv.includes('--dev');
+
+function loadEnvFile(path) {
+	if (!existsSync(path)) return {};
+	const out = {};
+	for (const line of readFileSync(path, 'utf8').split('\n')) {
+		const m = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$/);
+		if (!m) continue;
+		let v = m[2];
+		if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
+			v = v.slice(1, -1);
+		}
+		out[m[1]] = v;
+	}
+	return out;
+}
+
+const envFiles = [
+	resolve(root, '.env'),
+	resolve(root, '.env.local'),
+	resolve(root, dev ? '.env.development' : '.env.production'),
+];
+const envVars = Object.assign({}, ...envFiles.map(loadEnvFile), process.env);
+const publicDefines = Object.fromEntries(
+	Object.entries(envVars)
+		.filter(([k]) => k.startsWith('NEXT_PUBLIC_'))
+		.map(([k, v]) => [`process.env.${k}`, JSON.stringify(v)]),
+);
 
 /** @type {import('esbuild').BuildOptions} */
 const config = {
@@ -22,6 +50,7 @@ const config = {
 	sourcemap: dev,
 	define: {
 		'process.env.NODE_ENV': JSON.stringify(dev ? 'development' : 'production'),
+		...publicDefines,
 	},
 	logLevel: 'info',
 };

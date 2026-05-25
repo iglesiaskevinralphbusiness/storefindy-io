@@ -21833,7 +21833,7 @@
 	.btn:hover { opacity: 0.85; }
 `;
 
-  // src/widgets/TextDiffChecker.jsx
+  // src/widgets/TextDiffCheckerWidget.jsx
   var import_react3 = __toESM(require_react());
   var import_jsx_runtime3 = __toESM(require_jsx_runtime());
   function diffArray(a, b) {
@@ -21989,6 +21989,10 @@
       ] }, idx);
     }
     return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: "diff-checker", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: "powered-by", children: [
+        "Powered by: ",
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("a", { href: `process.env.NEXT_PUBLIC_ROOT_URL/?ref=embedtool`, target: "_blank", rel: "noopener", children: "Toolifier.com" })
+      ] }),
       /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: "grid", children: [
         /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: "col", children: [
           /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("label", { className: "lbl", children: "Original Text" }),
@@ -22041,8 +22045,8 @@
     ] });
   }
   var textDiffCheckerStyles = `
-	:host { display: block; font-family: system-ui, sans-serif; color: #111827; }
-	.diff-checker { display: flex; flex-direction: column; gap: 12px; }
+	.powered-by { position: absolute; bottom: 0; right: 0; font-size: 12px; color: #6b7280; a { color: #2563eb; text-decoration: none; } }
+	.diff-checker { position: relative; padding-bottom: 12px; display: flex; flex-direction: column; gap: 12px; }
 	.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 	.grid.results { margin-top: 32px; }
 	.col { display: flex; flex-direction: column; gap: 6px; min-width: 0; }

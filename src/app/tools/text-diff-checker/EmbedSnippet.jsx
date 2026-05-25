@@ -1,20 +1,89 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Children, isValidElement } from 'react';
 import styles from '../tools.module.scss';
 
-const CODE = `<Script src="/widgets.js" strategy="afterInteractive" />
-<text-diff-checker></text-diff-checker>`;
+function serializeElement(element) {
+	if (typeof element === 'string') return element;
+	if (!isValidElement(element)) return '';
 
-export default function EmbedSnippet() {
+	const tag = element.type;
+	if (typeof tag !== 'string') return '';
+
+	const { children, ...attrs } = element.props || {};
+	const attrStr = Object.entries(attrs)
+		.map(([k, v]) => ` ${k}="${String(v)}"`)
+		.join('');
+
+	const isCustomElement = tag.includes('-');
+	const childArray = Children.toArray(children);
+	const hasChildren = childArray.length > 0;
+
+	if (!hasChildren && !isCustomElement) {
+		return `<${tag}${attrStr} />`;
+	}
+
+	const innerStr = childArray.map(serializeElement).join('');
+	return `<${tag}${attrStr}>${innerStr}</${tag}>`;
+}
+
+function highlightElement(element, key) {
+	if (typeof element === 'string') return <span key={key}>{element}</span>;
+	if (!isValidElement(element)) return null;
+
+	const tag = element.type;
+	if (typeof tag !== 'string') return null;
+
+	const { children, ...attrs } = element.props || {};
+	const isCustomElement = tag.includes('-');
+	const childArray = Children.toArray(children);
+	const hasChildren = childArray.length > 0;
+
+	const attrNodes = Object.entries(attrs).flatMap(([k, v], i) => [
+		<span key={`sp-${i}`}> </span>,
+		<span key={`attr-${i}`} className={styles.cAttr}>{k}</span>,
+		<span key={`eq-${i}`} className={styles.cPunct}>=</span>,
+		<span key={`val-${i}`} className={styles.cStr}>&quot;{String(v)}&quot;</span>,
+	]);
+
+	if (!hasChildren && !isCustomElement) {
+		return (
+			<span key={key}>
+				<span className={styles.cPunct}>&lt;</span>
+				<span className={styles.cTag}>{tag}</span>
+				{attrNodes}
+				<span> </span>
+				<span className={styles.cPunct}>/&gt;</span>
+			</span>
+		);
+	}
+
+	return (
+		<span key={key}>
+			<span className={styles.cPunct}>&lt;</span>
+			<span className={styles.cTag}>{tag}</span>
+			{attrNodes}
+			<span className={styles.cPunct}>&gt;</span>
+			{childArray.map((c, i) => highlightElement(c, i))}
+			<span className={styles.cPunct}>&lt;/</span>
+			<span className={styles.cTag}>{tag}</span>
+			<span className={styles.cPunct}>&gt;</span>
+		</span>
+	);
+}
+
+export default function EmbedSnippet({ children }) {
+	const childArray = Children.toArray(children);
+	const code = childArray.map(serializeElement).join('\n');
+
 	const [copied, setCopied] = useState(false);
 
 	async function copy() {
 		try {
-			await navigator.clipboard.writeText(CODE);
+			await navigator.clipboard.writeText(code);
 		} catch {
 			const ta = document.createElement('textarea');
-			ta.value = CODE;
+			ta.value = code;
 			document.body.appendChild(ta);
 			ta.select();
 			document.execCommand('copy');
@@ -52,25 +121,12 @@ export default function EmbedSnippet() {
 			</button>
 			<pre className={styles.codeBlock}>
 				<code>
-					<span className={styles.cPunct}>&lt;</span>
-					<span className={styles.cTag}>Script</span>
-					<span> </span>
-					<span className={styles.cAttr}>src</span>
-					<span className={styles.cPunct}>=</span>
-					<span className={styles.cStr}>&quot;/widgets.js&quot;</span>
-					<span> </span>
-					<span className={styles.cAttr}>strategy</span>
-					<span className={styles.cPunct}>=</span>
-					<span className={styles.cStr}>&quot;afterInteractive&quot;</span>
-					<span> </span>
-					<span className={styles.cPunct}>/&gt;</span>
-					{'\n'}
-					<span className={styles.cPunct}>&lt;</span>
-					<span className={styles.cTag}>text-diff-checker</span>
-					<span className={styles.cPunct}>&gt;</span>
-					<span className={styles.cPunct}>&lt;/</span>
-					<span className={styles.cTag}>text-diff-checker</span>
-					<span className={styles.cPunct}>&gt;</span>
+					{childArray.map((c, i) => (
+						<span key={i}>
+							{highlightElement(c, i)}
+							{i < childArray.length - 1 && '\n'}
+						</span>
+					))}
 				</code>
 			</pre>
 		</div>
