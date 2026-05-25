@@ -72,6 +72,13 @@ export default function PasswordStrengthMeterPage() {
                                 <password-strength-meter></password-strength-meter>
                             </EmbedSnippet>
                         </div>
+                        <hr />
+                        <div>
+                            <h2>You may also like</h2>
+                            <ul>
+                                <li><Link href="/tools/random-password-generator">Random Password Generator</Link> - Generate a random password with customizable options.</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>

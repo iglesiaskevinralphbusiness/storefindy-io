@@ -155,13 +155,13 @@ export default function RandomPasswordGenerator() {
 export const randomPasswordGeneratorStyles = `
 	.powered-by { position: absolute; bottom: 0; right: 0; font-size: 12px; color: #6b7280; }
 	.powered-by a { color: #2563eb; text-decoration: none; }
-	.pwd-gen { position: relative; max-width: 400px; margin: 0 auto; padding-bottom: 20px; display: flex; flex-direction: column; gap: 16px; }
+	.pwd-gen { position: relative; max-width: 480px; margin: 0 auto; padding-bottom: 20px; display: flex; flex-direction: column; gap: 16px; }
 	.controls { display: flex; flex-direction: column; gap: 22px; }
 	.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 	.lbl { font-size: 14px; font-weight: 600; color: #374151; }
 	.val { font-weight: 500; color: #2563eb; }
 	.num, .sel {
-		padding: 8px 10px;
+		padding: 10px 12px;
 		border: 1px solid #d1d5db;
 		border-radius: 8px;
 		background: #ffffff;

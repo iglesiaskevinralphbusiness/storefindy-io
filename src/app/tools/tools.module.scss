@@ -46,5 +46,11 @@
             list-style: disc;
             padding-left: 20px;
         }
+        a {
+            color: #2563eb;
+            &:hover {
+                text-decoration: underline;
+            }
+        }
     }
 }
