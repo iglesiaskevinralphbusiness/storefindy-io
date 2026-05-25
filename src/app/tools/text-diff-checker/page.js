@@ -21,8 +21,6 @@ export default function TextDiffCheckerPage() {
 
                 <div className={styles.toolDetails}>
                     <div className={styles.detailsCol}>
-                        <hr />
-
                         <div>
                             <h2>How to use Text Diff Checker</h2>
                             <p>1. Copy and paste your original text into the original text input field.</p>
@@ -46,7 +44,6 @@ export default function TextDiffCheckerPage() {
                         </div>
                     </div>
                     <div className={styles.detailsCol}>
-                        <hr />
                         <div>
                             <h2>Embed this tool on your website</h2>
                             <EmbedSnippet>
