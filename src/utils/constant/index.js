@@ -83,6 +83,14 @@ export const TOOLS = [
         icon: <TbPasswordFingerprint />,
         category: 'generators'
     },
+    {
+        id: 'password-strength-meter',
+        name: 'Password Strength Meter',
+        description: 'Check the strength of your password.',
+        url: '/password-strength-meter',
+        icon: <TbPasswordFingerprint />,
+        category: 'text-tools'
+    },
 
     // everyday utilities
     {

@@ -13,6 +13,8 @@ export default function Home() {
         setFilteredTools(TOOLS.filter(tool => tool.name.toLowerCase().includes(search.toLowerCase()) || tool.description.toLowerCase().includes(search.toLowerCase())));
     }, [search]);
 
+    let blockIndex = 0;
+
     return (
         <>
         
@@ -27,8 +29,10 @@ export default function Home() {
                     <div key={category.id} className="pb-16">
                         <h2>{category.name}</h2>
                         <ul className={styles.tools}>
-                            {filteredTools.filter(tool => tool.category === category.id).map(tool => (
-                                <li key={tool.id}>
+                            {filteredTools.filter(tool => tool.category === category.id).map(tool => {
+                                blockIndex = (blockIndex % 11) + 1;
+                                return (
+                                <li key={tool.id} className={styles[`block${blockIndex}`]}>
                                     <Link href={`/tools${tool.url}`}>
                                         <span className={styles.icon}>
                                             {tool.icon}
@@ -40,7 +44,8 @@ export default function Home() {
                                         <span className={styles.arrow}><FaAngleRight /></span>
                                     </Link>
                                 </li>
-                            ))}
+                            );
+                            })}
                         </ul>
                     </div>
                 ))
