@@ -148,40 +148,38 @@ export default function PasswordStrengthMeter() {
 					</button>
 				</div>
 			)}
-			{hasInput && (
-				<div className="output">
-					<div className="meter">
-						<div
-							className="meter-fill"
-							style={{ width: `${stats.pct}%`, background: stats.level.color }}
-						/>
-					</div>
-					<div className="level-row">
-						<span className="level-label">Strength level:</span>
-						<span className="level-value" style={{ color: stats.level.color }}>
-							{stats.level.name}
-						</span>
-					</div>
-					<dl className="stats">
-						<div className="stat">
-							<dt>Duration to crack this password with brute force</dt>
-							<dd>{formatDuration(stats.seconds)}</dd>
-						</div>
-						<div className="stat">
-							<dt>Password length</dt>
-							<dd>{stats.length}</dd>
-						</div>
-						<div className="stat">
-							<dt>Entropy</dt>
-							<dd>{stats.entropy.toFixed(2)} bits</dd>
-						</div>
-						<div className="stat">
-							<dt>Character set size</dt>
-							<dd>{stats.size}</dd>
-						</div>
-					</dl>
+			<div className="output">
+				<div className="meter">
+					<div
+						className="meter-fill"
+						style={{ width: hasInput ? `${stats.pct}%` : '0%', background: hasInput ? stats.level.color : 'transparent' }}
+					/>
 				</div>
-			)}
+				<div className="level-row">
+					<span className="level-label">Strength level:</span>
+					<span className="level-value" style={{ color: hasInput ? stats.level.color : undefined }}>
+						{hasInput ? stats.level.name : '-'}
+					</span>
+				</div>
+				<dl className="stats">
+					<div className="stat">
+						<dt>Duration to crack this password with brute force</dt>
+						<dd>{hasInput ? formatDuration(stats.seconds) : '-'}</dd>
+					</div>
+					<div className="stat">
+						<dt>Password length</dt>
+						<dd>{hasInput ? stats.length : '-'}</dd>
+					</div>
+					<div className="stat">
+						<dt>Entropy</dt>
+						<dd>{hasInput ? `${stats.entropy.toFixed(2)} bits` : '-'}</dd>
+					</div>
+					<div className="stat">
+						<dt>Character set size</dt>
+						<dd>{hasInput ? stats.size : '-'}</dd>
+					</div>
+				</dl>
+			</div>
 		</div>
 	);
 }
@@ -202,7 +200,7 @@ export const passwordStrengthMeterStyles = `
 		outline: none;
 	}
 	.input:focus { border-color: #2563eb; }
-	.input-actions { display: flex; gap: 6px; }
+	.input-actions { display: flex; gap: 2px; position: absolute; right: 3px; top: 29px; }
 	.icon-btn {
 		display: inline-flex;
 		align-items: center;
@@ -217,7 +215,7 @@ export const passwordStrengthMeterStyles = `
 		cursor: pointer;
 	}
 	.icon-btn:hover { background: #f3f4f6; color: #111827; }
-	.output { display: flex; flex-direction: column; gap: 12px; padding-top: 8px; }
+	.output { display: flex; flex-direction: column; gap: 24px; padding-top: 25px; }
 	.meter {
 		width: 100%;
 		height: 8px;
@@ -231,17 +229,17 @@ export const passwordStrengthMeterStyles = `
 		transition: width 0.2s ease, background 0.2s ease;
 	}
 	.level-row { display: flex; gap: 8px; align-items: baseline; }
-	.level-label { font-size: 14px; color: #6b7280; }
-	.level-value { font-size: 16px; font-weight: 700; }
+	.level-label { font-size: 15px; color: #6b7280; }
+	.level-value { font-size: 15px; font-weight: 700; }
 	.stats {
 		margin: 0;
 		padding: 0;
 		display: grid;
 		grid-template-columns: 1fr 1fr;
-		gap: 8px 16px;
+		gap: 16px 16px;
 	}
-	.stat { display: flex; flex-direction: column; gap: 2px; margin: 0; }
-	.stat dt { font-size: 12px; color: #6b7280; }
+	.stat { display: flex; flex-direction: column; gap: 4px; margin: 0; }
+	.stat dt { font-size: 15px; color: #6b7280; }
 	.stat dd { margin: 0; font-size: 14px; font-weight: 600; color: #111827; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 	@media (max-width: 480px) {
 		.stats { grid-template-columns: 1fr; }
