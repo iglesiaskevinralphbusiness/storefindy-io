@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, Children, isValidElement } from 'react';
-import styles from '../tools.module.scss';
+import styles from './EmbedSnippet.module.scss';
 
 function serializeElement(element) {
 	if (typeof element === 'string') return element;

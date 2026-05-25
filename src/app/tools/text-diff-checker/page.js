@@ -2,7 +2,7 @@ import styles from '../tools.module.scss';
 import { FaAngleLeft } from "react-icons/fa6";
 import Link from 'next/link';
 import Script from 'next/script';
-import EmbedSnippet from './EmbedSnippet';
+import EmbedSnippet from '../../../components/EmbedSnippet';
 
 export default function TextDiffCheckerPage() {
     return (

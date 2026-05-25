@@ -22046,7 +22046,7 @@
   }
   var textDiffCheckerStyles = `
 	.powered-by { position: absolute; bottom: 0; right: 0; font-size: 12px; color: #6b7280; a { color: #2563eb; text-decoration: none; } }
-	.diff-checker { position: relative; padding-bottom: 12px; display: flex; flex-direction: column; gap: 12px; }
+	.diff-checker { position: relative; padding-bottom: 20px; display: flex; flex-direction: column; gap: 12px; }
 	.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 	.grid.results { margin-top: 32px; }
 	.col { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
