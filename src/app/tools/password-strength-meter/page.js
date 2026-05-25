@@ -47,7 +47,6 @@ export default function PasswordStrengthMeterPage() {
                                 <li>Perfect: The password is absolutely impossible to guess.</li>
                                 <li>Superb: The password is absolutely impossible to guess.</li>
                                 <li>Ultra: The password is absolutely impossible to guess.</li>
-                                <li>Ultra: The password is absolutely impossible to guess.</li>
                             </ul>
                         </div>
 
