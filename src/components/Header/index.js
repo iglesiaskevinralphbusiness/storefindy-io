@@ -29,7 +29,7 @@ export default function Header() {
                             <Link href="/" className={styles.menuItem}>{t('Features')}</Link>
                         </li>
                         <li>
-                            <Link href="/" className={styles.menuItem}>{t('Sign In')}</Link>
+                            <Link href="/sign-in" className={styles.menuItem}>{t('Sign In')}</Link>
                         </li>
                         <li className={styles.register}>
                             <Link href="#" className="buttonBox" role="button">{t('Create Store Locator')} </Link>

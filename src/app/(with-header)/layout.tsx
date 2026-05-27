@@ -3,7 +3,7 @@ import { getLocale, getMessages } from 'next-intl/server';
 
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
-import '../styles/globals.css';
+import '../../styles/globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
@@ -24,11 +24,11 @@ export default async function RootLayout({ children }: Props) {
 		<html lang={locale}>
 			<body className="min-h-full flex flex-col">
 				<NextIntlClientProvider locale={locale} messages={messages}>
-						<Header />
-						<main className="main">
-							{children}
-						</main>
-						<Footer />
+					<Header />
+					<main className="main">
+						{children}
+					</main>
+					<Footer />
 				</NextIntlClientProvider>
 			</body>
 		</html>
