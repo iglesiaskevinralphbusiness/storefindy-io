@@ -6,6 +6,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import '../../styles/globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import StoreProvider from '@/providers/StoreProvider';
 
 export const metadata: Metadata = {
 	title: 'Create Next App',
@@ -23,13 +24,15 @@ export default async function RootLayout({ children }: Props) {
 	return (
 		<html lang={locale}>
 			<body className="min-h-full flex flex-col">
-				<NextIntlClientProvider locale={locale} messages={messages}>
-					<Header />
-					<main className="main">
-						{children}
-					</main>
-					<Footer />
-				</NextIntlClientProvider>
+				<StoreProvider>
+					<NextIntlClientProvider locale={locale} messages={messages}>
+						<Header />
+						<main className="main">
+							{children}
+						</main>
+						<Footer />
+					</NextIntlClientProvider>
+				</StoreProvider>
 			</body>
 		</html>
 	);

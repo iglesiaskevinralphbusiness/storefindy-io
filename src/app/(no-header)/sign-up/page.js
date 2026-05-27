@@ -1,33 +1,33 @@
 'use client';
 
-import styles from './SignIn.module.scss';
+import styles from './SignUp.module.scss';
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 import { FcGoogle } from 'react-icons/fc';
 
-export default function SignInPage() {
-    const handleGoogleSignIn = () => {
+export default function SignUpPage() {
+    const handleGoogleSignUp = () => {
         signIn('google', { callbackUrl: '/dashboard' });
     };
 
     return (
-        <div className={styles.signIn}>
+        <div className={styles.signUp}>
             <div className={styles.colLeft}>
                 <div className={styles.content}>
-                    <h1>Welcome Back to<br />Storefindy</h1>
+                    <h1>Join<br />Storefindy</h1>
                     <hr />
-                    <p>Sign in to your account to continue</p>
+                    <p>Create your account in seconds with Google</p>
 
                     <button
                         type="button"
-                        onClick={handleGoogleSignIn}
+                        onClick={handleGoogleSignUp}
                         className={styles.googleBtn}
                     >
                         <FcGoogle size={20} />
-                        <span>Sign in with Google</span>
+                        <span>Sign up with Google</span>
                     </button>
 
-                    <p>Not a member yet? <Link href="/sign-up">Sign up</Link></p>
+                    <p>Already a member? <Link href="/sign-in">Sign in</Link></p>
                 </div>
             </div>
             <div className={styles.colRight}>
