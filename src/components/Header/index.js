@@ -17,28 +17,28 @@ export default function Header() {
             <div className={styles.headerContainer}>
                 <div className={styles.headerLeft}>
                     <Link href="/">
-                        Toolifier.io
+                        Storefindy.io
                     </Link>
                 </div>
-                <div className={styles.headerRight}>
+                <nav className={styles.headerRight}>
                     <ul>
                         <li>
-                            <Link href="/"><HiOutlineInformationCircle /></Link>
-                            <span>{t('About Us')}</span>
+                            <Link href="/" className={styles.menuItem}>{t('Demo')}</Link>
                         </li>
                         <li>
-                            <button><TbMoon /></button>
-                            <span>{t('Dark Mode')}</span>
+                            <Link href="/" className={styles.menuItem}>{t('Features')}</Link>
+                        </li>
+                        <li>
+                            <Link href="/" className={styles.menuItem}>{t('Sign In')}</Link>
+                        </li>
+                        <li className={styles.register}>
+                            <Link href="#" className="buttonBox" role="button">{t('Create Store Locator')} </Link>
                         </li>
                         <li className={styles.lang}>
                             <LanguageSwitcher />
                         </li>
-                        <li className={styles.buyMeACoffee}>
-                            <Link href="#">{t('Buy me a coffee')} <FaRegHeart /></Link>
-                            <span>{t('Support Us')}</span>
-                        </li>
                     </ul>
-                </div>
+                </nav>
             </div>
         </header>
     );

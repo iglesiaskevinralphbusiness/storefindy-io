@@ -1,13 +1,11 @@
 {
     "header": {
-        "About Us": "About Us",
-        "Dark Mode": "Dark Mode",
-        "Buy me a coffee": "Buy me a coffee",
-        "Support Us": "Support Us"
+        "Demo": "Demo",
+        "Features": "Features",
+        "Sign In": "Sign In",
+        "Create Store Locator": "Create Store Locator"
     },
     "home": {
-        "title": "Welcome to my app",
-        "description": "This is a Next.js app with internationalization.",
-        "cta": "Get started"
+        
     }
 }

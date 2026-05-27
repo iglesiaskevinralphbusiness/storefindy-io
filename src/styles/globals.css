@@ -16,27 +16,17 @@ body {
   background: var(--background);
   color: var(--foreground);
   font: 16px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  color: rgb(17, 24, 39);
+  font-weight: 200;
 }
 
 .wrap {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  background-color: #fff;
-  font-family: sans-serif;
+  max-width: 1140px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .main {
-  flex: 1;
-  width: 100%;
-  max-width: 1280px;
-  padding: 16px 52px 52px;
-  background-color: #fdfdfd;
-  box-shadow: rgba(15, 23, 42, 0.12) 0px 0px 48px;
-  box-sizing: border-box;
+ 
 }
 
 h1 {
@@ -49,4 +39,44 @@ h2 {
   margin-bottom: 20px;
   font-size: 25px;
   font-weight: 900;
+}
+
+
+
+
+
+.buttonBox {
+  font-size: 16px;
+  font-weight: 200;
+  padding: 13px 20px 13px;
+  outline: 0;
+  border: 1px solid black;
+  cursor: pointer;
+  position: relative;
+  background-color: rgba(0, 0, 0, 0);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  z-index: 1;
+}
+.buttonBox:after {
+  content: "";
+  background-color: #ffe54c;
+  width: 100%;
+  z-index: -1;
+  position: absolute;
+  height: 100%;
+  top: 7px;
+  left: 7px;
+  transition: 0.2s;
+}
+.buttonBox:hover:after {
+  top: 0px;
+  left: 0px;
+}
+.buttonBox.secondary {
+  color: #fff;
+}
+.buttonBox.secondary:after {
+  background-color: #171717
 }
