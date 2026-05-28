@@ -1,11 +1,14 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
+import { getServerSession } from 'next-auth';
+import { redirect } from 'next/navigation';
 
 import type { Metadata } from 'next';
 import '../../styles/globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import StoreProvider from '@/providers/StoreProvider';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 export const metadata: Metadata = {
 	title: 'Create Next App',
@@ -17,6 +20,12 @@ type Props = {
 };
 
 export default async function RootLayout({ children }: Props) {
+	const session = await getServerSession(authOptions);
+
+	if (!session) {
+		redirect('/sign-in');
+	}
+
 	const locale = await getLocale();
 	const messages = await getMessages();
 

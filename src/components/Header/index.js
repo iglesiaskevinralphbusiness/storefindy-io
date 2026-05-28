@@ -2,10 +2,6 @@
 
 import styles from './Header.module.scss';
 import Link from "next/link";
-import Image from "next/image";
-import { HiOutlineInformationCircle } from "react-icons/hi";
-import { TbMoon } from "react-icons/tb";
-import { FaRegHeart } from "react-icons/fa6";
 import { useTranslations } from 'next-intl';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useSelector } from 'react-redux';
@@ -61,7 +57,7 @@ const HeaderLoggedOut = ({ email }) => {
 
     return <ul>
         <li>
-            <span className={styles.menuItem}>{email}</span>
+            <Link href="/dashboard" className={styles.menuItem}>Dashboard</Link>
         </li>
         <li>
             <button

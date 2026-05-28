@@ -1,0 +1,7 @@
+.dashboard {
+    display: flex;
+    gap: 20px;
+    .content {
+        min-height: calc(100vh - 154px);
+    }
+}
