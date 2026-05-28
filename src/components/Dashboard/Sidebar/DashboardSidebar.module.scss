@@ -21,12 +21,31 @@
                 margin-bottom: 1px;
                 a,
                 .toggle {
-                    position: relative;
                     display: flex;
                     align-items: center;
                     gap: 10px;
+                    justify-content: space-between;
+                    gap: 10px;
                     padding: 10px 10px 10px 20px;
                     cursor: pointer;
+                    > div {
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                    }
+                    > svg {
+                        margin-right: 10px;
+                        transition: transform 0.3s ease-in-out;
+                    }
+                    &.toggleClosed > svg {
+                        transform: rotate(180deg);
+                    }
+                    .badge {
+                        padding: 2px 7px;
+                        font-size: 11px;
+                        background-color: #ffe54c;
+                        border-radius: 10px;
+                    }
                     &:after {
                         content: '';
                         position: absolute;
@@ -40,24 +59,6 @@
                     }
                     &:hover:after {
                         width: 100%;
-                    }
-                }
-                .toggle {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    justify-content: space-between;
-                    > div {
-                        display: flex;
-                        align-items: center;
-                        gap: 10px;
-                    }
-                    > svg {
-                        margin-right: 10px;
-                        transition: transform 0.3s ease-in-out;
-                    }
-                    &.toggleClosed > svg {
-                        transform: rotate(180deg);
                     }
                 }
                 &:hover,

@@ -1,11 +1,11 @@
 'use client';
-
 import styles from './Header.module.scss';
 import Link from "next/link";
 import { useTranslations } from 'next-intl';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useSelector } from 'react-redux';
 import { signOut } from 'next-auth/react';
+import { usePathname } from 'next/navigation';
 
 export default function Header() {
     const { email, isLoggedIn } = useSelector(state => state.user);
@@ -56,9 +56,13 @@ const HeaderLoggedOut = ({ email }) => {
     };
 
     return <ul>
-        <li>
-            <Link href="/dashboard" className={styles.menuItem}>Dashboard</Link>
-        </li>
+        {
+            usePathname() !== '/dashboard' && (
+                <li>
+                    <Link href="/dashboard" className={styles.menuItem}>Dashboard</Link>
+                </li>
+            )
+        }
         <li>
             <button
                 type="button"

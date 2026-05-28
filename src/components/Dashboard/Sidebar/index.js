@@ -27,14 +27,19 @@ export default function Sidebar() {
                 <ul className={styles.mainMenu}>
                     <li className={isRootLinkActive('/dashboard')}>
                         <Link href="/dashboard">
-                            <LuHouse />
-                            Dashboard
+                            <div>
+                                <LuHouse />
+                                Dashboard
+                            </div>
                         </Link>
                     </li>
                     <li className={isRootLinkActive('/dashboard/analytics')}>
                         <Link href="/dashboard/analytics">
-                            <VscGraphLine />
-                            Analytics
+                            <div>
+                                <VscGraphLine />
+                                Analytics
+                            </div>
+                            <span className={styles.badge}>New</span>
                         </Link>
                     </li>
                 </ul>
@@ -165,20 +170,26 @@ export default function Sidebar() {
                 <ul className={styles.mainMenu}>
                     <li className={isRootLinkActive('/dashboard/documentation')}>
                         <Link href="/dashboard/documentation">
-                            <LuBookOpen />
-                            Documentation
+                            <div>
+                                <LuBookOpen />
+                                Documentation
+                            </div>
                         </Link>
                     </li>
                     <li className={isRootLinkActive('/dashboard/help-and-support')}>
                         <Link href="/dashboard/help-and-support">
-                            <LuFileQuestion />
-                            Help and Support
+                            <div>
+                                <LuFileQuestion />
+                                Help and Support
+                            </div>
                         </Link>
                     </li>
                     <li className={isRootLinkActive('/dashboard/report-bug')}>
                         <Link href="/dashboard/report-bug">
-                            <LuBug />
-                            Report Bug
+                            <div>
+                                <LuBug />
+                                Report Bug
+                            </div>
                         </Link>
                     </li>
                 </ul>
