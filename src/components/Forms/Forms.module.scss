@@ -170,7 +170,7 @@
     border: 1px solid #bababa;
     color: #5F5E5A;
     cursor: pointer;
-    font-size: 15px;
+    font-size: 14px;
     &:hover {
         background-color: #f1f1f1;
     }
@@ -180,5 +180,8 @@
         &:hover {
             background-color: #ffdf22;
         }
+    }
+    svg {
+        font-size: 16px;
     }
 }

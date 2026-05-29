@@ -57,7 +57,7 @@ const HeaderLoggedOut = ({ email }) => {
 
     return <ul>
         {
-            usePathname() !== '/dashboard' && (
+            !usePathname().includes('/dashboard') && (
                 <li>
                     <Link href="/dashboard" className={styles.menuItem}>Dashboard</Link>
                 </li>

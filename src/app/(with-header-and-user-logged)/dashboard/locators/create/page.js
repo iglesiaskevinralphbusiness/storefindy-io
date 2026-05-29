@@ -1,5 +1,6 @@
 'use client';
 import styles from '../../Dashboard.module.scss';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useState } from 'react';
 import Sidebar from '@/components/Dashboard/Sidebar';
@@ -16,6 +17,7 @@ import Button from '@/components/Forms/Button';
 import { LOCALES, COUNTRIES, ZOOM_LEVELS, SEARCH_RADII, MAXIMUM_RESULTS_SHOWN } from '@/utils/constant';
 
 export default function LocatorsCreatePage() {
+    const router = useRouter();
     const [locatorName, setLocatorName] = useState('');
     const [locatorDescription, setLocatorDescription] = useState('');
     const [defaultLanguage, setDefaultLanguage] = useState('');
@@ -175,12 +177,11 @@ export default function LocatorsCreatePage() {
                         </div>
 
                         <div className={styles.buttons}>
-                            <Link href="/dashboard/locators">
-                                <Button
-                                    value="Back"
-                                    icon={<LuChevronLeft />}
-                                >Back</Button>
-                            </Link>
+                            <Button
+                                onClick={() => router.back()}
+                                value="Back"
+                                icon={<LuChevronLeft />}
+                            >Back</Button>
                             <Button
                                 name="create_locator"
                                 value="Create Locator"
