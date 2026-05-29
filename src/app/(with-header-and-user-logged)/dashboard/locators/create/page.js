@@ -1,9 +1,10 @@
 'use client';
 import styles from '../../Dashboard.module.scss';
+import Link from 'next/link';
 import { useState } from 'react';
 import Sidebar from '@/components/Dashboard/Sidebar';
 import { RiArrowRightLine } from "react-icons/ri";
-import { LuInfo } from "react-icons/lu";
+import { LuInfo, LuCheck, LuChevronLeft } from "react-icons/lu";
 import { TbWorld } from "react-icons/tb";
 import { HiMiniMagnifyingGlass } from "react-icons/hi2";
 import { PiGear } from "react-icons/pi";
@@ -11,13 +12,14 @@ import Input from '@/components/Forms/Input';
 import Textarea from '@/components/Forms/Textarea';
 import Select from '@/components/Forms/Select';
 import Checkbox from '@/components/Forms/Checkbox';
+import Button from '@/components/Forms/Button';
 import { LOCALES, COUNTRIES, ZOOM_LEVELS, SEARCH_RADII, MAXIMUM_RESULTS_SHOWN } from '@/utils/constant';
 
 export default function LocatorsCreatePage() {
     const [locatorName, setLocatorName] = useState('');
     const [locatorDescription, setLocatorDescription] = useState('');
     const [defaultLanguage, setDefaultLanguage] = useState('');
-    const [defaultCountry, setDefaultCountry] = useState('us');
+    const [defaultCountry, setDefaultCountry] = useState('');
     const [defaultZoomLevel, setDefaultZoomLevel] = useState('10');
     const [searchRadius, setSearchRadius] = useState('10');
     const [maximumResultsShown, setMaximumResultsShown] = useState('10');
@@ -29,6 +31,10 @@ export default function LocatorsCreatePage() {
     const [showPhoneNumber, setShowPhoneNumber] = useState(false);
     const [showWebsiteLink, setShowWebsiteLink] = useState(false);
     const [poweredByStorefindy, setPoweredByStorefindy] = useState(true);
+
+    const handleClickCreateLocator = () => {
+        console.log('create locator');
+    }
 
     return (
         <div className={styles.dashboard}>
@@ -77,7 +83,7 @@ export default function LocatorsCreatePage() {
                                     name="default_country"
                                     value={defaultCountry}
                                     onChange={e => setDefaultCountry(e.target.value)}
-                                    options={COUNTRIES}
+                                    options={[{ code: '', label: 'Auto detect user location' }, ...COUNTRIES]}
                                 />
                                 <Select
                                     label="Default Zoom Level"
@@ -165,6 +171,24 @@ export default function LocatorsCreatePage() {
                                 checked={poweredByStorefindy}
                                 onChange={() => setPoweredByStorefindy(!poweredByStorefindy)}
                                 disabled={true}
+                            />
+                        </div>
+
+                        <div className={styles.buttons}>
+                            <Link href="/dashboard/locators">
+                                <Button
+                                    value="Back"
+                                    icon={<LuChevronLeft />}
+                                >Back</Button>
+                            </Link>
+                            <Button
+                                name="create_locator"
+                                value="Create Locator"
+                                onClick={() => handleClickCreateLocator()}
+                                required={true}
+                                icon={<LuCheck />}
+                                iconPosition='right'
+                                primary={true}
                             />
                         </div>
 

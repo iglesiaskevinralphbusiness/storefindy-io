@@ -39,6 +39,9 @@
 }
 
 .create {
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
     .columns {
         display: flex;
         gap: 20px;
@@ -68,5 +71,11 @@
             font-size: 15px;
             font-weight: 600;
         }
+    }
+    .buttons {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
     }
 }

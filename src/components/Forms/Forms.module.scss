@@ -160,3 +160,25 @@
         margin-top: 5px;
     }
 }
+
+.button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    border: 1px solid #bababa;
+    color: #5F5E5A;
+    cursor: pointer;
+    font-size: 15px;
+    &:hover {
+        background-color: #f1f1f1;
+    }
+    &.primary {
+        background-color: #ffe54d;
+        border-color: #dac238;
+        &:hover {
+            background-color: #ffdf22;
+        }
+    }
+}

@@ -2,7 +2,8 @@
 import { useRouter } from 'next/navigation';
 import styles from './Locators.module.scss';
 import { LuMapPin, LuEye, LuTrash2, LuPalette, LuPlus } from "react-icons/lu";
-import Link from 'next/link';
+import { PiGear } from "react-icons/pi";
+import Button from '@/components/Forms/Button';
 
 export default function Locators() {
     const router = useRouter();
@@ -26,8 +27,14 @@ export default function Locators() {
                         <div className={styles.history}>
                             Edited 2 days ago
                         </div>
-                        <Link href="/" className={styles.edit}><LuPalette /> Customize</Link>
-                        <button className={styles.delete}><LuTrash2 /></button>
+                        <Button
+                            value="Manage"
+                            icon={<PiGear />}
+                        />
+                        <Button
+                            value=""
+                            icon={<LuTrash2 />}
+                        />
                     </div>
                 </div>
             </li>
