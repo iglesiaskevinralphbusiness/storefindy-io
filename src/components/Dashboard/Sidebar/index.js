@@ -12,13 +12,18 @@ import { useSelector } from 'react-redux';
 
 export default function Sidebar() {
     const { email } = useSelector(state => state.user);
-    const [isLocatorMenuOpen, setIsLocatorMenuOpen] = useState(false);
-    const [isLocationsMenuOpen, setIsLocationsMenuOpen] = useState(false);
-    const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
-    
+
     const isRootLinkActive = (value) => {
         return usePathname() === value ? styles.active : '';
     }
+
+    const isSubLinkActive = (value) => {
+        return value.some(v => usePathname().includes(v)) ? styles.active : '';
+    }
+
+    const [isLocatorMenuOpen, setIsLocatorMenuOpen] = useState(isSubLinkActive(['/dashboard/locators', '/dashboard/locators/create', '/dashboard/locators/customize', '/dashboard/locators/embed']));
+    const [isLocationsMenuOpen, setIsLocationsMenuOpen] = useState(isSubLinkActive(['/dashboard/locations', '/dashboard/locations/add-location', '/dashboard/locations/import-csv']));
+    const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(isSubLinkActive(['/dashboard/profile', '/dashboard/api-access', '/dashboard/billing', '/dashboard/notifications']));
 
     return (
         <div className={styles.sidebar}>
@@ -50,7 +55,7 @@ export default function Sidebar() {
                             className={`${styles.toggle} ${!isLocatorMenuOpen ? styles.toggleClosed : ''}`}
                             onClick={() => setIsLocatorMenuOpen(!isLocatorMenuOpen)}
                             role="button"
-                            aria-expanded={isLocatorMenuOpen}
+                            aria-expanded={isLocatorMenuOpen || isSubLinkActive(['/dashboard/locators', '/dashboard/locators/create', '/dashboard/locators/customize', '/dashboard/locators/embed'])}
                         >
                             <div>
                                 <IoMapOutline />
@@ -93,7 +98,7 @@ export default function Sidebar() {
                             className={`${styles.toggle} ${!isLocationsMenuOpen ? styles.toggleClosed : ''}`}
                             onClick={() => setIsLocationsMenuOpen(!isLocationsMenuOpen)}
                             role="button"
-                            aria-expanded={isLocationsMenuOpen}
+                            aria-expanded={isLocationsMenuOpen || isSubLinkActive(['/dashboard/locations', '/dashboard/locations/add-location', '/dashboard/locations/import-csv'])}
                         >
                             <div>
                                 <IoMapOutline />
@@ -130,7 +135,7 @@ export default function Sidebar() {
                             className={`${styles.toggle} ${!isAccountMenuOpen ? styles.toggleClosed : ''}`}
                             onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
                             role="button"
-                            aria-expanded={isAccountMenuOpen}
+                            aria-expanded={isAccountMenuOpen || isSubLinkActive(['/dashboard/profile', '/dashboard/api-access', '/dashboard/billing', '/dashboard/notifications'])}
                         >
                             <div>
                                 <LuUser />

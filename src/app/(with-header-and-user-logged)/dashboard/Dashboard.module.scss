@@ -3,7 +3,9 @@
     .content {
         flex: 1;
         min-height: calc(100vh - 154px);
-        background-color: #f3f3f3;
+        max-height: calc(100vh - 154px);
+        overflow-x: auto;
+        background-color: #fafafa;
         .title {
             display: flex;
             align-items: flex-start;
@@ -29,6 +31,42 @@
                 margin: 0;
                 padding: 0;
             }
+        }
+        .body {
+            padding: 20px;
+        }
+    }
+}
+
+.create {
+    .columns {
+        display: flex;
+        gap: 20px;
+    }
+    .block {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-bottom: 30px;
+        padding: 14px 20px 20px;
+        border: 1px solid #e4e4e4;
+        border-radius: 16px;
+        background-color: #fff;
+        overflow: hidden;
+        &:last-child {
+            margin-bottom: 0;
+        }
+        &:hover {
+            border-color: #d4d4d4;
+        }
+        h2 {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin: 0;
+            font-size: 15px;
+            font-weight: 600;
         }
     }
 }
