@@ -30,15 +30,15 @@ const locatorSchema = new mongoose.Schema({
     // CUSTOM UI
     settings: {
         background: { type: String, default: '#ffffff' },
-        color: { type: String, default: '#000000' },
-        fontFamily: { type: String, default: 'system-ui, sans-serif' },
-        rootFontSize: { type: Number, default: 14 },
+        text_color: { type: String, default: '#000000' },
+        font_family: { type: String, default: 'system-ui, sans-serif' },
+        font_size: { type: Number, default: 14 },
 
         search: {
             border: { type: String, default: 'rounded' },
-            color: { type: String, default: '#185FA5' },
+            background: { type: String, default: '#185FA5' },
             label: { type: String, default: 'Search' },
-            textColor: { type: String, default: '#ffffff' },
+            text_color: { type: String, default: '#ffffff' },
         },
         pin: {
             color: { type: String, default: '#185FA5' },
@@ -46,37 +46,37 @@ const locatorSchema = new mongoose.Schema({
         },
         zoom: {
             border: { type: String, default: 'rounded' },
-            color: { type: String, default: '#ffffff' },
-            textColor: { type: String, default: '#1f1f1f' },
+            background: { type: String, default: '#ffffff' },
+            text_color: { type: String, default: '#1f1f1f' },
         },
         searchInput: {
             border: { type: String, default: 'rounded' },
             background: { type: String, default: '#ffffff' },
-            textColor: { type: String, default: '#1f1f1f' },
+            text_color: { type: String, default: '#1f1f1f' },
             placeholder: { type: String, default: 'Enter a location' },
         },
         filter: {
             border: { type: String, default: 'rounded' },
-            color: { type: String, default: '#f1f1f1' },
+            background: { type: String, default: '#f1f1f1' },
             label: { type: String, default: 'Filters' },
-            textColor: { type: String, default: '#1f1f1f' },
+            text_color: { type: String, default: '#1f1f1f' },
         },
         resultItem: {
-            activeBorder: { type: String, default: '#185FA5' },
-            border: { type: String, default: '#e4e4e4' },
+            active_border_color: { type: String, default: '#185FA5' },
+            border_color: { type: String, default: '#e4e4e4' },
             background: { type: String, default: '#ffffff' },
         },
         getDirections: {
             border: { type: String, default: 'rounded' },
-            color: { type: String, default: '#185FA5' },
+            background: { type: String, default: '#185FA5' },
             label: { type: String, default: 'Get Directions' },
-            textColor: { type: String, default: '#ffffff' },
+            text_color: { type: String, default: '#ffffff' },
         },
         viewLocation: {
             border: { type: String, default: 'rounded' },
-            color: { type: String, default: '#ffffff' },
+            background: { type: String, default: '#ffffff' },
             label: { type: String, default: 'View Location' },
-            textColor: { type: String, default: '#185FA5' },
+            text_color: { type: String, default: '#185FA5' },
         },
     },
 

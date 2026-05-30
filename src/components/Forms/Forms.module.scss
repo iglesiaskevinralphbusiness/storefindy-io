@@ -21,11 +21,6 @@
         outline: none;
         border-color: #185FA5;
     }
-    .note {
-        font-size: 12px;
-        color: #5F5E5A;
-        margin-top: 5px;
-    }
 }
 
 .textarea {
@@ -50,11 +45,6 @@
     textarea:focus {
         outline: none;
         border-color: #185FA5;
-    }
-    .note {
-        font-size: 12px;
-        color: #5F5E5A;
-        margin-top: 5px;
     }
 }
 
@@ -154,11 +144,23 @@
         outline: none;
         border-color: #185FA5;
     }
-    .note {
-        font-size: 12px;
-        color: #5F5E5A;
-        margin-top: 5px;
+}
+.errorForm {
+    input,
+    select,
+    textarea {
+        border-color: #cf2e2e;
     }
+}
+.note {
+    font-size: 12px;
+    color: #5F5E5A;
+    margin-top: 5px;
+}
+.error {
+    font-size: 12px;
+    color: #cf2e2e;
+    margin-top: 5px;
 }
 
 .button {
@@ -181,7 +183,33 @@
             background-color: #ffdf22;
         }
     }
+    &:disabled {
+        background-color: #f1f1f1;
+        border-color: #bababa;
+        cursor: not-allowed;
+        opacity: 0.6;
+        &:hover {
+            background-color: #f1f1f1;
+        }
+    }
+    &.pending {
+        background-color: #ffe54d !important;
+        border-color: #dac238 !important;
+        opacity: 1 !important;
+        svg {
+            animation: spin 1s linear infinite;
+        }
+    }
     svg {
         font-size: 16px;
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
     }
 }

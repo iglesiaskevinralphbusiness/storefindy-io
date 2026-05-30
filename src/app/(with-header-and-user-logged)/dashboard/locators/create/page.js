@@ -1,7 +1,8 @@
 'use client';
 import styles from '../../Dashboard.module.scss';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useActionState, useEffect } from 'react';
+import { postCreateLocator } from '@/actions/locator';
 import Sidebar from '@/components/Dashboard/Sidebar';
 import { RiArrowRightLine } from "react-icons/ri";
 import { LuInfo, LuCheck, LuChevronLeft, LuPlus } from "react-icons/lu";
@@ -18,6 +19,7 @@ import { toast } from 'react-toastify';
 
 export default function LocatorsCreatePage() {
     const router = useRouter();
+
     const [locatorName, setLocatorName] = useState('');
     const [locatorDescription, setLocatorDescription] = useState('');
     const [defaultLanguage, setDefaultLanguage] = useState('');
@@ -45,7 +47,7 @@ export default function LocatorsCreatePage() {
                 toast.error('Filter already exists!');
                 return;
             } else {
-                setFilters(prev => [...prev, { title: title }]);
+                setFilters(prev => [...prev, title]);
                 setFilterTitle('');
                 setShowFilters(true);
             }
@@ -54,6 +56,23 @@ export default function LocatorsCreatePage() {
     const handleClickCreateLocator = () => {
         console.log('create locator');
     }
+
+
+    // form submit handler
+    const postCreateLocatorWithParams = postCreateLocator.bind(null, filters);
+    const [state, action, pending] = useActionState(postCreateLocatorWithParams, { status: "idle" });
+    const err = (field) => state.status === "error" ? state.errors[field] : undefined;
+    useEffect(() => {
+        if (state.status === "idle") return;
+        if (state.status === "success") {
+            toast.success("Locator created successfully", { description: state.message });
+            router.push('/dashboard/locators');
+        } else if (state.status === "error") {
+            toast.warning("Some fields are not valid", { description: Object.values(state.errors)[0] });
+        } else if (state.status === "fatal") {
+            toast.error("Something went wrong", { description: state.message });
+        }
+    }, [state]);
 
     return (
         <div className={styles.dashboard}>
@@ -64,7 +83,7 @@ export default function LocatorsCreatePage() {
                     <p>Dashboard <RiArrowRightLine /> My Locators <RiArrowRightLine /> All Locators <RiArrowRightLine /> Create Locator</p>
                 </div>
                 <div className={styles.body}>
-                    <div className={styles.create}>
+                    <form action={action} className={styles.create}>
 
                         <div className={styles.block}>
                             <h2><LuInfo /> Basic Information</h2>
@@ -75,8 +94,10 @@ export default function LocatorsCreatePage() {
                                 value={locatorName}
                                 onChange={e => setLocatorName(e.target.value)}
                                 placeholder="e.g. Main Store Locator"
+                                maxlength={40}
                                 required={true}
                                 note="This is for your reference only, customers won't see this."
+                                error={err("locator_name")}
                             />
                             <Textarea
                                 label="Locator Description"
@@ -140,8 +161,9 @@ export default function LocatorsCreatePage() {
                                         type="text"
                                         name="locator_name"
                                         value={filterTitle}
+                                        maxlength={40}
                                         onChange={e => setFilterTitle(e.target.value)}
-                                        onKeyDown={e => { if(e.key === 'Enter') { handleClickAddFilter(); } }}
+                                        onKeyDown={e => { if(e.key === 'Enter') { e.preventDefault(); handleClickAddFilter(); } }}
                                         placeholder="e.g. Free Wifi, Free Parking, Wheelchair Accessible"
                                     />
                                     <Button value="Add" icon={<LuPlus />} onClick={() => handleClickAddFilter()} />
@@ -150,7 +172,7 @@ export default function LocatorsCreatePage() {
                                     {filters.length > 0 ? (
                                         <ul>
                                             {filters.map((filter, index) => (
-                                                <li key={index}>{filter.title}</li>
+                                                <li key={'filter' + index}>{filter}</li>
                                             ))}
                                         </ul>
                                     ) : (
@@ -242,6 +264,7 @@ export default function LocatorsCreatePage() {
                                 icon={<LuChevronLeft />}
                             >Back</Button>
                             <Button
+                                type="submit"
                                 name="create_locator"
                                 value="Create Locator"
                                 onClick={() => handleClickCreateLocator()}
@@ -249,10 +272,12 @@ export default function LocatorsCreatePage() {
                                 icon={<LuCheck />}
                                 iconPosition='right'
                                 primary={true}
+                                disabled={locatorName.trim() === '' ? true : false}
+                                pending={pending}
                             />
                         </div>
 
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>

@@ -39,7 +39,6 @@ export default async function RootLayout({ children }: Props) {
 						<main className="main">
 							{children}
 						</main>
-						<Footer />
 						<ToastContainer
 							position="bottom-right"
 							autoClose={4000}

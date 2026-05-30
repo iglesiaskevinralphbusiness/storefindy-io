@@ -2,8 +2,8 @@
     display: flex;
     .content {
         flex: 1;
-        min-height: calc(100vh - 154px);
-        max-height: calc(100vh - 154px);
+        min-height: calc(100vh - 100px);
+        max-height: calc(100vh - 100px);
         overflow-x: auto;
         background-color: #fafafa;
         .title {
