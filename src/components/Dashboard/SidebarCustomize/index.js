@@ -24,6 +24,7 @@ const BORDER_STYLES = [
 
 const DEFAULT_SETTINGS = {
     background: '#ffffff',
+    color: '#000000',
     fontFamily: 'system-ui, sans-serif',
     rootFontSize: 14,
     search: {
@@ -39,7 +40,6 @@ const DEFAULT_SETTINGS = {
     zoom: {
         border: 'rounded',
         color: '#ffffff',
-        label: '+ / −',
         textColor: '#1f1f1f',
     },
     searchInput: {
@@ -145,6 +145,11 @@ export default function SidebarCustomize() {
                         label="Background"
                         value={settings.background}
                         onChange={(v) => update('background', v)}
+                    />
+                    <ColorField
+                        label="Text Color"
+                        value={settings.textColor}
+                        onChange={(v) => update('textColor', v)}
                     />
                     <SelectField
                         label="Font Family"
@@ -311,12 +316,6 @@ export default function SidebarCustomize() {
                         label="Color"
                         value={settings.zoom.color}
                         onChange={(v) => updateGroup('zoom', 'color', v)}
-                    />
-                    <TextField
-                        label="Label"
-                        value={settings.zoom.label}
-                        placeholder="+ / −"
-                        onChange={(v) => updateGroup('zoom', 'label', v)}
                     />
                     <ColorField
                         label="Text Color"

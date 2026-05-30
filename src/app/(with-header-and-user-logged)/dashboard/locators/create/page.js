@@ -1,11 +1,10 @@
 'use client';
 import styles from '../../Dashboard.module.scss';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useState } from 'react';
 import Sidebar from '@/components/Dashboard/Sidebar';
 import { RiArrowRightLine } from "react-icons/ri";
-import { LuInfo, LuCheck, LuChevronLeft } from "react-icons/lu";
+import { LuInfo, LuCheck, LuChevronLeft, LuPlus } from "react-icons/lu";
 import { TbWorld } from "react-icons/tb";
 import { HiMiniMagnifyingGlass } from "react-icons/hi2";
 import { PiGear } from "react-icons/pi";
@@ -15,6 +14,7 @@ import Select from '@/components/Forms/Select';
 import Checkbox from '@/components/Forms/Checkbox';
 import Button from '@/components/Forms/Button';
 import { LOCALES, COUNTRIES, ZOOM_LEVELS, SEARCH_RADII, MAXIMUM_RESULTS_SHOWN } from '@/utils/constant';
+import { toast } from 'react-toastify';
 
 export default function LocatorsCreatePage() {
     const router = useRouter();
@@ -25,8 +25,12 @@ export default function LocatorsCreatePage() {
     const [defaultZoomLevel, setDefaultZoomLevel] = useState('10');
     const [searchRadius, setSearchRadius] = useState('10');
     const [maximumResultsShown, setMaximumResultsShown] = useState('10');
+    const [filterTitle, setFilterTitle] = useState('');
+    const [filters, setFilters] = useState([]);
     const [showSearchBar, setShowSearchBar] = useState(true);
     const [detectLocation, setDetectLocation] = useState(true);
+    const [showFilters, setShowFilters] = useState(false);
+    const [showRadius, setShowRadius] = useState(false);
     const [showStoreList, setShowStoreList] = useState(true);
     const [showDirections, setShowDirections] = useState(true);
     const [showStoreHours, setShowStoreHours] = useState(false);
@@ -34,6 +38,19 @@ export default function LocatorsCreatePage() {
     const [showWebsiteLink, setShowWebsiteLink] = useState(false);
     const [poweredByStorefindy, setPoweredByStorefindy] = useState(true);
 
+    const handleClickAddFilter = () => {
+        const title = filterTitle.trim();
+        if(title !== '') {
+            if(filters.some(filter => filter.title === title)) {
+                toast.error('Filter already exists!');
+                return;
+            } else {
+                setFilters(prev => [...prev, { title: title }]);
+                setFilterTitle('');
+                setShowFilters(true);
+            }
+        }
+    }
     const handleClickCreateLocator = () => {
         console.log('create locator');
     }
@@ -78,40 +95,68 @@ export default function LocatorsCreatePage() {
                         </div>
 
                         <div className={styles.columns}>
-                            <div className={styles.block}>
-                                <h2><TbWorld /> Default Map View</h2>
-                                <Select
-                                    label="Default Country"
-                                    name="default_country"
-                                    value={defaultCountry}
-                                    onChange={e => setDefaultCountry(e.target.value)}
-                                    options={[{ code: '', label: 'Auto detect user location' }, ...COUNTRIES]}
-                                />
-                                <Select
-                                    label="Default Zoom Level"
-                                    name="default_zoom_level"
-                                    value={defaultZoomLevel}
-                                    onChange={e => setDefaultZoomLevel(e.target.value)}
-                                    options={ZOOM_LEVELS}
-                                />
-                            </div>
+                            <div>
+                                <div className={styles.block}>
+                                    <h2><TbWorld /> Default Map View</h2>
+                                    <Select
+                                        label="Default Country"
+                                        name="default_country"
+                                        value={defaultCountry}
+                                        onChange={e => setDefaultCountry(e.target.value)}
+                                        options={[{ code: '', label: 'Auto detect user location' }, ...COUNTRIES]}
+                                    />
+                                    <Select
+                                        label="Default Zoom Level"
+                                        name="default_zoom_level"
+                                        value={defaultZoomLevel}
+                                        onChange={e => setDefaultZoomLevel(e.target.value)}
+                                        options={ZOOM_LEVELS}
+                                    />
+                                </div>
 
+                                <div className={styles.block}>
+                                    <h2><HiMiniMagnifyingGlass /> Search Settings</h2>
+                                    <Select
+                                        label="Search Radius"
+                                        name="search_radius"
+                                        value={searchRadius}
+                                        onChange={e => setSearchRadius(e.target.value)}
+                                        options={SEARCH_RADII}
+                                    />
+                                    <Select
+                                        label="Maximum Results Shown"
+                                        name="maximum_results_shown"
+                                        value={maximumResultsShown}
+                                        onChange={e => setMaximumResultsShown(e.target.value)}
+                                        options={MAXIMUM_RESULTS_SHOWN}
+                                    />
+                                </div>
+                            </div>
                             <div className={styles.block}>
-                                <h2><HiMiniMagnifyingGlass /> Search Settings</h2>
-                                <Select
-                                    label="Search Radius"
-                                    name="search_radius"
-                                    value={searchRadius}
-                                    onChange={e => setSearchRadius(e.target.value)}
-                                    options={SEARCH_RADII}
-                                />
-                                <Select
-                                    label="Maximum Results Shown"
-                                    name="maximum_results_shown"
-                                    value={maximumResultsShown}
-                                    onChange={e => setMaximumResultsShown(e.target.value)}
-                                    options={MAXIMUM_RESULTS_SHOWN}
-                                />
+                                <h2>Filters</h2>
+                                <div className={styles.filtersInput}>
+                                    <Input
+                                        label="Filter Title"
+                                        type="text"
+                                        name="locator_name"
+                                        value={filterTitle}
+                                        onChange={e => setFilterTitle(e.target.value)}
+                                        onKeyDown={e => { if(e.key === 'Enter') { handleClickAddFilter(); } }}
+                                        placeholder="e.g. Free Wifi, Free Parking, Wheelchair Accessible"
+                                    />
+                                    <Button value="Add" icon={<LuPlus />} onClick={() => handleClickAddFilter()} />
+                                </div>
+                                <div className={styles.filtersList}>
+                                    {filters.length > 0 ? (
+                                        <ul>
+                                            {filters.map((filter, index) => (
+                                                <li key={index}>{filter.title}</li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p>No filters added yet</p>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
@@ -130,6 +175,20 @@ export default function LocatorsCreatePage() {
                                 description="Show a button to auto-detect user location"
                                 checked={detectLocation}
                                 onChange={() => setDetectLocation(!detectLocation)}
+                            />
+                            <Checkbox
+                                label="Show filters"
+                                name="show_filters"
+                                description="Display filters on the search form"
+                                checked={showFilters}
+                                onChange={() => setShowFilters(!showFilters)}
+                            />
+                            <Checkbox
+                                label="Show search radius"
+                                name="show_radius"
+                                description="Display search radius on the search form"
+                                checked={showRadius}
+                                onChange={() => setShowRadius(!showRadius)}
                             />
                             <Checkbox
                                 label="Show store list"

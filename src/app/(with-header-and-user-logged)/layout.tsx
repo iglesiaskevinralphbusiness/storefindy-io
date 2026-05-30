@@ -2,6 +2,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
+import { ToastContainer } from 'react-toastify';
 
 import type { Metadata } from 'next';
 import '../../styles/globals.css';
@@ -39,6 +40,18 @@ export default async function RootLayout({ children }: Props) {
 							{children}
 						</main>
 						<Footer />
+						<ToastContainer
+							position="bottom-right"
+							autoClose={4000}
+							hideProgressBar={false}
+							newestOnTop={false}
+							closeOnClick={false}
+							rtl={false}
+							pauseOnFocusLoss
+							draggable
+							pauseOnHover
+							theme="light"
+						/>
 					</NextIntlClientProvider>
 				</StoreProvider>
 			</body>

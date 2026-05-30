@@ -44,7 +44,10 @@
     margin: 0 auto;
     .columns {
         display: flex;
-        gap: 20px;
+        gap: 30px;
+        > div {
+            flex: 1;
+        }
     }
     .block {
         flex: 1;
@@ -57,9 +60,6 @@
         border-radius: 16px;
         background-color: #fff;
         overflow: hidden;
-        &:last-child {
-            margin-bottom: 0;
-        }
         &:hover {
             border-color: #d4d4d4;
         }
@@ -70,6 +70,32 @@
             margin: 0;
             font-size: 15px;
             font-weight: 600;
+        }
+        .filtersInput {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            > div {
+                flex: 1;
+            }
+        }
+        .filtersList {
+            flex: 1;
+            display: flex;
+            p {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+            }
+            ul {
+                padding: 0 20px;
+                li {
+                    list-style: decimal;
+                    padding: 5px 0;
+                }
+            }
         }
     }
     .buttons {
