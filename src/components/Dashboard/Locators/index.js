@@ -46,7 +46,8 @@ export default function Locators({ data=[] }) {
                                     { isManageOpen === locator._id && <>
                                     <div className={styles.manageBackground} onClick={() => { setIsManageOpen(null); }}></div>
                                         <ul className={styles.manageMenu}>
-                                            <li><Link href={`/dashboard/locators/settings/${locator._id}`}><PiGear /> Settings</Link></li>
+                                            <li><Link href={`/dashboard/locators/preview/${locator._id}`} target="_blank"><LuEye /> Preview</Link></li>
+                                            <li><Link href={`/dashboard/locators/edit/${locator._id}`}><PiGear /> Edit Locator</Link></li>
                                             <li><Link href={`/dashboard/locators/customize/${locator._id}`}><LuPalette /> Customize UI</Link></li>
                                             <li><Link href={`/dashboard/locators/embed/${locator._id}`}><LuCodeXml /> Embed Code</Link></li>
                                         </ul>

@@ -2,7 +2,7 @@
 import styles from '../../Dashboard.module.scss';
 import { useRouter } from 'next/navigation';
 import { useState, useActionState, useEffect } from 'react';
-import { postCreateLocator } from '@/actions/locator';
+import { postCreateLocator, postEditLocator } from '@/actions/locator';
 import Sidebar from '@/components/Dashboard/Sidebar';
 import { RiArrowRightLine } from "react-icons/ri";
 import { LuInfo, LuCheck, LuChevronLeft, LuPlus } from "react-icons/lu";
@@ -17,28 +17,28 @@ import Button from '@/components/Forms/Button';
 import { LOCALES, COUNTRIES, ZOOM_LEVELS, SEARCH_RADII, MAXIMUM_RESULTS_SHOWN } from '@/utils/constant';
 import { toast } from 'react-toastify';
 
-export default function LocatorsCreatePage() {
+export default function LocatorsCreatePage({ data=null }) {
     const router = useRouter();
 
-    const [locatorName, setLocatorName] = useState('');
-    const [locatorDescription, setLocatorDescription] = useState('');
-    const [defaultLanguage, setDefaultLanguage] = useState('');
-    const [defaultCountry, setDefaultCountry] = useState('');
-    const [defaultZoomLevel, setDefaultZoomLevel] = useState('10');
-    const [searchRadius, setSearchRadius] = useState('10');
-    const [maximumResultsShown, setMaximumResultsShown] = useState('10');
+    const [locatorName, setLocatorName] = useState(data?.name || '');
+    const [locatorDescription, setLocatorDescription] = useState(data?.description || '');
+    const [defaultLanguage, setDefaultLanguage] = useState(data?.default_language || '');
+    const [defaultCountry, setDefaultCountry] = useState(data?.default_country || '');
+    const [defaultZoomLevel, setDefaultZoomLevel] = useState(data?.default_zoom_level || '10');
+    const [searchRadius, setSearchRadius] = useState(data?.search_radius || '10');
+    const [maximumResultsShown, setMaximumResultsShown] = useState(data?.maximum_results_shown || '10');
     const [filterTitle, setFilterTitle] = useState('');
-    const [filters, setFilters] = useState([]);
-    const [showSearchBar, setShowSearchBar] = useState(true);
-    const [detectLocation, setDetectLocation] = useState(true);
-    const [showFilters, setShowFilters] = useState(false);
-    const [showRadius, setShowRadius] = useState(false);
-    const [showStoreList, setShowStoreList] = useState(true);
-    const [showDirections, setShowDirections] = useState(true);
-    const [showStoreHours, setShowStoreHours] = useState(false);
-    const [showPhoneNumber, setShowPhoneNumber] = useState(false);
-    const [showWebsiteLink, setShowWebsiteLink] = useState(false);
-    const [poweredByStorefindy, setPoweredByStorefindy] = useState(true);
+    const [filters, setFilters] = useState(data?.filters || []);
+    const [showSearchBar, setShowSearchBar] = useState(data?.show_search_bar || true);
+    const [detectLocation, setDetectLocation] = useState(data?.detect_location || true);
+    const [showFilters, setShowFilters] = useState(data?.show_filters || false);
+    const [showRadius, setShowRadius] = useState(data?.show_radius || false);
+    const [showStoreList, setShowStoreList] = useState(data?.show_store_list || true);
+    const [showDirections, setShowDirections] = useState(data?.show_directions || true);
+    const [showStoreHours, setShowStoreHours] = useState(data?.show_store_hours || false);
+    const [showPhoneNumber, setShowPhoneNumber] = useState(data?.show_phone_number || false);
+    const [showWebsiteLink, setShowWebsiteLink] = useState(data?.show_website_link || false);
+    const [poweredByStorefindy, setPoweredByStorefindy] = useState(data?.powered_by_storefindy || true);
 
     const handleClickAddFilter = () => {
         const title = filterTitle.trim();
@@ -59,13 +59,13 @@ export default function LocatorsCreatePage() {
 
 
     // form submit handler
-    const postCreateLocatorWithParams = postCreateLocator.bind(null, filters);
+    const postCreateLocatorWithParams = data ? postEditLocator.bind(null, data._id, filters) : postCreateLocator.bind(null, filters);
     const [state, action, pending] = useActionState(postCreateLocatorWithParams, { status: "idle" });
     const err = (field) => state.status === "error" ? state.errors[field] : undefined;
     useEffect(() => {
         if (state.status === "idle") return;
         if (state.status === "success") {
-            toast.success("Locator created successfully", { description: state.message });
+            toast.success(data ? "Locator updated successfully" : "Locator created successfully", { description: state.message });
             router.push('/dashboard/locators');
         } else if (state.status === "error") {
             toast.warning("Some fields are not valid", { description: Object.values(state.errors)[0] });
@@ -265,8 +265,8 @@ export default function LocatorsCreatePage() {
                             >Back</Button>
                             <Button
                                 type="submit"
-                                name="create_locator"
-                                value="Create Locator"
+                                name={data ? "update_locator" : "create_locator"}
+                                value={data ? "Update Locator" : "Create Locator"}
                                 onClick={() => handleClickCreateLocator()}
                                 required={true}
                                 icon={<LuCheck />}
