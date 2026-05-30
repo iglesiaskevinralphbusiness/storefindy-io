@@ -107,6 +107,12 @@ ul.locators {
                         }
                     }
                 }
+                .deleteActions {
+                    display: flex;
+                    gap: 10px;
+                    justify-content: flex-end;
+                    padding: 10px 15px;
+                }
             }
         }
     }

@@ -2,15 +2,17 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './Locators.module.scss';
-import { LuMapPin, LuEye, LuTrash2, LuPalette, LuPlus, LuCodeXml } from "react-icons/lu";
+import { LuMapPin, LuEye, LuTrash2, LuPalette, LuPlus, LuCodeXml, LuChevronLeft } from "react-icons/lu";
 import { PiGear } from "react-icons/pi";
 import Button from '@/components/Forms/Button';
 import { mongooseFormatTimeAgo } from '@/utils/helpers';
 import Link from 'next/link';
+import Modal from '@/components/Modal';
 
 export default function Locators({ data=[] }) {
     const router = useRouter();
     const [isManageOpen, setIsManageOpen] = useState(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
     return (
         <ul className={styles.locators}>
@@ -53,7 +55,31 @@ export default function Locators({ data=[] }) {
                                 <Button
                                     value=""
                                     icon={<LuTrash2 />}
+                                    onClick={() => {
+                                        setIsDeleteModalOpen(true);
+                                    }}
                                 />
+                                <Modal
+                                    isOpen={isDeleteModalOpen ? true : false}
+                                    onClose={() => setIsDeleteModalOpen(false)}
+                                    title="Delete Locator"
+                                >
+                                    <p>Are you sure you want to delete this locator? This action cannot be undone.</p>
+                                    <div className={styles.deleteActions}>
+                                        <Button
+                                            value="No, Cancel"
+                                            icon={<LuChevronLeft />}
+                                            onClick={() => {
+                                                setIsDeleteModalOpen(false);
+                                            }}
+                                        />
+                                        <Button
+                                            value="Yes, Delete"
+                                            primary={true}
+                                            icon={<LuTrash2 />}
+                                        />
+                                    </div>
+                                </Modal>
                             </div>
                         </div>
                     </li>
