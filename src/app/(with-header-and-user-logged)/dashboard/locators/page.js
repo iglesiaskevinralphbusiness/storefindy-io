@@ -2,8 +2,11 @@ import styles from '../Dashboard.module.scss';
 import Sidebar from '@/components/Dashboard/Sidebar';
 import { RiArrowRightLine } from "react-icons/ri";
 import Locators from '@/components/Dashboard/Locators';
+import { getLocators } from '@/actions/locator';
 
-export default function LocatorsPage() {
+export default async function LocatorsPage() {
+    const locators = await getLocators();
+    
     return (
         <div className={styles.dashboard}>
             <Sidebar />
@@ -13,7 +16,7 @@ export default function LocatorsPage() {
                     <p>Dashboard <RiArrowRightLine /> My Locators <RiArrowRightLine /> All Locators</p>
                 </div>
                 <div className={styles.body}>
-                    <Locators />
+                    <Locators data={locators}/>
                 </div>
             </div>
         </div>

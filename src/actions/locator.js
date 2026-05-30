@@ -1,11 +1,21 @@
 "use server";
+import { redirect } from 'next/navigation';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { dbConnect } from '@/config/mongo.config';
 import { LocatorModel } from '@/mongo/LocatorModel';
+import { serializeForClient } from '@/utils/helpers';
 
-export async function postCreateLocator(filters,_prev, formData) {
-    dbConnect();
-    
+export async function postCreateLocator(filters, _prev, formData) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    await dbConnect();
+
     const form = {
+        user_id: session.user.id,
         name: formData.get('locator_name').trim(),
         description: formData.get('locator_description'),
         default_language: formData.get('default_language'),
@@ -28,7 +38,7 @@ export async function postCreateLocator(filters,_prev, formData) {
 
     // manual validation
     const errors = {};
-    if(form.locator_name === '') {
+    if (form.name === '') {
         errors.locator_name = 'Locator name is required';
     }
     // if any errors, return early
@@ -44,4 +54,16 @@ export async function postCreateLocator(filters,_prev, formData) {
         console.log(error)
         return { status: "fatal", message: "Server error. Please try again." };
     }
+}
+
+export async function getLocators() {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    await dbConnect();
+    
+    const locators = await LocatorModel.find({ user_id: session.user.id }).lean();
+    return serializeForClient(locators);
 }

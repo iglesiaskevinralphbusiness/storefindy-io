@@ -1,6 +1,9 @@
 import mongoose from 'mongoose';
 
 const locatorSchema = new mongoose.Schema({
+    user_id: { type: String, required: true, index: true },
+    views: { type: Number, required: false, default: 0 },
+    
     // SETTINGS
     // basic information
     name: { type: String, required: true },

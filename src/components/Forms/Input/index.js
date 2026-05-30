@@ -4,7 +4,7 @@ export default function Input({ label, type, name, value, maxlength=500, onChang
     return (
         <div className={`${styles.input} ${error ? styles.errorForm : ''}`}>
             <label htmlFor={name}>{label} {required ? <span className={styles.required}>*</span> : ''}</label>
-            <input type={type} name={name} value={value} maxlength={maxlength} onChange={onChange} onKeyDown={onKeyDown} placeholder={placeholder} required={required} />
+            <input type={type} name={name} value={value} maxLength={maxlength} onChange={onChange} onKeyDown={onKeyDown} placeholder={placeholder} required={required} />
             { note ? <p className={styles.note}>{note}</p> : '' }
             { error ? <p className={styles.error}>{error}</p> : '' }
         </div>
