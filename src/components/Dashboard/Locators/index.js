@@ -1,14 +1,17 @@
 'use client';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './Locators.module.scss';
-import { LuMapPin, LuEye, LuTrash2, LuPalette, LuPlus } from "react-icons/lu";
+import { LuMapPin, LuEye, LuTrash2, LuPalette, LuPlus, LuCodeXml } from "react-icons/lu";
 import { PiGear } from "react-icons/pi";
 import Button from '@/components/Forms/Button';
 import { mongooseFormatTimeAgo } from '@/utils/helpers';
+import Link from 'next/link';
 
 export default function Locators({ data=[] }) {
     const router = useRouter();
-    
+    const [isManageOpen, setIsManageOpen] = useState(null);
+
     return (
         <ul className={styles.locators}>
             {
@@ -30,10 +33,23 @@ export default function Locators({ data=[] }) {
                                 <div className={styles.history}>
                                     { mongooseFormatTimeAgo(locator.updatedAt) }
                                 </div>
-                                <Button
-                                    value="Manage"
-                                    icon={<PiGear />}
-                                />
+                                <div className={styles.manage}>
+                                    <Button
+                                        value="Manage"
+                                        icon={<PiGear />}
+                                        onClick={() => {
+                                            setIsManageOpen(locator._id);
+                                        }}
+                                    />
+                                    { isManageOpen === locator._id && <>
+                                    <div className={styles.manageBackground} onClick={() => { setIsManageOpen(null); }}></div>
+                                        <ul className={styles.manageMenu}>
+                                            <li><Link href={`/dashboard/locators/settings/${locator._id}`}><PiGear /> Settings</Link></li>
+                                            <li><Link href={`/dashboard/locators/customize/${locator._id}`}><LuPalette /> Customize UI</Link></li>
+                                            <li><Link href={`/dashboard/locators/embed/${locator._id}`}><LuCodeXml /> Embed Code</Link></li>
+                                        </ul>
+                                    </> }
+                                </div>
                                 <Button
                                     value=""
                                     icon={<LuTrash2 />}
