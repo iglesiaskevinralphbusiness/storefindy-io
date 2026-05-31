@@ -31,8 +31,6 @@ export async function postCreateLocator(filters, _prev, formData) {
         show_store_list: formData.get('show_store_list') === 'on' ? true : false,
         show_directions: formData.get('show_directions') === 'on' ? true : false,
         show_store_hours: formData.get('show_store_hours') === 'on' ? true : false,
-        show_phone_number: formData.get('show_phone_number') === 'on' ? true : false,
-        show_website_link: formData.get('show_website_link') === 'on' ? true : false,
         powered_by_storefindy: formData.get('powered_by_storefindy') === 'on' ? true : false,
     }
 
@@ -81,8 +79,6 @@ export async function postEditLocator(locator_id, filters, _prev, formData) {
         show_store_list: formData.get('show_store_list') === 'on' ? true : false,
         show_directions: formData.get('show_directions') === 'on' ? true : false,
         show_store_hours: formData.get('show_store_hours') === 'on' ? true : false,
-        show_phone_number: formData.get('show_phone_number') === 'on' ? true : false,
-        show_website_link: formData.get('show_website_link') === 'on' ? true : false,
         powered_by_storefindy: formData.get('powered_by_storefindy') === 'on' ? true : false,
     }
 
@@ -101,7 +97,6 @@ export async function postEditLocator(locator_id, filters, _prev, formData) {
         await LocatorModel.findByIdAndUpdate(locator_id, form, { new: true });
         return { status: "success", message: 'Locator updated successfully' };
     } catch (error) {
-        console.log(error)
         return { status: "fatal", message: "Server error. Please try again." };
     }
 }
@@ -128,4 +123,16 @@ export async function getLocatorById(locator_id) {
     
     const locator = await LocatorModel.findOne({ _id: locator_id, user_id: session.user.id }).lean();
     return serializeForClient(locator);
+}
+
+export async function postDeleteLocator(locator_id) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    await dbConnect();
+    
+    await LocatorModel.findByIdAndDelete(locator_id);
+    return { status: "success", message: 'Locator deleted successfully' };
 }

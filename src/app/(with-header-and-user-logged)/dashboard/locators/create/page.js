@@ -37,6 +37,7 @@ export default function LocatorsCreatePage({ data=null }) {
     const [showDirections, setShowDirections] = useState(data?.show_directions || true);
     const [showStoreHours, setShowStoreHours] = useState(data?.show_store_hours || false);
     const [showPhoneNumber, setShowPhoneNumber] = useState(data?.show_phone_number || false);
+    const [showEmailAddress, setShowEmailAddress] = useState(data?.show_email_address || false);
     const [showWebsiteLink, setShowWebsiteLink] = useState(data?.show_website_link || false);
     const [poweredByStorefindy, setPoweredByStorefindy] = useState(data?.powered_by_storefindy || true);
 
@@ -154,7 +155,7 @@ export default function LocatorsCreatePage({ data=null }) {
                                 </div>
                             </div>
                             <div className={styles.block}>
-                                <h2>Filters</h2>
+                                <h2>Filters / Categories</h2>
                                 <div className={styles.filtersInput}>
                                     <Input
                                         label="Filter Title"
@@ -232,20 +233,6 @@ export default function LocatorsCreatePage({ data=null }) {
                                 description="Display opening hours on each store card"
                                 checked={showStoreHours}
                                 onChange={() => setShowStoreHours(!showStoreHours)}
-                            />
-                            <Checkbox
-                                label="Show phone number"
-                                name="show_phone_number"
-                                description="Display contact number on each store card"
-                                checked={showPhoneNumber}
-                                onChange={() => setShowPhoneNumber(!showPhoneNumber)}
-                            />
-                            <Checkbox
-                                label="Show website link"
-                                name="show_website_link"
-                                description="Add a visit website button on each store"
-                                checked={showWebsiteLink}
-                                onChange={() => setShowWebsiteLink(!showWebsiteLink)}
                             />
                             <Checkbox
                                 label="Powered by Storefindy"

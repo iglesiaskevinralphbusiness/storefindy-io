@@ -25,8 +25,6 @@ const locatorSchema = new mongoose.Schema({
     show_store_list: { type: Boolean, required: false, default: true },
     show_directions: { type: Boolean, required: false, default: true },
     show_store_hours: { type: Boolean, required: false, default: false },
-    show_phone_number: { type: Boolean, required: false, default: false },
-    show_website_link: { type: Boolean, required: false, default: false },
     powered_by_storefindy: { type: Boolean, required: false, default: true },
 
 
