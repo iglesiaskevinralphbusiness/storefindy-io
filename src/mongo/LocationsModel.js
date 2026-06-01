@@ -9,21 +9,28 @@ const locatorSchema = new mongoose.Schema({
     locator_id: { type: String, required: true, index: true },
     filters: { type: Array, required: false, default: [] },
     description: { type: String, required: false, default: '' },
+    // Address Details
+    street: { type: String, required: false, default: '' },
+    city: { type: String, required: true, default: '' },
+    state: { type: String, required: true, default: '' },
+    postal: { type: String, required: false, default: '' },
+    country: { type: String, required: true, default: '' },
     // Location on Map
     latitude: { type: Number, required: true },
     longitude: { type: Number, required: true },
-    // Address Details
-    street: { type: String, required: false, default: '' },
-    city: { type: String, required: false, default: '' },
-    state: { type: String, required: false, default: '' },
-    postal: { type: String, required: false, default: '' },
-    country: { type: String, required: false, default: '' },
+    // Business Hours
+    location_status: { type: String, required: true },
+    hours: { type: Object, required: true },
+    holidays: { type: Array, required: false, default: [] },
     // Contact & Links
     phone: { type: String, required: false, default: '' },
     email: { type: String, required: false, default: '' },
     website: { type: String, required: false, default: '' },
-    // Business Hours
-    
+    // Location Settings
+    published: { type: Boolean, required: true, default: true },
+    show_opening_hours: { type: Boolean, required: true, default: false },
+    custom_notes: { type: String, required: false, default: '' },
+
 
 
 

@@ -394,6 +394,7 @@ export default function AddLocationPage({ locators }) {
                         value={country}
                         onChange={e => setCountry(e.target.value)}
                         options={COUNTRIES}
+                        required={true}
                     />
                 </div>
             </div>
@@ -512,46 +513,56 @@ export default function AddLocationPage({ locators }) {
                                 placeholderText="Select date"
                             />
                         </div>
-                        <Button value="Add" icon={<LuPlus />} primary={true} onClick={addHoliday} />
+                        <Button
+                            value="Add"
+                            icon={<LuPlus />}
+                            primary={true}
+                            onClick={addHoliday}
+                            disabled={locationStatus !== 'open'}
+                        />
                     </div>
-
-                    {holidays.length > 0 && (
-                        <div className={styles.hours} style={{ marginTop: '15px' }}>
-                            {holidays.map((holiday, index) => (
-                                <div className={styles.hoursRow} key={`${holiday.from}-${holiday.to}-${index}`}>
-                                    <span className={styles.hoursDay} style={{ width: 'auto', minWidth: '92px' }}>
-                                        {formatHolidayRange(holiday.from, holiday.to)}
-                                    </span>
-                                    <span
-                                        className={`${styles.hoursToggle} ${holiday.enabled ? styles.on : ''}`}
-                                        onClick={() => toggleHoliday(index)}
-                                    ></span>
-                                    {holiday.enabled ? (
-                                        <div className={styles.hoursTimes}>
-                                            <TimePicker
-                                                value={holiday.open}
-                                                onChange={val => updateHolidayTime(index, 'open', val)}
-                                            />
-                                            <span className={styles.hoursSep}>to</span>
-                                            <TimePicker
-                                                value={holiday.close}
-                                                min={holiday.open}
-                                                onChange={val => updateHolidayTime(index, 'close', val)}
+                    { locationStatus === 'open' && <>
+                        <div className={styles.hours}>
+                            <p>Hours of operation for a brief period of time, like for a special event. Your regular business hours don't change.</p>
+                            {holidays.length > 0 && (
+                                <>
+                                    {holidays.map((holiday, index) => (
+                                        <div className={styles.hoursRow} key={`${holiday.from}-${holiday.to}-${index}`}>
+                                            <span className={styles.hoursDay} style={{ width: 'auto', minWidth: '92px' }}>
+                                                {formatHolidayRange(holiday.from, holiday.to)}
+                                            </span>
+                                            <span
+                                                className={`${styles.hoursToggle} ${holiday.enabled ? styles.on : ''}`}
+                                                onClick={() => toggleHoliday(index)}
+                                            ></span>
+                                            {holiday.enabled ? (
+                                                <div className={styles.hoursTimes}>
+                                                    <TimePicker
+                                                        value={holiday.open}
+                                                        onChange={val => updateHolidayTime(index, 'open', val)}
+                                                    />
+                                                    <span className={styles.hoursSep}>to</span>
+                                                    <TimePicker
+                                                        value={holiday.close}
+                                                        min={holiday.open}
+                                                        onChange={val => updateHolidayTime(index, 'close', val)}
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div className={styles.hoursTimes}>
+                                                    <span className={styles.hoursClosed}>Closed</span>
+                                                </div>
+                                            )}
+                                            <LuTrash2
+                                                style={{ cursor: 'pointer', color: '#c0392b', flexShrink: 0 }}
+                                                onClick={() => removeHoliday(index)}
                                             />
                                         </div>
-                                    ) : (
-                                        <div className={styles.hoursTimes}>
-                                            <span className={styles.hoursClosed}>Closed</span>
-                                        </div>
-                                    )}
-                                    <LuTrash2
-                                        style={{ cursor: 'pointer', color: '#c0392b', flexShrink: 0 }}
-                                        onClick={() => removeHoliday(index)}
-                                    />
-                                </div>
-                            ))}
+                                    ))}
+                                </>
+                            )}
                         </div>
-                    )}
+                    </>}
                 </div>
             </div>
 
