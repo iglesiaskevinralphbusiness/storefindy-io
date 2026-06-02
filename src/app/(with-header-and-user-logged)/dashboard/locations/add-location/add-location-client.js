@@ -1,6 +1,6 @@
 'use client';
 import styles from '../../Dashboard.module.scss';
-import { useState, useEffect, forwardRef } from 'react';
+import { useState, useEffect, forwardRef, useActionState } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { LuInfo, LuMapPin, LuHouse, LuPhone, LuClock, LuSettings, LuCheck, LuChevronLeft, LuPlus, LuRefreshCw, LuImage, LuSearch, LuTrash2 } from "react-icons/lu";
@@ -13,6 +13,7 @@ import { COUNTRIES } from '@/utils/constant';
 import { toast } from 'react-toastify';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { postCreateLocation } from '@/actions/locations';
 
 // Leaflet relies on `window`, so the picker is loaded client-side only.
 const MapPicker = dynamic(() => import('@/components/Dashboard/MapPicker'), {
@@ -101,7 +102,7 @@ export default function AddLocationPage({ locators }) {
     // Address
     const [street, setStreet] = useState('');
     const [city, setCity] = useState('');
-    const [state, setState] = useState('');
+    const [stateProvince, setStateProvince] = useState('');
     const [postal, setPostal] = useState('');
     const [country, setCountry] = useState('ph');
 
@@ -281,30 +282,27 @@ export default function AddLocationPage({ locators }) {
         }
     };
 
-    const isValid = storeName.trim() !== '' && locatorId !== '' && lat !== '' && lng !== '' && city.trim() !== '' && state.trim() !== '';
+    const isValid = storeName.trim() !== '' && locatorId !== '' && lat !== '' && lng !== '' && city.trim() !== '' && stateProvince.trim() !== '';
 
-    const handleSave = () => {
-        const payload = {
-            name: storeName.trim(),
-            locator_id: locatorId,
-            categories,
-            description: description.trim(),
-            latitude: lat,
-            longitude: lng,
-            address: { street: street.trim(), city: city.trim(), state: state.trim(), postal: postal.trim(), country },
-            contact: { phone: phone.trim(), email: email.trim(), website: website.trim() },
-            hours,
-            holidays,
-            location_status: locationStatus,
-            published,
-            show_opening_hours: showOpeningHours,
-            custom_notes: customNotes.trim(),
+
+    // form submit handler
+    const postCreateLocationWithParams = postCreateLocation.bind(null, categories, hours, holidays);
+    const [state, action, pending] = useActionState(postCreateLocationWithParams, { status: "idle" });
+    const err = (field) => state.status === "error" ? state.errors[field] : undefined;
+    useEffect(() => {
+        if (state.status === "idle") return;
+        if (state.status === "success") {
+            toast.success("Location added successfully", { description: state.message });
+            router.push('/dashboard/locations');
+        } else if (state.status === "error") {
+            toast.warning("Some fields are not valid", { description: Object.values(state.errors)[0] });
+        } else if (state.status === "fatal") {
+            toast.error("Something went wrong", { description: state.message });
         }
-        console.log(payload);
-    };
+    }, [state]);
 
     return (
-        <form className={styles.create} onSubmit={e => { e.preventDefault(); handleSave(); }}>
+        <form className={styles.create} action={action}>
 
             <div className={styles.columns}>
                 <div className={styles.block}>
@@ -317,6 +315,7 @@ export default function AddLocationPage({ locators }) {
                         onChange={e => setStoreName(e.target.value)}
                         placeholder="e.g. Walmart Supercenter - Manhattan"
                         required={true}
+                        error={err("store_name")}
                     />
                     <Select
                         label="Locator"
@@ -326,6 +325,7 @@ export default function AddLocationPage({ locators }) {
                         options={locatorOptions}
                         required={true}
                         note="Which locator will show this location?"
+                        error={err("locator_id")}
                     />
                     <div>
                         <label style={{ display: 'block', marginBottom: '5px', fontSize: '13px' }}>Filters / Category <HiddenField locatorId={locatorId} show={selectedLocator?.show_filters} /></label>
@@ -369,15 +369,17 @@ export default function AddLocationPage({ locators }) {
                             onChange={e => setCity(e.target.value)}
                             placeholder="City"
                             required={true}
+                            error={err("city")}
                         />
                         <Input
                             label="State / Province"
                             type="text"
                             name="state"
-                            value={state}
-                            onChange={e => setState(e.target.value)}
+                            value={stateProvince}
+                            onChange={e => setStateProvince(e.target.value)}
                             placeholder="State"
                             required={true}
+                            error={err("state")}
                         />
                         <Input
                             label="Postal Code"
@@ -395,6 +397,7 @@ export default function AddLocationPage({ locators }) {
                         onChange={e => setCountry(e.target.value)}
                         options={COUNTRIES}
                         required={true}
+                        error={err("country")}
                     />
                 </div>
             </div>
@@ -414,6 +417,7 @@ export default function AddLocationPage({ locators }) {
                         onChange={e => setLat(e.target.value)}
                         placeholder="e.g. 40.7128"
                         required={true}
+                        error={err("latitude")}
                     />
                     <Input
                         label="Longitude"
@@ -423,6 +427,7 @@ export default function AddLocationPage({ locators }) {
                         onChange={e => setLng(e.target.value)}
                         placeholder="e.g. -74.0060"
                         required={true}
+                        error={err("longitude")}
                     />
                 </div>
                 <div className={styles.geocode}>
@@ -452,6 +457,7 @@ export default function AddLocationPage({ locators }) {
                             { code: 'temporarily_closed', label: 'Temporarily Closed' },
                             { code: 'coming_soon', label: 'Coming Soon' },
                         ]}
+                        error={err("location_status")}
                     />
                     { locationStatus === 'open' && <>
                         <div className={styles.hours}>
@@ -584,6 +590,7 @@ export default function AddLocationPage({ locators }) {
                         value={email}
                         onChange={e => setEmail(e.target.value)}
                         placeholder="store@example.com"
+                        error={err("email")}
                     />
                     <Input
                         label="Website URL"
@@ -592,6 +599,7 @@ export default function AddLocationPage({ locators }) {
                         value={website}
                         onChange={e => setWebsite(e.target.value)}
                         placeholder="https://yourstore.com"
+                        error={err("website")}
                     />
                     {/* <div>
                         <label style={{ display: 'block', marginBottom: '5px', fontSize: '13px' }}>Store Image URL</label>
