@@ -229,3 +229,11 @@
         font-size: 13px;
     }
 }
+
+
+.deleteActions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    padding: 20px 15px 10px;
+}

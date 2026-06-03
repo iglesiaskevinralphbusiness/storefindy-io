@@ -344,3 +344,15 @@ export async function importCSV(locatorId, mode, records) {
         return { status: "fatal", message: "Server error. Please try again." };
     }
 }
+
+export async function postDeleteLocation(location_id) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    await dbConnect();
+    
+    await LocationModel.findByIdAndDelete(location_id);
+    return { status: "success", message: 'Location deleted successfully' };
+}

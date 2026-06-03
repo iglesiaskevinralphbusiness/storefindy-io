@@ -2,7 +2,11 @@
 import { useState } from 'react';
 import styles from './LocationsTable.module.scss';
 import Button from '@/components/Forms/Button';
-import { LuPencil, LuMap, LuEye, LuEyeOff, LuTrash2, LuArrowUpDown, LuMapPinOff } from 'react-icons/lu';
+import { LuPencil, LuMap, LuEye, LuEyeOff, LuTrash2, LuArrowUpDown, LuMapPinOff, LuChevronLeft } from 'react-icons/lu';
+import Modal from '@/components/Modal';
+import { postDeleteLocation } from '@/actions/locations';
+import { toast } from 'react-toastify';
+import { useRouter } from 'next/navigation';
 
 // Dummy data — replace with real locations once getLocations is wired up.
 const DUMMY_LOCATIONS = [
@@ -32,9 +36,10 @@ const DUMMY_LOCATIONS = [
     { id: 24, name: 'Snack Shack BGC',       address: '26th St, BGC, Taguig City',       locator: 'Pop-up Stores',      status: 'draft',     views: 0   },
 ];
 
-export default function LocationsTable({ data = [] }) {
-    const [locations] = useState(data);
+export default function LocationsTable({ data=[] }) {
+    const router = useRouter();
     const [selected, setSelected] = useState(new Set());
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
     // Sort headers don't sort — they just log the clicked column for now.
     const handleSort = (column) => {
@@ -50,13 +55,13 @@ export default function LocationsTable({ data = [] }) {
     };
 
     const toggleAll = (e) => {
-        setSelected(e.target.checked ? new Set(locations.map(l => l.id)) : new Set());
+        setSelected(e.target.checked ? new Set(data.map(l => l._id)) : new Set());
     };
 
-    const allSelected = locations.length > 0 && selected.size === locations.length;
+    const allSelected = data.length > 0 && selected.size === data.length;
 
     // The full data objects for the currently checked rows.
-    const selectedLocations = locations.filter(l => selected.has(l.id));
+    const selectedLocations = data.filter(l => selected.has(l._id));
 
     const handleBulkPublish = () => {
         console.log('publish:', selectedLocations);
@@ -67,6 +72,17 @@ export default function LocationsTable({ data = [] }) {
     const handleBulkDelete = () => {
         console.log('delete:', selectedLocations);
     };
+
+    const handleClickDelete = async (locator_id) => {
+        const res = await postDeleteLocation(locator_id);
+        if(res.status === 'success') {
+            toast.success(res.message);
+            setIsDeleteModalOpen(false);
+            router.refresh();
+        } else {
+            toast.error(res.message);
+        }
+    }
 
     return (
         <>
@@ -95,7 +111,7 @@ export default function LocationsTable({ data = [] }) {
                         </tr>
                     </thead>
                     <tbody>
-                        {locations.length === 0 ? (
+                        {data.length === 0 ? (
                             <tr>
                                 <td colSpan={7}>
                                     <div className={styles.emptyState}>
@@ -104,14 +120,14 @@ export default function LocationsTable({ data = [] }) {
                                     </div>
                                 </td>
                             </tr>
-                        ) : locations.map(l => (
-                            <tr key={l._id} className={selected.has(l.id) ? styles.selected : ''}>
+                        ) : data.map(l => (
+                            <tr key={l._id} className={selected.has(l._id) ? styles.selected : ''}>
                                 <td>
                                     <input
                                         type="checkbox"
                                         className={styles.cb}
-                                        checked={selected.has(l.id)}
-                                        onChange={() => toggleRow(l.id)}
+                                        checked={selected.has(l._id)}
+                                        onChange={() => toggleRow(l._id)}
                                     />
                                 </td>
                                 <td><span className={styles.storeName}>{l.name}</span></td>
@@ -146,7 +162,7 @@ export default function LocationsTable({ data = [] }) {
                                         <button
                                             className={`${styles.actBtn} ${styles.danger}`}
                                             title="Delete"
-                                            onClick={() => console.log('delete location:', l.id)}
+                                            onClick={() => setIsDeleteModalOpen(l._id)}
                                         ><LuTrash2 /></button>
                                     </div>
                                 </td>
@@ -156,6 +172,31 @@ export default function LocationsTable({ data = [] }) {
                 </table>
             </div>
             </div>
+
+            <Modal
+                isOpen={isDeleteModalOpen ? true : false}
+                onClose={() => setIsDeleteModalOpen(false)}
+                title="Delete Locator"
+            >
+                <p>Are you sure you want to delete this location? This action cannot be undone.</p>
+                <div className={styles.deleteActions}>
+                    <Button
+                        value="No, Cancel"
+                        icon={<LuChevronLeft />}
+                        onClick={() => {
+                            setIsDeleteModalOpen(false);
+                        }}
+                    />
+                    <Button
+                        value="Yes, Delete"
+                        primary={true}
+                        icon={<LuTrash2 />}
+                        onClick={() => {
+                            handleClickDelete(isDeleteModalOpen);
+                        }}
+                    />
+                </div>
+            </Modal>
         </>
     );
 }
