@@ -32,8 +32,8 @@ const DUMMY_LOCATIONS = [
     { id: 24, name: 'Snack Shack BGC',       address: '26th St, BGC, Taguig City',       locator: 'Pop-up Stores',      status: 'draft',     views: 0   },
 ];
 
-export default function LocationsTable() {
-    const [locations] = useState(DUMMY_LOCATIONS);
+export default function LocationsTable({ data = [] }) {
+    const [locations] = useState(data);
     const [selected, setSelected] = useState(new Set());
 
     // Sort headers don't sort — they just log the clicked column for now.
@@ -115,12 +115,14 @@ export default function LocationsTable() {
                                     />
                                 </td>
                                 <td><span className={styles.storeName}>{l.name}</span></td>
-                                <td className={styles.address}>{l.address}</td>
+                                <td className={styles.address}>
+                                    {l.street} {l.city} {l.state} {l.postal} {l.country}
+                                </td>
                                 <td><span className={styles.locatorPill}>{l.locator}</span></td>
                                 <td>
-                                    <span className={`${styles.badge} ${l.status === 'published' ? styles.published : styles.draft}`}>
+                                    <span className={`${styles.badge} ${l.published ? styles.published : styles.draft}`}>
                                         <span className={styles.badgeDot}></span>
-                                        {l.status === 'published' ? 'Published' : 'Draft'}
+                                        {l.published ? 'Published' : 'Draft'}
                                     </span>
                                 </td>
                                 <td className={styles.views}>{l.views > 0 ? l.views.toLocaleString() : '—'}</td>

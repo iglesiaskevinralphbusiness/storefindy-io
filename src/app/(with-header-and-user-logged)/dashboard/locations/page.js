@@ -2,10 +2,11 @@ import styles from '../Dashboard.module.scss';
 import Sidebar from '@/components/Dashboard/Sidebar';
 import { RiArrowRightLine } from "react-icons/ri";
 import LocationsTable from '@/components/Dashboard/Locations/Table';
-// import { getLocations } from '@/actions/locations';
+import { getLocations } from '@/actions/locations';
 
 export default async function LocationsPage() {
-    // const locations = await getLocations();
+    const locations = await getLocations();
+    console.log(locations);
 
     return (
         <div className={styles.dashboard}>
@@ -16,7 +17,7 @@ export default async function LocationsPage() {
                     <p>Dashboard <RiArrowRightLine /> Locations <RiArrowRightLine /> All Locations</p>
                 </div>
                 <div className={styles.body}>
-                    <LocationsTable />
+                    <LocationsTable data={locations} />
                 </div>
             </div>
         </div>

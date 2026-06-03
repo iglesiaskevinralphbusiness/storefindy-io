@@ -125,3 +125,45 @@ export async function postCreateLocation(categories, hours, holidays, _prev, for
         return { status: "fatal", message: "Server error. Please try again." };
     }
 }
+
+export async function getLocations() {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    await dbConnect();
+    
+    const locations = await LocationModel.aggregate([
+        { $match: { user_id: session.user.id } },
+        { $addFields: { locatorId: { "$toObjectId": "$locator_id" } } },
+        {
+            $lookup: {
+                from: "locatormodels",
+                localField: "locatorId",
+                foreignField: "_id",
+                as: "locator"
+            }
+        },
+        {
+            $addFields: {
+                locator: {
+                    $arrayElemAt: ["$locator.name", 0]
+                }
+            }
+        },
+        { $project: {
+            _id: 1,
+            name: 1,
+            street: 1,
+            city: 1,
+            state: 1,
+            postal: 1,
+            country: 1,
+            published: 1,
+            views: 1,
+            locator: 1,
+        } },
+    ]);
+    return serializeForClient(locations);
+}
