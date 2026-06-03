@@ -2,44 +2,17 @@
 import { useState } from 'react';
 import styles from './LocationsTable.module.scss';
 import Button from '@/components/Forms/Button';
-import { LuPencil, LuMap, LuEye, LuEyeOff, LuTrash2, LuArrowUpDown, LuMapPinOff, LuChevronLeft } from 'react-icons/lu';
+import { LuPencil, LuMap, LuEye, LuEyeOff, LuTrash2, LuArrowUpDown, LuMapPinOff, LuChevronLeft, LuPlus } from 'react-icons/lu';
 import Modal from '@/components/Modal';
-import { postDeleteLocation } from '@/actions/locations';
+import { postDeleteLocation, postBulkDeleteLocations } from '@/actions/locations';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
-
-// Dummy data — replace with real locations once getLocations is wired up.
-const DUMMY_LOCATIONS = [
-    { id: 1,  name: 'SM Mall of Asia',       address: 'Seaside Blvd, Pasay City',        locator: 'Main Store Locator', status: 'published', views: 842 },
-    { id: 2,  name: 'Robinsons Galleria',    address: 'EDSA, Ortigas, Pasig City',       locator: 'Branch Finder',      status: 'published', views: 310 },
-    { id: 3,  name: 'Mercury Drug Makati',   address: 'Ayala Ave, Makati City',          locator: 'Main Store Locator', status: 'published', views: 254 },
-    { id: 4,  name: 'Puregold Cubao',        address: 'P. Tuazon Blvd, Quezon City',     locator: 'Main Store Locator', status: 'published', views: 198 },
-    { id: 5,  name: 'Ayala Center Cebu',     address: 'Cebu Business Park, Cebu City',   locator: 'Branch Finder',      status: 'published', views: 432 },
-    { id: 6,  name: 'Rose Pharmacy Cebu',    address: 'Colon St, Cebu City',             locator: 'Branch Finder',      status: 'published', views: 112 },
-    { id: 7,  name: 'Abreeza Mall Davao',    address: 'JP Laurel Ave, Davao City',       locator: 'Branch Finder',      status: 'published', views: 287 },
-    { id: 8,  name: 'Bench BGC',             address: 'BGC High Street, Taguig City',    locator: 'Main Store Locator', status: 'published', views: 174 },
-    { id: 9,  name: 'SM Megamall',           address: 'EDSA, Mandaluyong City',          locator: 'Main Store Locator', status: 'published', views: 521 },
-    { id: 10, name: 'Jollibee Ortigas',      address: 'Ortigas Ave, Pasig City',         locator: 'Pop-up Stores',      status: 'published', views: 89  },
-    { id: 11, name: "Watson's Alabang",      address: 'Alabang Town Center, Muntinlupa', locator: 'Main Store Locator', status: 'draft',     views: 0   },
-    { id: 12, name: 'Landmark Trinoma',      address: 'North Ave, Quezon City',          locator: 'Branch Finder',      status: 'published', views: 203 },
-    { id: 13, name: 'H&M Glorietta',         address: 'Ayala Center, Makati City',       locator: 'Main Store Locator', status: 'draft',     views: 0   },
-    { id: 14, name: 'National Bookstore',    address: 'SM City Cebu, Cebu City',         locator: 'Branch Finder',      status: 'published', views: 67  },
-    { id: 15, name: 'Mercury Drug Davao',    address: 'San Pedro St, Davao City',        locator: 'Branch Finder',      status: 'published', views: 145 },
-    { id: 16, name: 'Pop-up Store BGC',      address: 'Bonifacio High Street, Taguig',   locator: 'Pop-up Stores',      status: 'draft',     views: 0   },
-    { id: 17, name: 'Savemore Marikina',     address: 'Rizal Ave, Marikina City',        locator: 'Main Store Locator', status: 'published', views: 178 },
-    { id: 18, name: 'Pop-up Eastwood',       address: 'Eastwood City, Quezon City',      locator: 'Pop-up Stores',      status: 'draft',     views: 0   },
-    { id: 19, name: 'SM City Iloilo',        address: 'Benigno Aquino Ave, Iloilo City', locator: 'Branch Finder',      status: 'published', views: 234 },
-    { id: 20, name: 'Jollibee Makati CBD',   address: 'Dela Rosa St, Makati City',       locator: 'Pop-up Stores',      status: 'published', views: 156 },
-    { id: 21, name: 'Robinson Place Manila', address: 'Pedro Gil St, Manila',            locator: 'Main Store Locator', status: 'published', views: 312 },
-    { id: 22, name: 'Splash Salon Cebu',     address: 'IT Park, Lahug, Cebu City',       locator: 'Branch Finder',      status: 'published', views: 88  },
-    { id: 23, name: 'S&R Membership',        address: 'Mindanao Ave, Quezon City',       locator: 'Main Store Locator', status: 'published', views: 421 },
-    { id: 24, name: 'Snack Shack BGC',       address: '26th St, BGC, Taguig City',       locator: 'Pop-up Stores',      status: 'draft',     views: 0   },
-];
 
 export default function LocationsTable({ data=[] }) {
     const router = useRouter();
     const [selected, setSelected] = useState(new Set());
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
 
     // Sort headers don't sort — they just log the clicked column for now.
     const handleSort = (column) => {
@@ -69,9 +42,21 @@ export default function LocationsTable({ data=[] }) {
     const handleBulkUnpublish = () => {
         console.log('unpublish:', selectedLocations);
     };
-    const handleBulkDelete = () => {
-        console.log('delete:', selectedLocations);
+    const handleBulkDelete = async () => {
+        const location_ids = selectedLocations.map(l => l._id);
+        setIsBulkDeleteModalOpen(location_ids);
     };
+    const handleBulkDeleteContinue = async () => {
+        const res = await postBulkDeleteLocations(isBulkDeleteModalOpen);
+        if (res.status === 'success') {
+            toast.success(res.message);
+            setSelected(new Set());
+            setIsBulkDeleteModalOpen(false);
+            router.refresh();
+        } else {
+            toast.error(res.message);
+        }
+    }
 
     const handleClickDelete = async (locator_id) => {
         const res = await postDeleteLocation(locator_id);
@@ -116,7 +101,12 @@ export default function LocationsTable({ data=[] }) {
                                 <td colSpan={7}>
                                     <div className={styles.emptyState}>
                                         <LuMapPinOff />
-                                        <p>No locations found.</p>
+                                        <p>No locations found. Start by creating a new location.</p>
+                                        <Button
+                                            value="Create Location"
+                                            icon={<LuPlus />}
+                                            onClick={() => router.push('/dashboard/locations/add-location')}
+                                        />
                                     </div>
                                 </td>
                             </tr>
@@ -194,6 +184,29 @@ export default function LocationsTable({ data=[] }) {
                         onClick={() => {
                             handleClickDelete(isDeleteModalOpen);
                         }}
+                    />
+                </div>
+            </Modal>
+
+            <Modal
+                isOpen={isBulkDeleteModalOpen ? true : false}
+                onClose={() => setIsBulkDeleteModalOpen(false)}
+                title="Delete Locator"
+            >
+                <p>Are you sure you want to delete this multiple locations? This action cannot be undone.</p>
+                <div className={styles.deleteActions}>
+                    <Button
+                        value="No, Cancel"
+                        icon={<LuChevronLeft />}
+                        onClick={() => {
+                            setIsBulkDeleteModalOpen(false);
+                        }}
+                    />
+                    <Button
+                        value="Yes, Delete All"
+                        primary={true}
+                        icon={<LuTrash2 />}
+                        onClick={() => handleBulkDeleteContinue()}
                     />
                 </div>
             </Modal>

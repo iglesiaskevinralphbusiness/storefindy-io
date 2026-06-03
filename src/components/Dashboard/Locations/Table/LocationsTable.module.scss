@@ -217,15 +217,20 @@
 
 /* Empty */
 .emptyState {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
     padding: 40px 20px;
     text-align: center;
     color: #bbb;
 
-    svg {
+    > svg {
         font-size: 36px;
         margin-bottom: 10px;
     }
     p {
+        margin-bottom: 10px;
         font-size: 13px;
     }
 }

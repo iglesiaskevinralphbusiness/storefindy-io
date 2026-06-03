@@ -356,3 +356,23 @@ export async function postDeleteLocation(location_id) {
     await LocationModel.findByIdAndDelete(location_id);
     return { status: "success", message: 'Location deleted successfully' };
 }
+
+export async function postBulkDeleteLocations(location_ids) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    if (!Array.isArray(location_ids) || location_ids.length === 0) {
+        return { status: "error", message: 'No locations selected' };
+    }
+
+    await dbConnect();
+
+    const res = await LocationModel.deleteMany({ _id: { $in: location_ids } });
+    return {
+        status: "success",
+        message: `${res.deletedCount} location${res.deletedCount === 1 ? '' : 's'} deleted successfully`,
+        deletedCount: res.deletedCount,
+    };
+}
