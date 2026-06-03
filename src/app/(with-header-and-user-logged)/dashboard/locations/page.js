@@ -17,7 +17,7 @@ export default async function LocationsPage() {
                     <p>Dashboard <RiArrowRightLine /> Locations <RiArrowRightLine /> All Locations</p>
                 </div>
                 <div className={styles.body}>
-                    <LocationsTable data={locations} />
+                    <LocationsTable data={locations.items} />
                 </div>
             </div>
         </div>

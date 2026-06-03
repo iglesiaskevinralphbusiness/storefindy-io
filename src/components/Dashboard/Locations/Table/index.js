@@ -105,7 +105,7 @@ export default function LocationsTable({ data = [] }) {
                                 </td>
                             </tr>
                         ) : locations.map(l => (
-                            <tr key={l.id} className={selected.has(l.id) ? styles.selected : ''}>
+                            <tr key={l._id} className={selected.has(l.id) ? styles.selected : ''}>
                                 <td>
                                     <input
                                         type="checkbox"

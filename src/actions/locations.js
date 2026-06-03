@@ -126,13 +126,20 @@ export async function postCreateLocation(categories, hours, holidays, _prev, for
     }
 }
 
-export async function getLocations() {
+export async function getLocations(page=1, rows=10) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
         redirect('/sign-in');
     }
 
     await dbConnect();
+
+    // pagination
+    const currentPage = Number(page) > 0 ? Number(page) : 1;
+    const currentRows = Number(rows) > 0 ? Number(rows) : 10;
+
+    const totalCount = await LocationModel.countDocuments({ user_id: session.user.id });
+    const totalPages = Math.ceil(totalCount / currentRows);
     
     const locations = await LocationModel.aggregate([
         { $match: { user_id: session.user.id } },
@@ -152,18 +159,29 @@ export async function getLocations() {
                 }
             }
         },
-        { $project: {
-            _id: 1,
-            name: 1,
-            street: 1,
-            city: 1,
-            state: 1,
-            postal: 1,
-            country: 1,
-            published: 1,
-            views: 1,
-            locator: 1,
-        } },
+        {
+            $project: {
+                _id: 1,
+                name: 1,
+                street: 1,
+                city: 1,
+                state: 1,
+                postal: 1,
+                country: 1,
+                published: 1,
+                views: 1,
+                locator: 1,
+            }
+        },
+        { $sort: { created_at: -1 } },
+        { $skip: (currentPage - 1) * currentRows },
+        { $limit: currentRows }
     ]);
-    return serializeForClient(locations);
+
+    return {
+        rows: currentRows,
+        page: currentPage,
+        pages: totalPages === 0 ? 1 : totalPages,
+        items: serializeForClient(locations)
+    }
 }
