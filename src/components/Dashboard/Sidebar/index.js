@@ -4,7 +4,7 @@ import styles from './DashboardSidebar.module.scss';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { FaAngleUp } from "react-icons/fa6";
-import { LuHouse, LuPlus, LuPalette, LuCodeXml, LuList, LuUpload, LuUser, LuBookUser, LuKeyRound, LuBell, LuAppWindow, LuFileQuestion, LuBug, LuBookOpen, LuCircleUser } from "react-icons/lu";
+import { LuHouse, LuPlus, LuPalette, LuCodeXml, LuList, LuUpload, LuUser, LuBookUser, LuKeyRound, LuBell, LuAppWindow, LuFileQuestion, LuBug, LuBookOpen, LuCircleUser, LuMapPin } from "react-icons/lu";
 import { VscGraphLine } from "react-icons/vsc";
 import { IoMapOutline } from "react-icons/io5";
 import { HiOutlineSquares2X2 } from "react-icons/hi2";
@@ -119,7 +119,7 @@ export default function Sidebar() {
                                 aria-expanded={isLocationsMenuOpen || isSubLinkActive(['/dashboard/locations', '/dashboard/locations/add-location', '/dashboard/locations/import-csv'])}
                             >
                                 <div>
-                                    <IoMapOutline />
+                                    <LuMapPin />
                                     Locations
                                 </div>
                                 <FaAngleUp />
