@@ -92,7 +92,11 @@ export default function Locators({ data=[] }) {
                 onClose={() => setIsDeleteModalOpen(false)}
                 title="Delete Locator"
             >
-                <p>Are you sure you want to delete this locator? This action cannot be undone.</p>
+                <p>Are you sure you want to delete this locator?</p>
+                <ul style={{ listStyle: 'disc', paddingLeft: '20px', marginTop: '10px' }}>
+                    <li>This action cannot be undone.</li>
+                    <li>All associated locations will also be deleted.</li>
+                </ul>
                 <div className={styles.deleteActions}>
                     <Button
                         value="No, Cancel"

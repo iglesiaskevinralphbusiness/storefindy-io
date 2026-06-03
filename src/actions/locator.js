@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { dbConnect } from '@/config/mongo.config';
 import { LocatorModel } from '@/mongo/LocatorModel';
+import { LocationModel } from '@/mongo/LocationsModel';
 import { serializeForClient } from '@/utils/helpers';
 
 export async function postCreateLocator(filters, _prev, formData) {
@@ -134,5 +135,6 @@ export async function postDeleteLocator(locator_id) {
     await dbConnect();
     
     await LocatorModel.findByIdAndDelete(locator_id);
+    await LocationModel.deleteMany({ locator_id });
     return { status: "success", message: 'Locator deleted successfully' };
 }
