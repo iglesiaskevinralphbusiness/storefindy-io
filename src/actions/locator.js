@@ -6,6 +6,7 @@ import { dbConnect } from '@/config/mongo.config';
 import { LocatorModel } from '@/mongo/LocatorModel';
 import { LocationModel } from '@/mongo/LocationsModel';
 import { serializeForClient } from '@/utils/helpers';
+import { isValidObjectId } from 'mongoose';
 
 export async function postCreateLocator(filters, _prev, formData) {
     const session = await getServerSession(authOptions);
@@ -118,6 +119,11 @@ export async function getLocatorById(locator_id) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
         redirect('/sign-in');
+    }
+
+    // check if location_id is a valid ObjectId
+    if (!isValidObjectId(locator_id)) {
+        return null;
     }
 
     await dbConnect();

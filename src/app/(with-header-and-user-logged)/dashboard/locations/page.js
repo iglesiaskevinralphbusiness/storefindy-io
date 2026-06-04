@@ -8,7 +8,6 @@ export default async function LocationsPage({ searchParams }) {
     const { page=1, rows=10, sort='updatedAt', order='asc' } = await searchParams;
 
     const locations = await getLocations(page, rows, sort, order);
-    console.log(locations);
 
     return (
         <>

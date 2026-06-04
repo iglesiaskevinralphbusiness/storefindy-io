@@ -146,7 +146,7 @@ export default function LocationsTable({ data=[], sort, order }) {
                                         <button
                                             className={`${styles.actBtn} ${styles.edit}`}
                                             title="Edit"
-                                            onClick={() => console.log('edit location:', l.id)}
+                                            onClick={() => router.push(`/dashboard/locations/edit-location/${l._id}`)}
                                         ><LuPencil /></button>
                                         <button
                                             className={styles.actBtn}

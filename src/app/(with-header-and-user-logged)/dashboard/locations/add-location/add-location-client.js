@@ -13,7 +13,7 @@ import { COUNTRIES } from '@/utils/constant';
 import { toast } from 'react-toastify';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { postCreateLocation } from '@/actions/locations';
+import { postCreateLocation, postEditLocation } from '@/actions/locations';
 
 // Leaflet relies on `window`, so the picker is loaded client-side only.
 const MapPicker = dynamic(() => import('@/components/Dashboard/MapPicker'), {
@@ -76,18 +76,18 @@ const TimePicker = ({ value, min = '00:00', onChange }) => (
     />
 );
 
-export default function AddLocationPage({ locators }) {
+export default function AddLocationPage({ locators, data }) {
     const router = useRouter();
 
     // Basic information
-    const [storeName, setStoreName] = useState('');
-    const [locatorId, setLocatorId] = useState('');
-    const [categories, setCategories] = useState([]);
-    const [description, setDescription] = useState('');
+    const [storeName, setStoreName] = useState(data?.name || '');
+    const [locatorId, setLocatorId] = useState(data?.locator_id || '');
+    const [categories, setCategories] = useState(data?.filters || []);
+    const [description, setDescription] = useState(data?.description || '');
 
     // Map / coordinates
-    const [lat, setLat] = useState('');
-    const [lng, setLng] = useState('');
+    const [lat, setLat] = useState(data?.latitude || '');
+    const [lng, setLng] = useState(data?.longitude || '');
     const [geocode, setGeocode] = useState('');
     const [mapHint, setMapHint] = useState('idle');
 
@@ -100,34 +100,33 @@ export default function AddLocationPage({ locators }) {
     const mapZoom = userLocation ? 13 : 4;
 
     // Address
-    const [street, setStreet] = useState('');
-    const [city, setCity] = useState('');
-    const [stateProvince, setStateProvince] = useState('');
-    const [postal, setPostal] = useState('');
-    const [country, setCountry] = useState('ph');
+    const [street, setStreet] = useState(data?.street || '');
+    const [city, setCity] = useState(data?.city || '');
+    const [stateProvince, setStateProvince] = useState(data?.state || '');
+    const [postal, setPostal] = useState(data?.postal || '');
+    const [country, setCountry] = useState(data?.country || 'ph');
 
     // Contact & links
-    const [phone, setPhone] = useState('');
-    const [email, setEmail] = useState('');
-    const [website, setWebsite] = useState('');
-    const [imageUrl, setImageUrl] = useState('');
+    const [phone, setPhone] = useState(data?.phone || '');
+    const [email, setEmail] = useState(data?.email || '');
+    const [website, setWebsite] = useState(data?.website || '');
 
     // Opening hours
-    const [hours, setHours] = useState(DEFAULT_HOURS);
-    const [locationStatus, setLocationStatus] = useState('open');
+    const [hours, setHours] = useState(data?.hours || DEFAULT_HOURS);
+    const [locationStatus, setLocationStatus] = useState(data?.location_status || 'open');
 
     // Holiday / special hours. The pickers hold Date objects; entries store local ISO (YYYY-MM-DD) strings.
     const [holidayFrom, setHolidayFrom] = useState(null);
     const [holidayTo, setHolidayTo] = useState(null);
-    const [holidays, setHolidays] = useState([]);
+    const [holidays, setHolidays] = useState(data?.holidays || []);
     // Local "today" — used as the earliest selectable date.
     const todayISO = new Date().toLocaleDateString('en-CA');
     const today = new Date(`${todayISO}T00:00:00`);
 
     // Location settings
-    const [published, setPublished] = useState(true);
-    const [showOpeningHours, setShowOpeningHours] = useState(true);
-    const [customNotes, setCustomNotes] = useState('');
+    const [published, setPublished] = useState(data?.published || true);
+    const [showOpeningHours, setShowOpeningHours] = useState(data?.show_opening_hours || false);
+    const [customNotes, setCustomNotes] = useState(data?.custom_notes || '');
 
     // Locator options for the dropdown
     const [selectedLocator, setSelectedLocator] = useState(null);
@@ -138,7 +137,6 @@ export default function AddLocationPage({ locators }) {
         const locationOption = locators.find(locator => locator._id === locatorId);
         if(locationOption) {
             setSelectedLocator(locationOption);
-            console.log(locationOption)
 
             // When browser location is disabled, re-center the map on the locator's default country.
             if (!userLocation && locationOption.default_country) {
@@ -148,7 +146,11 @@ export default function AddLocationPage({ locators }) {
         } else {
             setSelectedLocator(null);
         }
-        setCategories([]);
+        if(locationOption && locationOption._id === data?.locator_id) {
+            setCategories(data?.filters || []);
+        } else {
+            setCategories([]);
+        }
     }, [locatorId]);
 
     // Option 1: ask the browser for the user's location to center the map on startup.
@@ -286,13 +288,13 @@ export default function AddLocationPage({ locators }) {
 
 
     // form submit handler
-    const postCreateLocationWithParams = postCreateLocation.bind(null, categories, hours, holidays);
+    const postCreateLocationWithParams = data ? postEditLocation.bind(null, data._id, categories, hours, holidays) : postCreateLocation.bind(null, categories, hours, holidays);
     const [state, action, pending] = useActionState(postCreateLocationWithParams, { status: "idle" });
     const err = (field) => state.status === "error" ? state.errors[field] : undefined;
     useEffect(() => {
         if (state.status === "idle") return;
         if (state.status === "success") {
-            toast.success("Location added successfully", { description: state.message });
+            toast.success(data ? "Location updated successfully" : "Location added successfully", { description: state.message });
             router.push('/dashboard/locations');
         } else if (state.status === "error") {
             toast.warning("Some fields are not valid", { description: Object.values(state.errors)[0] });
@@ -654,6 +656,7 @@ export default function AddLocationPage({ locators }) {
                     iconPosition="right"
                     primary={true}
                     disabled={!isValid}
+                    pending={pending}
                 />
             </div>
 
