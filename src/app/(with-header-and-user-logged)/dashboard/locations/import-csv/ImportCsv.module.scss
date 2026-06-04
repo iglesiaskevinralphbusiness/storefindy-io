@@ -605,6 +605,25 @@
         color: #A32D2D;
     }
 }
+.statusTooltip {
+    position: fixed;
+    z-index: 1000;
+    max-width: 320px;
+    background: #2b2b2b;
+    color: #fff;
+    font-size: 11px;
+    line-height: 1.5;
+    padding: 8px 10px;
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+    pointer-events: none;
+    white-space: normal;
+}
+.statusTooltipLine {
+    & + & {
+        margin-top: 3px;
+    }
+}
 .notesBox {
     margin-top: 14px;
     background: #fff8f0;

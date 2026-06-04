@@ -28,7 +28,7 @@ const locationSchema = new mongoose.Schema({
     city: { type: String, required: true, default: '' },
     state: { type: String, required: true, default: '' },
     postal: { type: String, required: false, default: '' },
-    country: { type: String, required: true, default: '' },
+    country: { type: String, required: true, default: 'us' },
     // Location on Map
     latitude: { type: Number, required: true },
     longitude: { type: Number, required: true },

@@ -14,10 +14,40 @@ import Link from 'next/link';
 import { toast } from 'react-toastify';
 import { getLocators } from '@/actions/locator';
 import { importCSV } from '@/actions/locations';
+import { COUNTRIES } from '@/utils/constant/countries';
 import styles from '../../Dashboard.module.scss';
 import csv from './ImportCsv.module.scss';
 
 const SKIP = '— Skip this column —';
+
+// Country code saved when the CSV country can't be matched to our list.
+const DEFAULT_COUNTRY = 'us';
+
+// Lookup keyed by both the full label and the code (both lowercased) -> country code.
+// Lets a CSV provide either "Philippines" or "ph" and resolve to "ph".
+const COUNTRY_LOOKUP = (() => {
+    const map = new Map();
+    for (const c of COUNTRIES) {
+        map.set(c.label.toLowerCase(), c.code);
+        map.set(c.code.toLowerCase(), c.code);
+    }
+    return map;
+})();
+
+// Reverse lookup: country code -> display label (e.g. "ph" -> "Philippines").
+const CODE_TO_LABEL = (() => {
+    const map = new Map();
+    for (const c of COUNTRIES) map.set(c.code, c.label);
+    return map;
+})();
+
+// Resolve a raw CSV country value to a Storefindy country code.
+// Returns { code, matched }; unmatched values fall back to DEFAULT_COUNTRY.
+function resolveCountry(raw) {
+    const key = (raw ?? '').trim().toLowerCase();
+    const code = COUNTRY_LOOKUP.get(key);
+    return code ? { code, matched: true } : { code: DEFAULT_COUNTRY, matched: false };
+}
 
 // Storefindy fields the CSV maps onto.
 const REQUIRED_FIELDS = ['name', 'city', 'state', 'country', 'lat', 'lng'];
@@ -141,6 +171,13 @@ function ImportWizard({ locators }) {
     const [imported, setImported] = useState(false);
     const [importing, setImporting] = useState(false);
     const [result, setResult] = useState(null); // server response on success
+    const [tooltip, setTooltip] = useState(null); // { top, left, lines } for the status hover tooltip
+
+    // Show the status tooltip anchored below the hovered badge (fixed-positioned so it isn't clipped).
+    function showTooltip(e, lines) {
+        const r = e.currentTarget.getBoundingClientRect();
+        setTooltip({ top: r.bottom + 6, left: r.left, lines });
+    }
 
     const selectedLocator = locators.find(l => l._id === locatorId);
     const selectedLocatorName = selectedLocator?.name ?? '';
@@ -154,24 +191,48 @@ function ImportWizard({ locators }) {
             const field = mapping[h];
             if (field) obj[field] = (row[i] ?? '').trim();
         });
+
+        // Resolve the country to a code. Keep the original label for the warning,
+        // and store the resolved code (defaulting to "us" when no match is found).
+        const countryRaw = obj.country || '';
+        let countryUnmatched = false;
+        if (countryRaw) {
+            const { code, matched } = resolveCountry(countryRaw);
+            obj.country = code;
+            countryUnmatched = !matched;
+        }
+
+        // Collect specific issues so the status badge can explain itself on hover.
+        const issues = [];
+        const missingRequired = REQUIRED_FIELDS.filter(f => !obj[f]);
+        if (missingRequired.length) {
+            issues.push(`Missing required field(s): ${missingRequired.map(f => FIELD_LABELS[f]).join(', ')}`);
+        }
+        if (obj.lat && isNaN(Number(obj.lat))) issues.push('Latitude is not a valid number');
+        if (obj.lng && isNaN(Number(obj.lng))) issues.push('Longitude is not a valid number');
+        if (countryUnmatched) {
+            issues.push(`Country "${countryRaw}" didn't match our list — defaulting to ${CODE_TO_LABEL.get(DEFAULT_COUNTRY)}`);
+        }
+        const missingOptional = OPTIONAL_FIELDS.filter(f => !obj[f]);
+        if (missingOptional.length) {
+            issues.push(`Missing optional field(s): ${missingOptional.map(f => FIELD_LABELS[f]).join(', ')}`);
+        }
+
         let status = 'ok';
-        for (const f of REQUIRED_FIELDS) {
-            if (!obj[f]) { status = 'err'; break; }
+        if (missingRequired.length || (obj.lat && isNaN(Number(obj.lat))) || (obj.lng && isNaN(Number(obj.lng)))) {
+            status = 'err';
+        } else if (countryUnmatched || missingOptional.length) {
+            status = 'warn';
         }
-        if (status !== 'err') {
-            if ((obj.lat && isNaN(Number(obj.lat))) || (obj.lng && isNaN(Number(obj.lng)))) {
-                status = 'err';
-            } else if (OPTIONAL_FIELDS.some(f => !obj[f])) {
-                status = 'warn';
-            }
-        }
-        return { obj, status };
+        return { obj, status, countryRaw, countryUnmatched, issues };
     }), [rows, mapping, headers]);
 
     const counts = useMemo(() => ({
         ok: evaluated.filter(r => r.status === 'ok').length,
         warn: evaluated.filter(r => r.status === 'warn').length,
         err: evaluated.filter(r => r.status === 'err').length,
+        // Rows whose country couldn't be matched and fell back to the default.
+        countryUnmatched: evaluated.filter(r => r.status !== 'err' && r.countryUnmatched).length,
     }), [evaluated]);
 
     const validRows = counts.ok + counts.warn;
@@ -288,6 +349,15 @@ function ImportWizard({ locators }) {
     return (
         <div className={csv.wizard}>
             <Stepper step={step} />
+
+            {/* Status hover tooltip (fixed so it escapes the scrollable preview table). */}
+            {tooltip && (
+                <div className={csv.statusTooltip} style={{ top: tooltip.top, left: tooltip.left }}>
+                    {tooltip.lines.map((line, i) => (
+                        <div key={i} className={csv.statusTooltipLine}>• {line}</div>
+                    ))}
+                </div>
+            )}
 
             {/* STEP 1 — Select locator + mode */}
             {step === 1 && (
@@ -468,22 +538,48 @@ function ImportWizard({ locators }) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {evaluated.slice(0, 10).map(({ obj, status }, i) => (
+                                {evaluated.slice(0, 10).map(({ obj, status, countryRaw, countryUnmatched, issues }, i) => (
                                     <tr key={i} className={status === 'ok' ? csv.rowOk : status === 'warn' ? csv.rowWarn : csv.rowErr}>
                                         <td className={csv.rowIndex}>{i + 1}</td>
                                         <td>
-                                            <span className={`${csv.rowBadge} ${csv[status]}`}>
+                                            <span
+                                                className={`${csv.rowBadge} ${csv[status]}`}
+                                                style={issues.length ? { cursor: 'help' } : undefined}
+                                                onMouseEnter={issues.length ? (e) => showTooltip(e, issues) : undefined}
+                                                onMouseLeave={issues.length ? () => setTooltip(null) : undefined}
+                                            >
                                                 {status === 'ok' ? <><LuCircleCheck /> Ready</> : status === 'warn' ? <><LuTriangleAlert /> Warning</> : <><LuCircleX /> Error</>}
                                             </span>
                                         </td>
                                         {SF_FIELDS.map(f => {
                                             const v = obj[f];
                                             const invalid = (f === 'lat' || f === 'lng') && v && isNaN(Number(v));
+                                            const countryWarn = f === 'country' && countryUnmatched;
                                             const cls = invalid ? csv.cellInvalid
-                                                : !v ? csv.cellEmpty
-                                                    : f === 'website' ? csv.cellLink
-                                                        : f === 'name' ? csv.rowName
-                                                            : csv.cellMuted;
+                                                : countryWarn ? csv.cellInvalid
+                                                    : !v ? csv.cellEmpty
+                                                        : f === 'website' ? csv.cellLink
+                                                            : f === 'name' ? csv.rowName
+                                                                : csv.cellMuted;
+                                            // Country is stored as a code but shown as its label in the preview.
+                                            // Unmatched countries show the original value struck out, then the default.
+                                            if (f === 'country') {
+                                                return (
+                                                    <td
+                                                        key={f}
+                                                        className={cls}
+                                                        title={countryWarn ? `"${countryRaw}" didn't match any country in our list — saving as "${CODE_TO_LABEL.get(DEFAULT_COUNTRY)}"` : undefined}
+                                                    >
+                                                        {!v ? '—' : countryWarn ? (
+                                                            <>
+                                                                <LuTriangleAlert />{' '}
+                                                                <s>{countryRaw}</s>{' '}
+                                                                <span className={csv.rowName}>{CODE_TO_LABEL.get(v) || v}</span>
+                                                            </>
+                                                        ) : (CODE_TO_LABEL.get(v) || v)}
+                                                    </td>
+                                                );
+                                            }
                                             return <td key={f} className={cls}>{v || '—'}</td>;
                                         })}
                                     </tr>
@@ -496,7 +592,8 @@ function ImportWizard({ locators }) {
                             <div className={csv.notesBoxTitle}><LuCircleAlert /> Import Notes</div>
                             <p>
                                 {counts.err > 0 && <>• <strong>{counts.err}</strong> row(s) have missing required fields or an invalid latitude/longitude — they will be <strong>skipped</strong>.<br /></>}
-                                {counts.warn > 0 && <>• <strong>{counts.warn}</strong> row(s) are missing optional fields — they will be <strong>imported without them</strong>.<br /></>}
+                                {counts.countryUnmatched > 0 && <>• <strong>{counts.countryUnmatched}</strong> row(s) have a country that doesn&apos;t match our country list — they will default to <strong>{CODE_TO_LABEL.get(DEFAULT_COUNTRY)}</strong>. Use the full country name (e.g. <em>Philippines</em>) or its 2-letter code (e.g. <em>ph</em>).<br /></>}
+                                {counts.warn > 0 && <>• <strong>{counts.warn}</strong> row(s) are missing optional fields or have an unmatched country — they will still be <strong>imported</strong>.<br /></>}
                                 • <strong>{validRows} valid row(s)</strong> will be added to <strong>{selectedLocatorName}</strong>.
                             </p>
                         </div>
