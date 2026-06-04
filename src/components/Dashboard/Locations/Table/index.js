@@ -6,17 +6,24 @@ import { LuPencil, LuMap, LuEye, LuEyeOff, LuTrash2, LuArrowUpDown, LuMapPinOff,
 import Modal from '@/components/Modal';
 import { postDeleteLocation, postBulkDeleteLocations } from '@/actions/locations';
 import { toast } from 'react-toastify';
-import { useRouter } from 'next/navigation';
+import { mongooseFormatTimeAgo } from '@/utils/helpers';
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
-export default function LocationsTable({ data=[] }) {
+
+export default function LocationsTable({ data=[], sort, order }) {
     const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
     const [selected, setSelected] = useState(new Set());
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
 
     // Sort headers don't sort — they just log the clicked column for now.
     const handleSort = (column) => {
-        console.log('sort column clicked:', column);
+        const params = new URLSearchParams(searchParams);
+        params.set("sort", column);
+        params.set("order", sort === column && order === "asc" ? "desc" : "asc");
+        router.push(`${pathname}?${params.toString()}`);
     };
 
     const toggleRow = (id) => {
@@ -90,8 +97,9 @@ export default function LocationsTable({ data=[] }) {
                             <th onClick={() => handleSort('name')}>Store Name <LuArrowUpDown /></th>
                             <th onClick={() => handleSort('address')}>Address <LuArrowUpDown /></th>
                             <th onClick={() => handleSort('locator')}>Locator <LuArrowUpDown /></th>
-                            <th onClick={() => handleSort('status')}>Status <LuArrowUpDown /></th>
+                            <th onClick={() => handleSort('published')}>Status <LuArrowUpDown /></th>
                             <th onClick={() => handleSort('views')}>Views <LuArrowUpDown /></th>
+                            <th onClick={() => handleSort('updatedAt')}>Date Modified <LuArrowUpDown /></th>
                             <th style={{ width: '90px', cursor: 'default' }}>Actions</th>
                         </tr>
                     </thead>
@@ -122,7 +130,7 @@ export default function LocationsTable({ data=[] }) {
                                 </td>
                                 <td><span className={styles.storeName}>{l.name}</span></td>
                                 <td className={styles.address}>
-                                    {l.street} {l.city} {l.state} {l.postal} {l.country}
+                                    {l.address}
                                 </td>
                                 <td><span className={styles.locatorPill}>{l.locator}</span></td>
                                 <td>
@@ -132,6 +140,7 @@ export default function LocationsTable({ data=[] }) {
                                     </span>
                                 </td>
                                 <td className={styles.views}>{l.views > 0 ? l.views.toLocaleString() : '—'}</td>
+                                <td className={styles.dateModified}>{l.updatedAt ? mongooseFormatTimeAgo(l.updatedAt) : '—'}</td>
                                 <td>
                                     <div className={styles.actions}>
                                         <button

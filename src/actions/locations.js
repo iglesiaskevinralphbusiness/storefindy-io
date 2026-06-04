@@ -139,7 +139,7 @@ export async function postCreateLocation(categories, hours, holidays, _prev, for
     }
 }
 
-export async function getLocations(page=1, rows=10) {
+export async function getLocations(page=1, rows=10, sort='updatedAt', order='asc') {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
         redirect('/sign-in');
@@ -153,9 +153,16 @@ export async function getLocations(page=1, rows=10) {
 
     const totalCount = await LocationModel.countDocuments({ user_id: session.user.id });
     const totalPages = Math.ceil(totalCount / currentRows);
+
+    // sort
+    const sortField = sort || 'updatedAt';
+    const sortOrder = order === 'desc' ? 1 : -1;
+    console.log(sortField, sortOrder);
     
     const locations = await LocationModel.aggregate([
         { $match: { user_id: session.user.id } },
+
+        // add locator name
         { $addFields: { locatorId: { "$toObjectId": "$locator_id" } } },
         {
             $lookup: {
@@ -172,21 +179,49 @@ export async function getLocations(page=1, rows=10) {
                 }
             }
         },
+
+        // concatenate address
+        {
+            $addFields: {
+                address: {
+                    $reduce: {
+                        input: {
+                            $filter: {
+                                input: ["$street", "$city", "$state", "$country", "$postal"],
+                                as: "part",
+                                cond: {
+                                    $and: [
+                                        { $ne: ["$$part", null] },
+                                        { $ne: ["$$part", ""] }
+                                    ]
+                                }
+                            }
+                        },
+                        initialValue: "",
+                        in: {
+                            $cond: {
+                                if: { $eq: ["$$value", ""] },
+                                then: "$$this",
+                                else: { $concat: ["$$value", ", ", "$$this"] }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+
         {
             $project: {
                 _id: 1,
                 name: 1,
-                street: 1,
-                city: 1,
-                state: 1,
-                postal: 1,
-                country: 1,
+                address: 1,
                 published: 1,
                 views: 1,
+                updatedAt: 1,
                 locator: 1,
             }
         },
-        { $sort: { created_at: -1 } },
+        { $sort: { [sortField]: sortOrder } },
         { $skip: (currentPage - 1) * currentRows },
         { $limit: currentRows }
     ]);
