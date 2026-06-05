@@ -3,11 +3,13 @@ import Sidebar from '@/components/Dashboard/Sidebar';
 import { RiArrowRightLine } from "react-icons/ri";
 import LocationsTable from '@/components/Dashboard/Locations/Table';
 import { getLocations } from '@/actions/locations';
+import Pagination from '@/components/Pagination';
 
 export default async function LocationsPage({ searchParams }) {
     const { page=1, rows=10, sort='updatedAt', order='asc' } = await searchParams;
 
     const locations = await getLocations(page, rows, sort, order);
+    console.log(locations,'locations');
 
     return (
         <>
@@ -21,6 +23,7 @@ export default async function LocationsPage({ searchParams }) {
                     <div className={styles.body}>
                         <LocationsTable data={locations.items} sort={sort} order={order} />
                     </div>
+                    <Pagination page={locations.page} pages={locations.pages} />
                 </div>
             </div>
         </>

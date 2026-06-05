@@ -1,0 +1,35 @@
+.paginationControls {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0;
+  padding: 20px 0;
+  a,
+  .disabled,
+  span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 37px;
+    height: 37px;
+    border: 1px solid #bababa;
+    border-radius: 8px;
+    color: #5f5e5a;
+    background-color: #fff;
+    &.active {
+      background-color: #ffe54c;
+    }
+  }
+  a {
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+  .disabled {
+    background-color: #f3f3f3;
+    color: #d1d1d1;
+    border: 1px solid #d1d1d1;
+    cursor: not-allowed;
+  }
+}
