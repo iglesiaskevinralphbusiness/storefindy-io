@@ -254,7 +254,7 @@ export async function postEditLocation(location_id, categories, hours, holidays,
     }
 }
 
-export async function getLocations(page=1, rows=10, sort='updatedAt', order='asc') {
+export async function getLocations(page=1, rows=10, sort='createdAt', order='asc') {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
         redirect('/sign-in');
@@ -333,6 +333,7 @@ export async function getLocations(page=1, rows=10, sort='updatedAt', order='asc
                 published: 1,
                 views: 1,
                 updatedAt: 1,
+                createdAt: 1,
                 locator: 1,
             }
         },
@@ -518,6 +519,11 @@ export async function postDeleteLocation(location_id) {
     }
 
     await dbConnect();
+
+    // check if location_id is a valid ObjectId
+    if (!isValidObjectId(location_id)) {
+        return { status: "error", message: 'Invalid selected location' };
+    }
     
     await LocationModel.findByIdAndDelete(location_id);
     return { status: "success", message: 'Location deleted successfully' };
@@ -533,6 +539,13 @@ export async function postBulkDeleteLocations(location_ids) {
         return { status: "error", message: 'No locations selected' };
     }
 
+    // check if all location_ids are valid ObjectIds
+    for (const location_id of location_ids) {
+        if (!isValidObjectId(location_id)) {
+            return { status: "error", message: 'Invalid selected location' };
+        }
+    }
+
     await dbConnect();
 
     const res = await LocationModel.deleteMany({ _id: { $in: location_ids } });
@@ -540,5 +553,55 @@ export async function postBulkDeleteLocations(location_ids) {
         status: "success",
         message: `${res.deletedCount} location${res.deletedCount === 1 ? '' : 's'} deleted successfully`,
         deletedCount: res.deletedCount,
+    };
+}
+
+export async function postPublishLocation(location_id, action) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    await dbConnect();
+
+    // check if location_id is a valid ObjectId
+    if (!isValidObjectId(location_id)) {
+        return { status: "error", message: 'Invalid selected location' };
+    }
+
+    await LocationModel.findByIdAndUpdate(location_id, { published: action === 'publish' ? true : false });
+    return { status: "success", message: 'Location published successfully' };
+}
+
+export async function postBulkPublishLocations(location_ids, action) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    if (!Array.isArray(location_ids) || location_ids.length === 0) {
+        return { status: "error", message: 'No locations selected' };
+    }
+
+    // check if all location_ids are valid ObjectIds
+    for (const location_id of location_ids) {
+        if (!isValidObjectId(location_id)) {
+            return { status: "error", message: 'Invalid selected location' };
+        }
+    }
+
+    await dbConnect();
+
+    // count how many locations are being updated by action, skip the ones that are already in the desired state
+    const count = await LocationModel.countDocuments({ _id: { $in: location_ids }, published: action === 'publish' ? false : true });
+    if (count === 0) {
+        return { status: "error", message: `The selected locations are already in the ${action} status` };
+    }
+
+    const res = await LocationModel.updateMany({ _id: { $in: location_ids } }, { published: action === 'publish' ? true : false });
+    return {
+        status: "success",
+        message: `${count} location${count === 1 ? '' : 's'} published successfully`,
+        modifiedCount: res.modifiedCount,
     };
 }
