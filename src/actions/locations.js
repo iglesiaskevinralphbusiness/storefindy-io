@@ -254,10 +254,31 @@ export async function postEditLocation(location_id, categories, hours, holidays,
     }
 }
 
-export async function getLocations(page=1, rows=10, sort='createdAt', order='asc') {
+export async function getLocations(page=1, rows=10, sort='createdAt', order='asc', search='', locators='') {
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
         redirect('/sign-in');
+    }
+
+    // build the query
+    const match = {
+        user_id: session.user.id
+    };
+    if (search) {
+        match.$or = [
+            { name: { $regex: search, $options: "i" } },
+            { street: { $regex: search, $options: "i" } },
+            { city: { $regex: search, $options: "i" } },
+            { state: { $regex: search, $options: "i" } },
+            { country: { $regex: search, $options: "i" } },
+            { postal: { $regex: search, $options: "i" } }
+        ];
+    }
+    if (locators) {
+        match.locator_id = {
+            $in: locators.split(",")
+        };
     }
 
     await dbConnect();
@@ -275,7 +296,7 @@ export async function getLocations(page=1, rows=10, sort='createdAt', order='asc
     console.log(sortField, sortOrder);
     
     const locations = await LocationModel.aggregate([
-        { $match: { user_id: session.user.id } },
+        { $match: match },
 
         // add locator name
         { $addFields: { locatorId: { "$toObjectId": "$locator_id" } } },
