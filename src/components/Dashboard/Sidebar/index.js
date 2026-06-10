@@ -9,14 +9,9 @@ import { VscGraphLine } from "react-icons/vsc";
 import { IoMapOutline } from "react-icons/io5";
 import { HiOutlineSquares2X2 } from "react-icons/hi2";
 import { useSelector } from 'react-redux';
-import Modal from '@/components/Modal';
-import Button from '@/components/Forms/Button';
 
 export default function Sidebar() {
     const { email } = useSelector(state => state.user);
-
-    const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
-    const [isEmbedModalOpen, setIsEmbedModalOpen] = useState(false);
 
     const isRootLinkActive = (value) => {
         return usePathname() === value ? styles.active : '';
@@ -89,24 +84,16 @@ export default function Sidebar() {
                             </Link>
                         </li>
                         <li className={isRootLinkParamsActive('/dashboard/locators/customize')}>
-                            <a
-                                role="button"
-                                onClick={() => setIsCustomizeModalOpen(true)}
-                                style={{ cursor: 'pointer' }}
-                            >
+                            <Link href="/dashboard/locators/customize">
                                 <LuPalette />
                                 Customize Locator
-                            </a>
+                            </Link>
                         </li>
                         <li className={isRootLinkParamsActive('/dashboard/locators/embed')}>
-                            <a
-                                role="button"
-                                onClick={() => setIsEmbedModalOpen(true)}
-                                style={{ cursor: 'pointer' }}
-                            >
+                            <Link href="/dashboard/locators/embed">
                                 <LuCodeXml />
                                 Embed Locator
-                            </a>
+                            </Link>
                         </li>
                     </ul>
                     <h2>LOCATIONS</h2>
@@ -224,25 +211,6 @@ export default function Sidebar() {
                     </div>
                 </div>
             </div>
-
-
-            <Modal
-                isOpen={isCustomizeModalOpen}
-                onClose={() => setIsCustomizeModalOpen(false)}
-                title="Select a locator to customize"
-            >
-                <Link href="/dashboard/locators/customize/id">
-                    <Button value="Main Store Locator" icon={<LuPalette />} />
-                </Link>
-            </Modal>
-
-            <Modal
-                isOpen={isEmbedModalOpen}
-                onClose={() => setIsEmbedModalOpen(false)}
-                title="Select a locator to embed"
-            >
-                <p>Embed the appearance and behavior of your locator here.</p>
-            </Modal>
         </>
     );
 }
