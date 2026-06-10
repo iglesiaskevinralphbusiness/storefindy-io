@@ -45,7 +45,10 @@ const config = {
 	target: ['es2020'],
 	platform: 'browser',
 	jsx: 'automatic',
-	loader: { '.tsx': 'tsx', '.ts': 'ts' },
+	// `.js: jsx` lets our JSX-in-.js components (e.g. components/Locator) build;
+	// `.png: dataurl` inlines Leaflet's bundled marker/layer images so the
+	// imported leaflet.css resolves them inside the single widget bundle.
+	loader: { '.tsx': 'tsx', '.ts': 'ts', '.js': 'jsx', '.png': 'dataurl' },
 	minify: !dev,
 	sourcemap: dev,
 	define: {

@@ -153,11 +153,54 @@ export const resultsStyles = `
     color: #fff;
     cursor: pointer;
 }
+.locator-sidebar .filter-panel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 12px;
+    border: 1px solid #e7e9e9;
+    border-radius: 6px;
+}
+.locator-sidebar .filter-panel .filter-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 95%;
+}
+.locator-sidebar .filter-panel .filter-empty {
+    font-size: 90%;
+    color: #777;
+}
+.locator-sidebar .radius-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 95%;
+}
+.locator-sidebar .radius-control select {
+    height: 34px;
+    padding: 0 8px;
+    border: 1px solid #d4d4d4;
+    border-radius: 4px;
+}
 `;
 
 export const mapStyles = `
 .locator-map {
     flex: 1;
+}
+.locator-map .map-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #777;
+}
+.results ul.results-list > li.active {
+    border-left-color: #185FA5;
 }
 `;
 
