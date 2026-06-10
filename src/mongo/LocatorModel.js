@@ -30,6 +30,7 @@ const locatorSchema = new mongoose.Schema({
 
     // CUSTOM UI
     settings: {
+        height: { type: String, default: 'large' },
         background: { type: String, default: '#ffffff' },
         text_color: { type: String, default: '#000000' },
         font_family: { type: String, default: 'system-ui, sans-serif' },

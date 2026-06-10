@@ -1,7 +1,7 @@
 import { defineWidget } from './defineWidget';
 import MyWidget, { myWidgetStyles } from './MyWidget';
-import { poweredByCheckerStyles } from '../components/PoweredBy';
-import TextDiffChecker, { textDiffCheckerStyles } from './TextDiffCheckerWidget';
+import { locatorStyles } from '../components/Locator';
+import LocatorWidget from './LocatorWidget';
 
 defineWidget({
 	tagName: 'my-widget',
@@ -11,8 +11,8 @@ defineWidget({
 });
 
 defineWidget({
-	tagName: 'text-diff-checker',
-	component: TextDiffChecker,
+	tagName: 'locator',
+	component: LocatorWidget,
 	observedAttributes: [],
-	styles: textDiffCheckerStyles + poweredByCheckerStyles,
+	styles: locatorStyles,
 });

@@ -5,6 +5,12 @@ import { LuSettings, LuArrowLeft, LuChevronDown, LuLayoutTemplate, LuSearch, LuM
 import styles from './SidebarCustomize.module.scss';
 import Button from '@/components/Forms/Button';
 
+const HEIGHT_OPTIONS = [
+    { code: 'small', label: 'Small 500px' },
+    { code: 'medium', label: 'Medium 665px' },
+    { code: 'large', label: 'Large 765px' },
+];
+
 const FONT_FAMILIES = [
     { code: 'system-ui, sans-serif', label: 'System Default' },
     { code: 'Arial, sans-serif', label: 'Arial' },
@@ -23,6 +29,7 @@ const BORDER_STYLES = [
 ];
 
 const DEFAULT_SETTINGS = {
+    height: 'large',
     background: '#ffffff',
     color: '#000000',
     fontFamily: 'system-ui, sans-serif',
@@ -141,6 +148,12 @@ export default function SidebarCustomize() {
                     isOpen={openSections.main}
                     onToggle={() => toggleSection('main')}
                 >
+                    <SelectField
+                        label="Height"
+                        value={settings.height}
+                        onChange={(v) => update('height', v)}
+                        options={HEIGHT_OPTIONS}
+                    />
                     <ColorField
                         label="Background"
                         value={settings.background}
