@@ -28,63 +28,10 @@ const BORDER_STYLES = [
     { code: 'square', label: 'Square' },
 ];
 
-const DEFAULT_SETTINGS = {
-    height: 'large',
-    background: '#ffffff',
-    color: '#000000',
-    fontFamily: 'system-ui, sans-serif',
-    rootFontSize: 14,
-    search: {
-        border: 'rounded',
-        color: '#185FA5',
-        label: 'Search',
-        textColor: '#ffffff',
-    },
-    pin: {
-        color: '#185FA5',
-        image: null,
-    },
-    zoom: {
-        border: 'rounded',
-        color: '#ffffff',
-        textColor: '#1f1f1f',
-    },
-    searchInput: {
-        border: 'rounded',
-        background: '#ffffff',
-        textColor: '#1f1f1f',
-        placeholder: 'Enter a location',
-    },
-    filter: {
-        border: 'rounded',
-        color: '#f1f1f1',
-        label: 'Filters',
-        textColor: '#1f1f1f',
-    },
-    resultItem: {
-        activeBorder: '#185FA5',
-        border: '#e4e4e4',
-        background: '#ffffff',
-    },
-    getDirections: {
-        border: 'rounded',
-        color: '#185FA5',
-        label: 'Get Directions',
-        textColor: '#ffffff',
-    },
-    viewLocation: {
-        border: 'rounded',
-        color: '#ffffff',
-        label: 'View Location',
-        textColor: '#185FA5',
-    },
-};
-
-export default function SidebarCustomize() {
+export default function SidebarCustomize({ settings, setSettings }) {
     const router = useRouter();
     const fileInputRef = useRef(null);
 
-    const [settings, setSettings] = useState(DEFAULT_SETTINGS);
     const [openSections, setOpenSections] = useState({
         main: true,
         search: false,
@@ -161,19 +108,19 @@ export default function SidebarCustomize() {
                     />
                     <ColorField
                         label="Text Color"
-                        value={settings.textColor}
-                        onChange={(v) => update('textColor', v)}
+                        value={settings.text_color}
+                        onChange={(v) => update('text_color', v)}
                     />
                     <SelectField
                         label="Font Family"
-                        value={settings.fontFamily}
-                        onChange={(v) => update('fontFamily', v)}
+                        value={settings.font_family}
+                        onChange={(v) => update('font_family', v)}
                         options={FONT_FAMILIES}
                     />
                     <NumberField
                         label="Root Font Size"
-                        value={settings.rootFontSize}
-                        onChange={(v) => update('rootFontSize', v)}
+                        value={settings.font_size}
+                        onChange={(v) => update('font_size', v)}
                         suffix="px"
                     />
                 </Section>
@@ -197,8 +144,13 @@ export default function SidebarCustomize() {
                     />
                     <ColorField
                         label="Text Color"
-                        value={settings.searchInput.textColor}
-                        onChange={(v) => updateGroup('searchInput', 'textColor', v)}
+                        value={settings.searchInput.text_color}
+                        onChange={(v) => updateGroup('searchInput', 'text_color', v)}
+                    />
+                    <ColorField
+                        label="Border Color"
+                        value={settings.searchInput.border_color}
+                        onChange={(v) => updateGroup('searchInput', 'border_color', v)}
                     />
                     <TextField
                         label="Placeholder"
@@ -222,8 +174,8 @@ export default function SidebarCustomize() {
                     />
                     <ColorField
                         label="Color"
-                        value={settings.search.color}
-                        onChange={(v) => updateGroup('search', 'color', v)}
+                        value={settings.search.background}
+                        onChange={(v) => updateGroup('search', 'background', v)}
                     />
                     <TextField
                         label="Label"
@@ -233,8 +185,8 @@ export default function SidebarCustomize() {
                     />
                     <ColorField
                         label="Text Color"
-                        value={settings.search.textColor}
-                        onChange={(v) => updateGroup('search', 'textColor', v)}
+                        value={settings.search.text_color}
+                        onChange={(v) => updateGroup('search', 'text_color', v)}
                     />
                 </Section>
 
@@ -252,8 +204,8 @@ export default function SidebarCustomize() {
                     />
                     <ColorField
                         label="Color"
-                        value={settings.filter.color}
-                        onChange={(v) => updateGroup('filter', 'color', v)}
+                        value={settings.filter.background}
+                        onChange={(v) => updateGroup('filter', 'background', v)}
                     />
                     <TextField
                         label="Label"
@@ -263,8 +215,8 @@ export default function SidebarCustomize() {
                     />
                     <ColorField
                         label="Text Color"
-                        value={settings.filter.textColor}
-                        onChange={(v) => updateGroup('filter', 'textColor', v)}
+                        value={settings.filter.text_color}
+                        onChange={(v) => updateGroup('filter', 'text_color', v)}
                     />
                 </Section>
 
@@ -327,13 +279,13 @@ export default function SidebarCustomize() {
                     />
                     <ColorField
                         label="Color"
-                        value={settings.zoom.color}
-                        onChange={(v) => updateGroup('zoom', 'color', v)}
+                        value={settings.zoom.background}
+                        onChange={(v) => updateGroup('zoom', 'background', v)}
                     />
                     <ColorField
                         label="Text Color"
-                        value={settings.zoom.textColor}
-                        onChange={(v) => updateGroup('zoom', 'textColor', v)}
+                        value={settings.zoom.text_color}
+                        onChange={(v) => updateGroup('zoom', 'text_color', v)}
                     />
                 </Section>
                 
@@ -345,13 +297,13 @@ export default function SidebarCustomize() {
                 >
                     <ColorField
                         label="Active Border"
-                        value={settings.resultItem.activeBorder}
-                        onChange={(v) => updateGroup('resultItem', 'activeBorder', v)}
+                        value={settings.resultItem.active_border_color}
+                        onChange={(v) => updateGroup('resultItem', 'active_border_color', v)}
                     />
                     <ColorField
                         label="Border"
-                        value={settings.resultItem.border}
-                        onChange={(v) => updateGroup('resultItem', 'border', v)}
+                        value={settings.resultItem.border_color}
+                        onChange={(v) => updateGroup('resultItem', 'border_color', v)}
                     />
                     <ColorField
                         label="Background"
@@ -374,8 +326,8 @@ export default function SidebarCustomize() {
                     />
                     <ColorField
                         label="Color"
-                        value={settings.getDirections.color}
-                        onChange={(v) => updateGroup('getDirections', 'color', v)}
+                        value={settings.getDirections.background}
+                        onChange={(v) => updateGroup('getDirections', 'background', v)}
                     />
                     <TextField
                         label="Label"
@@ -385,8 +337,8 @@ export default function SidebarCustomize() {
                     />
                     <ColorField
                         label="Text Color"
-                        value={settings.getDirections.textColor}
-                        onChange={(v) => updateGroup('getDirections', 'textColor', v)}
+                        value={settings.getDirections.text_color}
+                        onChange={(v) => updateGroup('getDirections', 'text_color', v)}
                     />
                 </Section>
 
@@ -426,17 +378,20 @@ export default function SidebarCustomize() {
 
 
 function ColorField({ label, value, onChange }) {
+    // Keep the inputs controlled even when the setting is undefined: the color
+    // picker needs a valid hex, the text input is fine with an empty string.
+    const hex = value ?? '';
     return (
         <div className={styles.field}>
             <label>{label}</label>
             <div className={styles.colorPicker}>
-                <span className={styles.swatch} style={{ backgroundColor: value }}>
-                    <input type="color" value={value} onChange={(e) => onChange(e.target.value)} />
+                <span className={styles.swatch} style={{ backgroundColor: hex }}>
+                    <input type="color" value={hex || '#000000'} onChange={(e) => onChange(e.target.value)} />
                 </span>
                 <input
                     type="text"
                     className={styles.hex}
-                    value={value}
+                    value={hex}
                     onChange={(e) => onChange(e.target.value)}
                 />
             </div>

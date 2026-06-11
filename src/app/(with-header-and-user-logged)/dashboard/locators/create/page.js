@@ -23,7 +23,7 @@ export default function LocatorsCreatePage({ data=null }) {
     const [locatorName, setLocatorName] = useState(data?.name || '');
     const [locatorDescription, setLocatorDescription] = useState(data?.description || '');
     const [defaultLanguage, setDefaultLanguage] = useState(data?.default_language || '');
-    const [defaultCountry, setDefaultCountry] = useState(data?.default_country || '');
+    const [defaultCountry, setDefaultCountry] = useState(data?.default_country || 'us');
     const [defaultZoomLevel, setDefaultZoomLevel] = useState(data?.default_zoom_level || '10');
     const [searchRadius, setSearchRadius] = useState(data?.search_radius || '10');
     const [maximumResultsShown, setMaximumResultsShown] = useState(data?.maximum_results_shown || '10');
@@ -125,7 +125,8 @@ export default function LocatorsCreatePage({ data=null }) {
                                         name="default_country"
                                         value={defaultCountry}
                                         onChange={e => setDefaultCountry(e.target.value)}
-                                        options={[{ code: '', label: 'Auto detect user location' }, ...COUNTRIES]}
+                                        options={COUNTRIES}
+                                        note="This is default map view when auto detect user location is disabled from the widget features."
                                     />
                                     <Select
                                         label="Default Zoom Level"

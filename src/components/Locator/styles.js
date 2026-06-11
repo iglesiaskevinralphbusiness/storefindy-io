@@ -10,7 +10,7 @@ export const formStyles = `
     height: 40px;
     padding: 0 15px;
     border: 1px solid #000;
-    font-size: 14px;
+    font-size: 100%;
     outline: none;
 }
 .locator-sidebar .inputs .btn-search {

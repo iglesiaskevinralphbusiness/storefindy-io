@@ -5,6 +5,7 @@ import { FaAngleDown } from "react-icons/fa6";
 import { formStyles, resultsStyles, mapStyles, userDefinedStyles } from './styles';
 import Link from 'next/link';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { COUNTRIES } from '@/utils/constant/countries';
 
 // Leaflet touches `window`, so the map is loaded lazily and only rendered after
 // mount. React.lazy works in both the Next.js bundle and the esbuild widget bundle.
@@ -47,6 +48,7 @@ export default function Locator({
     search_radius = 10,
     default_zoom_level = 10,
     detect_location = true,
+    default_country = '',
     filters = [],
     // Feature toggles
     show_search_bar = true,
@@ -58,6 +60,8 @@ export default function Locator({
     show_directions = true,
     show_website_link = true,
     // Theme / labels
+    settings = {},
+
     pin_color = '#185FA5',
     search_input_placeholder = 'Enter city, state, or postal code',
     search_label = 'Search',
@@ -69,6 +73,12 @@ export default function Locator({
     // every fresh search. (maximum_results_shown is enforced server-side.)
     const defaultRadius = search_radius ?? 10;
     const defaultZoom = default_zoom_level ?? 10;
+    // When auto-detect is off, open the map on the locator's configured country
+    // (e.g. "jp", "us", "ph") instead of the hardcoded world fallback.
+    const countryView = !detect_location
+        ? COUNTRIES.find((c) => c.code === String(default_country || '').toLowerCase())
+        : null;
+    const defaultCenter = countryView ? [countryView.lat, countryView.lng] : null;
     // Radius choices, always including the locator's configured default.
     const radiusOptions = [...new Set([5, 10, 25, 50, 100, defaultRadius])].sort((a, b) => a - b);
 
@@ -188,20 +198,50 @@ export default function Locator({
         runSearch({ radius: Number(e.target.value) });
     };
 
+    const getAppHeight = () => {
+        if(settings.height === 'small') return 'small-app';
+        if(settings.height === 'medium') return 'medium-app';
+        if(settings.height === 'large') return 'large-app';
+        return 'large-app';
+    }
+
+    const getBorderStyle = (value) => {
+        if(value === 'rounded') return '10px';
+        if(value === 'pill') return '20px';
+        if(value === 'square') return '0';
+        return '0';
+    }
+
     return (
         <>
             <style>{locatorStyles}</style>
-            <div className={`locator large-app`}>
+            <div
+                className={`locator ${getAppHeight()}`}
+                style={
+                    {
+                        backgroundColor: settings.background,
+                        color: settings.text_color,
+                        fontFamily: settings.font_family,
+                        fontSize: settings.font_size
+                    }
+                }
+            >
                 <div className="locator-sidebar">
                     {show_search_bar && (
                         <form onSubmit={onSubmit}>
                             <div className="inputs">
                                 <input
                                     type="text"
-                                    placeholder={search_input_placeholder}
+                                    placeholder={settings.searchInput.placeholder}
                                     className="input-search"
                                     value={params.q}
                                     onChange={(e) => setParams((p) => ({ ...p, q: e.target.value }))}
+                                    style={{
+                                        borderColor: settings.searchInput.border_color,
+                                        backgroundColor: settings.searchInput.background,
+                                        color: settings.searchInput.text_color,
+                                        borderRadius: getBorderStyle(settings.searchInput.border),
+                                    }}
                                 />
                                 <button type="submit" className="btn-search">
                                     <HiMiniMagnifyingGlass />{search_label}
@@ -338,6 +378,7 @@ export default function Locator({
                             locations={locations}
                             center={center}
                             zoom={zoom}
+                            defaultCenter={defaultCenter}
                             radiusMiles={params.radius}
                             pinColor={pin_color}
                             activeId={activeId}

@@ -50,6 +50,7 @@ export default function LocatorMap({
     locations = [],
     center,
     zoom = 10,
+    defaultCenter = null,
     radiusMiles,
     pinColor = '#185FA5',
     activeId = null,
@@ -68,11 +69,13 @@ export default function LocatorMap({
     }, [activeId]);
 
     // Freeze the map's initial view once; later changes flow through <Recenter />.
-    const [initialView] = useState(() =>
-        center && center.length === 2
-            ? { center, zoom }
-            : { center: [39.8283, -98.5795], zoom: 4 }
-    );
+    // Priority: an active search center, then the locator's configured country
+    // (used when auto-detect is off), then the world fallback.
+    const [initialView] = useState(() => {
+        if (center && center.length === 2) return { center, zoom };
+        if (defaultCenter && defaultCenter.length === 2) return { center: defaultCenter, zoom };
+        return { center: [39.8283, -98.5795], zoom: 4 };
+    });
 
     return (
         <MapContainer

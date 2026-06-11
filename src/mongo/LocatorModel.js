@@ -10,7 +10,7 @@ const locatorSchema = new mongoose.Schema({
     description: { type: String, required: false, default: '' },
     default_language: { type: String, required: true },
     // default map view
-    default_country: { type: String, required: false, default: '' },
+    default_country: { type: String, required: false, default: 'us' },
     default_zoom_level: { type: Number, required: true },
     // search settings
     search_radius: { type: Number, required: true },
@@ -37,7 +37,7 @@ const locatorSchema = new mongoose.Schema({
         font_size: { type: Number, default: 14 },
 
         search: {
-            border: { type: String, default: 'rounded' },
+            border: { type: String, default: 'square' },
             background: { type: String, default: '#185FA5' },
             label: { type: String, default: 'Search' },
             text_color: { type: String, default: '#ffffff' },
@@ -47,18 +47,19 @@ const locatorSchema = new mongoose.Schema({
             image: { type: String, default: null },
         },
         zoom: {
-            border: { type: String, default: 'rounded' },
+            border: { type: String, default: 'square' },
             background: { type: String, default: '#ffffff' },
             text_color: { type: String, default: '#1f1f1f' },
         },
         searchInput: {
-            border: { type: String, default: 'rounded' },
+            border: { type: String, default: 'square' },
             background: { type: String, default: '#ffffff' },
             text_color: { type: String, default: '#1f1f1f' },
-            placeholder: { type: String, default: 'Enter a location' },
+            border_color: { type: String, default: '#000' },
+            placeholder: { type: String, default: 'Enter city, state, or postal code' },
         },
         filter: {
-            border: { type: String, default: 'rounded' },
+            border: { type: String, default: 'square' },
             background: { type: String, default: '#f1f1f1' },
             label: { type: String, default: 'Filters' },
             text_color: { type: String, default: '#1f1f1f' },
@@ -69,13 +70,13 @@ const locatorSchema = new mongoose.Schema({
             background: { type: String, default: '#ffffff' },
         },
         getDirections: {
-            border: { type: String, default: 'rounded' },
+            border: { type: String, default: 'square' },
             background: { type: String, default: '#185FA5' },
             label: { type: String, default: 'Get Directions' },
             text_color: { type: String, default: '#ffffff' },
         },
         viewLocation: {
-            border: { type: String, default: 'rounded' },
+            border: { type: String, default: 'square' },
             background: { type: String, default: '#ffffff' },
             label: { type: String, default: 'View Location' },
             text_color: { type: String, default: '#185FA5' },

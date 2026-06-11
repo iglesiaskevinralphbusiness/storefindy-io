@@ -6,10 +6,10 @@ export const LOCALES = [
 export { COUNTRIES } from './countries';
 
 export const ZOOM_LEVELS = [
-	{ code: '10', label: 'City level (zoom 10)' },
-	{ code: '7', label: 'State level (zoom 7)' },
-	{ code: '5', label: 'Country level (zoom 5)' },
-	{ code: '2', label: 'World level (zoom 2)' },
+	{ code: '15', label: 'City level (zoom 15)' },
+	{ code: '10', label: 'State level (zoom 10)' },
+	{ code: '7', label: 'Country level (zoom 7)' },
+	{ code: '5', label: 'World level (zoom 5)' },
 ];
 
 export const SEARCH_RADII = [
