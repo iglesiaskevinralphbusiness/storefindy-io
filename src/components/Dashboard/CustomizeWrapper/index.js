@@ -33,15 +33,6 @@ export default function CustomizeWrapper({ data }) {
             label: settings.filter.label,
             text_color: settings.filter.text_color,
         },
-        pin: {
-            color: settings.pin.color,
-            image: settings.pin.image,
-        },
-        zoom: {
-            border: settings.zoom.border,
-            background: settings.zoom.background,
-            text_color: settings.zoom.text_color,
-        },
         resultItem: {
             active_border_color: settings.resultItem.active_border_color,
             border_color: settings.resultItem.border_color,
@@ -58,6 +49,15 @@ export default function CustomizeWrapper({ data }) {
             background: settings.viewLocation.background,
             label: settings.viewLocation.label,
             text_color: settings.viewLocation.text_color,
+        },
+        pin: {
+            color: settings.pin.color,
+            image: settings.pin.image,
+        },
+        zoom: {
+            border: settings.zoom.border,
+            background: settings.zoom.background,
+            text_color: settings.zoom.text_color,
         },
     });
 
@@ -96,11 +96,6 @@ export default function CustomizeWrapper({ data }) {
                     settings={settingsData}
                     
                     pin_color={data.settings?.pin?.color}
-                    search_input_placeholder={data.settings?.searchInput?.placeholder}
-                    search_label={data.settings?.search?.label}
-                    filter_label={data.settings?.filter?.label}
-                    get_directions_label={data.settings?.getDirections?.label}
-                    view_location_label={data.settings?.viewLocation?.label}
                 />
             </div>
         </div>

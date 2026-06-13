@@ -1,7 +1,14 @@
 'use client';
-import { LuFilter, LuMapPin, LuPhone, LuClock } from "react-icons/lu";
 import { HiMiniMagnifyingGlass } from "react-icons/hi2";
 import { FaAngleDown } from "react-icons/fa6";
+import { BiSearchAlt } from "react-icons/bi";
+import { VscSearchFuzzy } from "react-icons/vsc";
+import { TbMapSearch } from "react-icons/tb";
+import { TbMapPinSearch } from "react-icons/tb";
+import { TbShoppingBagSearch } from "react-icons/tb";
+import { RiFilterFill } from "react-icons/ri";
+import { IoFilterCircleOutline } from "react-icons/io5";
+import { LuFilter, LuPhone, LuClock, LuListFilter, LuMap, LuMapPin, LuMapPinned, LuArrowRight, LuArrowLeft, LuChevronLeft, LuChevronRight, LuCircleChevronLeft, LuCircleChevronRight } from "react-icons/lu";
 import { formStyles, resultsStyles, mapStyles, userDefinedStyles } from './styles';
 import Link from 'next/link';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
@@ -63,11 +70,6 @@ export default function Locator({
     settings = {},
 
     pin_color = '#185FA5',
-    search_input_placeholder = 'Enter city, state, or postal code',
-    search_label = 'Search',
-    filter_label = 'Filter',
-    get_directions_label = 'Get Directions',
-    view_location_label = 'View Store Page',
 }) {
     // Configured defaults — the source of truth for the map's first load and for
     // every fresh search. (maximum_results_shown is enforced server-side.)
@@ -212,6 +214,35 @@ export default function Locator({
         return '0';
     }
 
+    const getButtonIcon = (icon) => {
+        // search button
+        if(icon === 'magnifying-glass') return <HiMiniMagnifyingGlass />;
+        if(icon === 'magnifying-glass2') return <BiSearchAlt />;
+        if(icon === 'magnifying-glass3') return <VscSearchFuzzy />;
+        if(icon === 'map') return <TbMapSearch />;
+        if(icon === 'pin') return <TbMapPinSearch />;
+        if(icon === 'shopping-bag') return <TbShoppingBagSearch />;
+
+        // filter button
+        if(icon === 'funnel') return <LuFilter />;
+        if(icon === 'funnel-solid') return <RiFilterFill />;
+        if(icon === 'list-filter') return <LuListFilter />;
+        if(icon === 'filter-circle') return <IoFilterCircleOutline />;
+
+        // get directions / view location button
+        if(icon === 'map-view') return <LuMap />;
+        if(icon === 'pin-view') return <LuMapPin />;
+        if(icon === 'pinned') return <LuMapPinned />;
+        if(icon === 'arrow-right') return <LuArrowRight />;
+        if(icon === 'arrow-left') return <LuArrowLeft />;
+        if(icon === 'chevron-left') return <LuChevronLeft />;
+        if(icon === 'chevron-right') return <LuChevronRight />;
+        if(icon === 'circle-chevron-left') return <LuCircleChevronLeft />;
+        if(icon === 'circle-chevron-right') return <LuCircleChevronRight />;
+
+        return '';
+    }
+
     return (
         <>
             <style>{locatorStyles}</style>
@@ -243,12 +274,29 @@ export default function Locator({
                                         borderRadius: getBorderStyle(settings.searchInput.border),
                                     }}
                                 />
-                                <button type="submit" className="btn-search">
-                                    <HiMiniMagnifyingGlass />{search_label}
+                                <button
+                                    type="submit"
+                                    className="btn-search"
+                                    style={{
+                                        backgroundColor: settings.search.background,
+                                        color: settings.search.text_color,
+                                        borderRadius: getBorderStyle(settings.search.border),
+                                    }}
+                                >
+                                    {getButtonIcon(settings.search.icon)}{settings.search.label}
                                 </button>
                                 {show_filters && (
-                                    <button type="button" className="btn-filter" onClick={() => setShowFilters((v) => !v)}>
-                                        <LuFilter /> {filter_label}
+                                    <button
+                                        type="button"
+                                        className="btn-filter"
+                                        onClick={() => setShowFilters((v) => !v)}
+                                        style={{
+                                            backgroundColor: settings.filter.background,
+                                            color: settings.filter.text_color,
+                                            borderRadius: getBorderStyle(settings.filter.border),
+                                        }}
+                                    >
+                                        {getButtonIcon(settings.filter.icon)}{settings.filter.label}
                                     </button>
                                 )}
                             </div>
@@ -274,7 +322,17 @@ export default function Locator({
                             {show_radius && (
                                 <div className="radius-control">
                                     <label htmlFor="locator-radius">Radius</label>
-                                    <select id="locator-radius" value={params.radius} onChange={onRadiusChange}>
+                                    <select
+                                        id="locator-radius"
+                                        value={params.radius}
+                                        onChange={onRadiusChange}
+                                        style={{
+                                            borderColor: settings.searchInput.border_color,
+                                            backgroundColor: settings.searchInput.background,
+                                            color: settings.searchInput.text_color,
+                                            borderRadius: getBorderStyle(settings.searchInput.border),
+                                        }}
+                                    >
                                         {radiusOptions.map((r) => (
                                             <option key={r} value={r}>{r} mi</option>
                                         ))}
@@ -308,6 +366,13 @@ export default function Locator({
                                         ref={(el) => { itemRefs.current[location._id] = el; }}
                                         className={activeId === location._id ? 'active' : ''}
                                         onClick={() => setActiveId(location._id)}
+                                        style={{
+                                            borderColor: settings.resultItem.border_color,
+                                            backgroundColor: settings.resultItem.background,
+                                            ...(activeId === location._id && {
+                                                borderColor: settings.resultItem.active_border_color,
+                                            }),
+                                        }}
                                     >
                                         <div className="title">
                                             <h2>
@@ -356,13 +421,26 @@ export default function Locator({
                                                 <Link
                                                     href={`https://www.google.com/maps/dir/?api=1&destination=${location.latitude},${location.longitude}`}
                                                     target="_blank"
+                                                    style={{
+                                                        backgroundColor: settings.getDirections.background,
+                                                        color: settings.getDirections.text_color,
+                                                        borderRadius: getBorderStyle(settings.getDirections.border),
+                                                    }}
                                                 >
-                                                    {get_directions_label}
+                                                    {getButtonIcon(settings.getDirections.icon)}{settings.getDirections.label}
                                                 </Link>
                                             )}
                                             {show_website_link && location.website && (
-                                                <Link href={location.website} target="_blank">
-                                                    {view_location_label}
+                                                <Link
+                                                    href={location.website}
+                                                    target="_blank"
+                                                    style={{
+                                                        backgroundColor: settings.viewLocation.background,
+                                                        color: settings.viewLocation.text_color,
+                                                        borderRadius: getBorderStyle(settings.viewLocation.border),
+                                                    }}
+                                                >
+                                                    {getButtonIcon(settings.viewLocation.icon)}{settings.viewLocation.label}
                                                 </Link>
                                             )}
                                         </div>

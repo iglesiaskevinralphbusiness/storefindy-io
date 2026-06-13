@@ -181,10 +181,12 @@ export const resultsStyles = `
     font-size: 95%;
 }
 .locator-sidebar .radius-control select {
-    height: 34px;
-    padding: 0 8px;
+    height: 40px;
+    padding: 0 15px;
     border: 1px solid #d4d4d4;
     border-radius: 4px;
+    font-size: 100%;
+    outline: none;
 }
 `;
 

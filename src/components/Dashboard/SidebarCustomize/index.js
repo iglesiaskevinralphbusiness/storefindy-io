@@ -28,6 +28,37 @@ const BORDER_STYLES = [
     { code: 'square', label: 'Square' },
 ];
 
+const SEARCH_BUTTON_ICONS = [
+    { code: '', label: 'None' },
+    { code: 'magnifying-glass', label: 'Magnifying Glass 1' },
+    { code: 'magnifying-glass2', label: 'Magnifying Glass 2' },
+    { code: 'magnifying-glass3', label: 'Magnifying Glass 3' },
+    { code: 'map', label: 'Map' },
+    { code: 'pin', label: 'Pin' },
+    { code: 'shopping-bag', label: 'Shopping Bag' },
+];
+
+const FILTER_BUTTON_ICONS = [
+    { code: '', label: 'None' },
+    { code: 'funnel', label: 'Funnel' },
+    { code: 'funnel-solid', label: 'Funnel Solid' },
+    { code: 'list-filter', label: 'List Filter' },
+    { code: 'filter-circle', label: 'Filter Circle' },
+];
+
+const GET_DIRECTIONS_VIEW_LOCATION_BUTTON_ICONS = [
+    { code: '', label: 'None' },
+    { code: 'map-view', label: 'Map' },
+    { code: 'pin-view', label: 'Pin' },
+    { code: 'pinned', label: 'Pinned' },
+    { code: 'arrow-right', label: 'Arrow Right' },
+    { code: 'arrow-left', label: 'Arrow Left' },
+    { code: 'chevron-left', label: 'Chevron Left' },
+    { code: 'chevron-right', label: 'Chevron Right' },
+    { code: 'circle-chevron-left', label: 'Circle Left' },
+    { code: 'circle-chevron-right', label: 'Circle Right' },
+];
+
 export default function SidebarCustomize({ settings, setSettings }) {
     const router = useRouter();
     const fileInputRef = useRef(null);
@@ -188,6 +219,12 @@ export default function SidebarCustomize({ settings, setSettings }) {
                         value={settings.search.text_color}
                         onChange={(v) => updateGroup('search', 'text_color', v)}
                     />
+                    <SelectField
+                        label="Icon"
+                        value={settings.search.icon}
+                        onChange={(v) => updateGroup('search', 'icon', v)}
+                        options={SEARCH_BUTTON_ICONS}
+                    />
                 </Section>
 
                 <Section
@@ -217,6 +254,107 @@ export default function SidebarCustomize({ settings, setSettings }) {
                         label="Text Color"
                         value={settings.filter.text_color}
                         onChange={(v) => updateGroup('filter', 'text_color', v)}
+                    />
+                    <SelectField
+                        label="Icon"
+                        value={settings.search.icon}
+                        onChange={(v) => updateGroup('filter', 'icon', v)}
+                        options={FILTER_BUTTON_ICONS}
+                    />
+                </Section>
+
+                <Section
+                    icon={<LuRows3 />}
+                    title="Result Items"
+                    isOpen={openSections.resultItem}
+                    onToggle={() => toggleSection('resultItem')}
+                >
+                    <ColorField
+                        label="Selected Border"
+                        value={settings.resultItem.active_border_color}
+                        onChange={(v) => updateGroup('resultItem', 'active_border_color', v)}
+                    />
+                    <ColorField
+                        label="Border"
+                        value={settings.resultItem.border_color}
+                        onChange={(v) => updateGroup('resultItem', 'border_color', v)}
+                    />
+                    <ColorField
+                        label="Background"
+                        value={settings.resultItem.background}
+                        onChange={(v) => updateGroup('resultItem', 'background', v)}
+                    />
+                </Section>
+
+                <Section
+                    icon={<LuNavigation />}
+                    title="Get Directions Button"
+                    isOpen={openSections.getDirections}
+                    onToggle={() => toggleSection('getDirections')}
+                >
+                    <SelectField
+                        label="Border"
+                        value={settings.getDirections.border}
+                        onChange={(v) => updateGroup('getDirections', 'border', v)}
+                        options={BORDER_STYLES}
+                    />
+                    <ColorField
+                        label="Background"
+                        value={settings.getDirections.background}
+                        onChange={(v) => updateGroup('getDirections', 'background', v)}
+                    />
+                    <TextField
+                        label="Label"
+                        value={settings.getDirections.label}
+                        placeholder="Get Directions"
+                        onChange={(v) => updateGroup('getDirections', 'label', v)}
+                    />
+                    <ColorField
+                        label="Text Color"
+                        value={settings.getDirections.text_color}
+                        onChange={(v) => updateGroup('getDirections', 'text_color', v)}
+                    />
+                    <SelectField
+                        label="Icon"
+                        value={settings.getDirections.icon}
+                        onChange={(v) => updateGroup('getDirections', 'icon', v)}
+                        options={GET_DIRECTIONS_VIEW_LOCATION_BUTTON_ICONS}
+                    />
+                </Section>
+
+                <Section
+                    icon={<LuMapPinned />}
+                    title="View Location Button"
+                    isOpen={openSections.viewLocation}
+                    onToggle={() => toggleSection('viewLocation')}
+                >
+                    <SelectField
+                        label="Border"
+                        value={settings.viewLocation.border}
+                        onChange={(v) => updateGroup('viewLocation', 'border', v)}
+                        options={BORDER_STYLES}
+                    />
+                    <ColorField
+                        label="Background"
+                        value={settings.viewLocation.background}
+                        onChange={(v) => updateGroup('viewLocation', 'background', v)}
+                    />
+                    <TextField
+                        label="Label"
+                        value={settings.viewLocation.label}
+                        placeholder="View Location"
+                        onChange={(v) => updateGroup('viewLocation', 'label', v)}
+                    />
+                    <ColorField
+                        label="Text Color"
+                        value={settings.viewLocation.text_color}
+                        onChange={(v) => updateGroup('viewLocation', 'text_color', v)}
+                    />
+                    <SelectField
+                        label="Icon"
+                        value={settings.viewLocation.icon}
+                        onChange={(v) => updateGroup('viewLocation', 'icon', v)}
+                        options={GET_DIRECTIONS_VIEW_LOCATION_BUTTON_ICONS}
                     />
                 </Section>
 
@@ -286,89 +424,6 @@ export default function SidebarCustomize({ settings, setSettings }) {
                         label="Text Color"
                         value={settings.zoom.text_color}
                         onChange={(v) => updateGroup('zoom', 'text_color', v)}
-                    />
-                </Section>
-                
-                <Section
-                    icon={<LuRows3 />}
-                    title="Result Item"
-                    isOpen={openSections.resultItem}
-                    onToggle={() => toggleSection('resultItem')}
-                >
-                    <ColorField
-                        label="Active Border"
-                        value={settings.resultItem.active_border_color}
-                        onChange={(v) => updateGroup('resultItem', 'active_border_color', v)}
-                    />
-                    <ColorField
-                        label="Border"
-                        value={settings.resultItem.border_color}
-                        onChange={(v) => updateGroup('resultItem', 'border_color', v)}
-                    />
-                    <ColorField
-                        label="Background"
-                        value={settings.resultItem.background}
-                        onChange={(v) => updateGroup('resultItem', 'background', v)}
-                    />
-                </Section>
-
-                <Section
-                    icon={<LuNavigation />}
-                    title="Get Directions Button"
-                    isOpen={openSections.getDirections}
-                    onToggle={() => toggleSection('getDirections')}
-                >
-                    <SelectField
-                        label="Border"
-                        value={settings.getDirections.border}
-                        onChange={(v) => updateGroup('getDirections', 'border', v)}
-                        options={BORDER_STYLES}
-                    />
-                    <ColorField
-                        label="Color"
-                        value={settings.getDirections.background}
-                        onChange={(v) => updateGroup('getDirections', 'background', v)}
-                    />
-                    <TextField
-                        label="Label"
-                        value={settings.getDirections.label}
-                        placeholder="Get Directions"
-                        onChange={(v) => updateGroup('getDirections', 'label', v)}
-                    />
-                    <ColorField
-                        label="Text Color"
-                        value={settings.getDirections.text_color}
-                        onChange={(v) => updateGroup('getDirections', 'text_color', v)}
-                    />
-                </Section>
-
-                <Section
-                    icon={<LuMapPinned />}
-                    title="View Location Button"
-                    isOpen={openSections.viewLocation}
-                    onToggle={() => toggleSection('viewLocation')}
-                >
-                    <SelectField
-                        label="Border"
-                        value={settings.viewLocation.border}
-                        onChange={(v) => updateGroup('viewLocation', 'border', v)}
-                        options={BORDER_STYLES}
-                    />
-                    <ColorField
-                        label="Color"
-                        value={settings.viewLocation.color}
-                        onChange={(v) => updateGroup('viewLocation', 'color', v)}
-                    />
-                    <TextField
-                        label="Label"
-                        value={settings.viewLocation.label}
-                        placeholder="View Location"
-                        onChange={(v) => updateGroup('viewLocation', 'label', v)}
-                    />
-                    <ColorField
-                        label="Text Color"
-                        value={settings.viewLocation.textColor}
-                        onChange={(v) => updateGroup('viewLocation', 'textColor', v)}
                     />
                 </Section>
             </div>

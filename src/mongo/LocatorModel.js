@@ -36,11 +36,45 @@ const locatorSchema = new mongoose.Schema({
         font_family: { type: String, default: 'system-ui, sans-serif' },
         font_size: { type: Number, default: 14 },
 
-        search: {
+        searchInput: {
             border: { type: String, default: 'square' },
-            background: { type: String, default: '#185FA5' },
+            background: { type: String, default: '#ffffff' },
+            text_color: { type: String, default: '#1f1f1f' },
+            border_color: { type: String, default: '#000' },
+            placeholder: { type: String, default: 'Enter city, state, or postal code' },
+        },
+        search: { // search button
+            border: { type: String, default: 'square' },
+            background: { type: String, default: '#000' },
             label: { type: String, default: 'Search' },
+            text_color: { type: String, default: '#fff' },
+            icon: { type: String, default: 'magnifying-glass' },
+        },
+        filter: { // filter button
+            border: { type: String, default: 'square' },
+            background: { type: String, default: '#000' },
+            label: { type: String, default: 'Filters' },
+            text_color: { type: String, default: '#fff' },
+            icon: { type: String, default: 'funnel' },
+        },
+        resultItem: {
+            active_border_color: { type: String, default: '#185FA5' },
+            border_color: { type: String, default: '#e4e4e4' },
+            background: { type: String, default: '#ffffff' },
+        },
+        getDirections: {
+            border: { type: String, default: 'square' },
+            background: { type: String, default: '#000' },
+            label: { type: String, default: 'Get Directions' },
             text_color: { type: String, default: '#ffffff' },
+            icon: { type: String, default: '' },
+        },
+        viewLocation: {
+            border: { type: String, default: 'square' },
+            background: { type: String, default: '#000' },
+            label: { type: String, default: 'View Location' },
+            text_color: { type: String, default: '#ffffff' },
+            icon: { type: String, default: '' },
         },
         pin: {
             color: { type: String, default: '#185FA5' },
@@ -50,36 +84,6 @@ const locatorSchema = new mongoose.Schema({
             border: { type: String, default: 'square' },
             background: { type: String, default: '#ffffff' },
             text_color: { type: String, default: '#1f1f1f' },
-        },
-        searchInput: {
-            border: { type: String, default: 'square' },
-            background: { type: String, default: '#ffffff' },
-            text_color: { type: String, default: '#1f1f1f' },
-            border_color: { type: String, default: '#000' },
-            placeholder: { type: String, default: 'Enter city, state, or postal code' },
-        },
-        filter: {
-            border: { type: String, default: 'square' },
-            background: { type: String, default: '#f1f1f1' },
-            label: { type: String, default: 'Filters' },
-            text_color: { type: String, default: '#1f1f1f' },
-        },
-        resultItem: {
-            active_border_color: { type: String, default: '#185FA5' },
-            border_color: { type: String, default: '#e4e4e4' },
-            background: { type: String, default: '#ffffff' },
-        },
-        getDirections: {
-            border: { type: String, default: 'square' },
-            background: { type: String, default: '#185FA5' },
-            label: { type: String, default: 'Get Directions' },
-            text_color: { type: String, default: '#ffffff' },
-        },
-        viewLocation: {
-            border: { type: String, default: 'square' },
-            background: { type: String, default: '#ffffff' },
-            label: { type: String, default: 'View Location' },
-            text_color: { type: String, default: '#185FA5' },
         },
     },
 
