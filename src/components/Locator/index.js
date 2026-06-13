@@ -66,10 +66,11 @@ export default function Locator({
     show_store_hours = false,
     show_directions = true,
     show_website_link = true,
+    // customize settings
+    show_map_radius_indicator=false,
+    shap_map_pin_number=true,
     // Theme / labels
     settings = {},
-
-    pin_color = '#185FA5',
 }) {
     // Configured defaults — the source of truth for the map's first load and for
     // every fresh search. (maximum_results_shown is enforced server-side.)
@@ -457,8 +458,12 @@ export default function Locator({
                             center={center}
                             zoom={zoom}
                             defaultCenter={defaultCenter}
-                            radiusMiles={params.radius}
-                            pinColor={pin_color}
+                            radiusMiles={show_map_radius_indicator ? params.radius : 0}
+                            showPinNumber={shap_map_pin_number}
+                            pinColor={settings.pin.color}
+                            pinSize={settings.pin.size}
+                            pinTextColor={settings.pin.text_color}
+                            pinTextSize={settings.pin.text_size}
                             activeId={activeId}
                             onMove={handleMapMove}
                             onSelect={setActiveId}

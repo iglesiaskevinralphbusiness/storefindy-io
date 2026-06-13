@@ -369,6 +369,23 @@ export default function SidebarCustomize({ settings, setSettings }) {
                         value={settings.pin.color}
                         onChange={(v) => updateGroup('pin', 'color', v)}
                     />
+                    <SelectField
+                        label="Size"
+                        value={settings.pin.size}
+                        onChange={(v) => updateGroup('pin', 'size', v)}
+                        options={[{code: 'small', label: 'Small'}, {code: 'medium', label: 'Medium'}, {code: 'large', label: 'Large'}]}
+                    />
+                    <ColorField
+                        label="Text Color"
+                        value={settings.pin.text_color}
+                        onChange={(v) => updateGroup('pin', 'text_color', v)}
+                    />
+                    <NumberField
+                        label="Text Size"
+                        value={settings.pin.text_size}
+                        onChange={(v) => updateGroup('pin', 'text_size', v)}
+                        suffix="px"
+                    />
                     <div className={styles.field}>
                         <label>Custom Image</label>
                         {settings.pin.image ? (
@@ -481,7 +498,7 @@ function NumberField({ label, value, onChange, suffix }) {
             <div className={styles.numberInput}>
                 <input
                     type="number"
-                    value={value}
+                    value={value ?? ''}
                     onChange={(e) => onChange(Number(e.target.value))}
                 />
                 {suffix && <span className={styles.suffix}>{suffix}</span>}

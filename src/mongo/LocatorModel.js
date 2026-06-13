@@ -26,6 +26,9 @@ const locatorSchema = new mongoose.Schema({
     show_directions: { type: Boolean, required: false, default: true },
     show_store_hours: { type: Boolean, required: false, default: false },
     powered_by_storefindy: { type: Boolean, required: false, default: true },
+    // customize settings
+    show_map_radius_indicator: { type: Boolean, required: false, default: false },
+    shap_map_pin_number: { type: Boolean, required: false, default: true },
 
 
     // CUSTOM UI
@@ -77,7 +80,10 @@ const locatorSchema = new mongoose.Schema({
             icon: { type: String, default: '' },
         },
         pin: {
-            color: { type: String, default: '#185FA5' },
+            color: { type: String, default: '#000' },
+            size: { type: String, default: 'small' },
+            text_color: { type: String, default: '#ffffff' },
+            text_size: { type: Number, default: 12 },
             image: { type: String, default: null },
         },
         zoom: {

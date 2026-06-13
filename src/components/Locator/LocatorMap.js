@@ -4,14 +4,41 @@ import { MapContainer, TileLayer, Marker, Popup, Circle, useMap, useMapEvents } 
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
+// Pixel dimensions for each configurable pin size (settings.pin.size). The
+// existing default ("small") is 32px; medium and large scale up from there.
+const PIN_SIZE_PX = { small: 32, medium: 44, large: 56 };
+function pinPixelSize(size) {
+    return PIN_SIZE_PX[size] ?? PIN_SIZE_PX.small;
+}
+
 // Builds a teardrop pin in the locator's brand color (settings.pin.color).
-function buildPinIcon(color = '#185FA5') {
+function buildPinIcon(color = '#185FA5', size = 'small') {
+    const px = pinPixelSize(size);
     return L.divIcon({
         className: '',
-        html: `<svg width="32" height="32" viewBox="0 0 24 24" fill="${color}" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`,
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -32],
+        html: `<svg width="${px}" height="${px}" viewBox="0 0 24 24" fill="${color}" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`,
+        iconSize: [px, px],
+        iconAnchor: [px / 2, px],
+        popupAnchor: [0, -px],
+    });
+}
+
+// Builds a numbered pin that mirrors the store list's ordinal (index + 1), so a
+// result's position in the list matches its marker on the map. textColor /
+// textSize fall back to #fff / 14px when their settings are empty.
+function buildNumberedPinIcon(color = '#185FA5', number, size = 'small', textColor, textSize) {
+    const px = pinPixelSize(size);
+    const fill = textColor || '#fff';
+    const fontPx = Number(textSize) > 0 ? Number(textSize) : 14;
+    // The SVG is drawn in a 24-unit viewBox scaled to `px`, so convert the
+    // desired pixel font size back into viewBox units.
+    const fontUnits = (fontPx * 24) / px;
+    return L.divIcon({
+        className: '',
+        html: `<svg width="${px}" height="${px}" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="${color}"/><text x="12" y="9" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-size="${fontUnits}" font-weight="bold" fill="${fill}">${number}</text></svg>`,
+        iconSize: [px, px],
+        iconAnchor: [px / 2, px],
+        popupAnchor: [0, -px],
     });
 }
 
@@ -52,12 +79,16 @@ export default function LocatorMap({
     zoom = 10,
     defaultCenter = null,
     radiusMiles,
+    showPinNumber = false,
     pinColor = '#185FA5',
+    pinSize = 'small',
+    pinTextColor,
+    pinTextSize,
     activeId = null,
     onMove = () => {},
     onSelect = () => {},
 }) {
-    const icon = useMemo(() => buildPinIcon(pinColor), [pinColor]);
+    const icon = useMemo(() => buildPinIcon(pinColor, pinSize), [pinColor, pinSize]);
     // Leaflet marker instances, keyed by location id, so the active one's popup
     // can be opened programmatically when an item is selected in the list.
     const markerRefs = useRef({});
@@ -103,14 +134,14 @@ export default function LocatorMap({
                 />
             )}
 
-            {locations
-                .filter((loc) => typeof loc.latitude === 'number' && typeof loc.longitude === 'number')
-                .map((loc) => (
+            {locations.map((loc, index) => {
+                if (typeof loc.latitude !== 'number' || typeof loc.longitude !== 'number') return null;
+                return (
                     <Marker
                         key={loc._id}
                         ref={(instance) => { if (instance) markerRefs.current[loc._id] = instance; }}
                         position={[loc.latitude, loc.longitude]}
-                        icon={icon}
+                        icon={showPinNumber ? buildNumberedPinIcon(pinColor, index + 1, pinSize, pinTextColor, pinTextSize) : icon}
                         opacity={activeId && activeId !== loc._id ? 0.6 : 1}
                         eventHandlers={{ click: () => onSelect(loc._id) }}
                     >
@@ -123,7 +154,8 @@ export default function LocatorMap({
                             ) : null}
                         </Popup>
                     </Marker>
-                ))}
+                );
+            })}
         </MapContainer>
     );
 }

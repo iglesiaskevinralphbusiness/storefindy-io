@@ -52,6 +52,9 @@ export default function CustomizeWrapper({ data }) {
         },
         pin: {
             color: settings.pin.color,
+            size: settings.pin.size,
+            text_color: settings.pin.text_color,
+            text_size: settings.pin.text_size,
             image: settings.pin.image,
         },
         zoom: {
@@ -91,6 +94,10 @@ export default function CustomizeWrapper({ data }) {
                     show_store_hours={data.show_store_hours}
                     show_directions={data.show_directions}
                     show_website_link={data.show_website_link}
+
+                    // customize settings
+                    show_map_radius_indicator={data.show_map_radius_indicator}
+                    shap_map_pin_number={data.shap_map_pin_number}
 
                     // customize settings
                     settings={settingsData}
