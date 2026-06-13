@@ -19,6 +19,7 @@ export default function CustomizeWrapper({ data }) {
             border: settings.searchInput.border,
             background: settings.searchInput.background,
             text_color: settings.searchInput.text_color,
+            border_color: settings.searchInput.border_color,
             placeholder: settings.searchInput.placeholder,
         },
         search: {
@@ -26,12 +27,14 @@ export default function CustomizeWrapper({ data }) {
             background: settings.search.background,
             label: settings.search.label,
             text_color: settings.search.text_color,
+            icon: settings.search.icon,
         },
         filter: {
             border: settings.filter.border,
             background: settings.filter.background,
             label: settings.filter.label,
             text_color: settings.filter.text_color,
+            icon: settings.filter.icon,
         },
         resultItem: {
             active_border_color: settings.resultItem.active_border_color,
@@ -43,12 +46,14 @@ export default function CustomizeWrapper({ data }) {
             background: settings.getDirections.background,
             label: settings.getDirections.label,
             text_color: settings.getDirections.text_color,
+            icon: settings.getDirections.icon,
         },
         viewLocation: {
             border: settings.viewLocation.border,
             background: settings.viewLocation.background,
             label: settings.viewLocation.label,
             text_color: settings.viewLocation.text_color,
+            icon: settings.viewLocation.icon,
         },
         pin: {
             color: settings.pin.color,
