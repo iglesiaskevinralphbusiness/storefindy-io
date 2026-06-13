@@ -12,13 +12,36 @@
         flex-shrink: 0;
     }
 
-    .tools {
-        flex: 1;
-        overflow-y: auto;
-        padding: 8px 0;
+    // Clipped viewport: shows one panel (309px) at a time and hides whatever
+    // the track has slid out of view.
+    .panels {
+        overflow: hidden;
+        width: 100%;
+    }
 
-    height: calc(100vh - 166px);
-    overflow-y: auto;
+    // Holds the two panels side by side and slides horizontally. It is twice
+    // the sidebar width so each panel fills exactly one viewport.
+    .track {
+        display: flex;
+        width: 200%;
+        transition: transform 0.3s ease;
+
+        &.showSettings {
+            // Shift left by one full panel: tools slides out, settings slides in.
+            transform: translateX(-50%);
+        }
+    }
+
+    .tools,
+    .settings {
+        width: 50%;
+        flex-shrink: 0;
+        padding: 8px 0;
+        height: calc(100vh - 166px);
+        overflow-y: auto;
+    }
+    .settings {
+        padding: 0 10px;
     }
 }
 

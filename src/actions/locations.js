@@ -47,6 +47,7 @@ export async function postCreateLocation(categories, hours, holidays, _prev, for
         phone: formData.get('phone').trim(),
         email: formData.get('email').trim(),
         website: formData.get('website').trim(),
+        view_location_url: (formData.get('location_website_url') || '').trim(),
         location_status: formData.get('location_status'),
         hours,
         holidays,
@@ -83,6 +84,7 @@ export async function postCreateLocation(categories, hours, holidays, _prev, for
         longitude: coordinate(-180, 180, 'Longitude'),
         email: optionalFormat(z.email(), 'Email is not a valid format'),
         website: optionalFormat(z.url(), 'Website must be a valid URL (including http:// or https://)'),
+        location_website_url: optionalFormat(z.url(), 'View location URL must be a valid URL (including http:// or https://)'),
     });
 
     const parsed = locationSchema.safeParse({
@@ -96,6 +98,7 @@ export async function postCreateLocation(categories, hours, holidays, _prev, for
         longitude: form.longitude,
         email: form.email,
         website: form.website,
+        location_website_url: form.view_location_url,
     });
 
     if (!parsed.success) {
@@ -163,6 +166,7 @@ export async function postEditLocation(location_id, categories, hours, holidays,
         phone: formData.get('phone').trim(),
         email: formData.get('email').trim(),
         website: formData.get('website').trim(),
+        view_location_url: (formData.get('location_website_url') || '').trim(),
         location_status: formData.get('location_status'),
         hours,
         holidays,
@@ -199,6 +203,7 @@ export async function postEditLocation(location_id, categories, hours, holidays,
         longitude: coordinate(-180, 180, 'Longitude'),
         email: optionalFormat(z.email(), 'Email is not a valid format'),
         website: optionalFormat(z.url(), 'Website must be a valid URL (including http:// or https://)'),
+        location_website_url: optionalFormat(z.url(), 'View location URL must be a valid URL (including http:// or https://)'),
     });
 
     const parsed = locationSchema.safeParse({
@@ -212,6 +217,7 @@ export async function postEditLocation(location_id, categories, hours, holidays,
         longitude: form.longitude,
         email: form.email,
         website: form.website,
+        location_website_url: form.view_location_url,
     });
 
     if (!parsed.success) {
@@ -449,6 +455,7 @@ export async function importCSV(locatorId, mode, records) {
             phone: String(raw?.phone ?? '').trim(),
             email: String(raw?.email ?? '').trim(),
             website: String(raw?.website ?? '').trim(),
+            view_location_url: String(raw?.view_location_url ?? '').trim(),
         });
 
         const parsed = rowSchema.safeParse({
@@ -483,6 +490,7 @@ export async function importCSV(locatorId, mode, records) {
             phone: clean.phone,
             email: clean.email,
             website: clean.website,
+            view_location_url: clean.view_location_url,
             published: true,
             show_opening_hours: false,
             custom_notes: '',

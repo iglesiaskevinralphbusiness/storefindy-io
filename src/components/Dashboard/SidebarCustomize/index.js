@@ -1,9 +1,11 @@
 'use client';
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { LuSettings, LuArrowLeft, LuChevronDown, LuLayoutTemplate, LuSearch, LuMapPin, LuZoomIn, LuUpload, LuX, LuCheck, LuTextCursorInput, LuFilter, LuRows3, LuNavigation, LuMapPinned } from "react-icons/lu";
+import { LuSettings, LuPalette, LuArrowLeft, LuChevronDown, LuLayoutTemplate, LuSearch, LuMapPin, LuZoomIn, LuUpload, LuX, LuCheck, LuTextCursorInput, LuFilter, LuRows3, LuNavigation, LuMapPinned } from "react-icons/lu";
+import { MdFilterList } from "react-icons/md";
 import styles from './SidebarCustomize.module.scss';
 import Button from '@/components/Forms/Button';
+import Checkbox from '@/components/Forms/Checkbox';
 
 const HEIGHT_OPTIONS = [
     { code: 'small', label: 'Small 500px' },
@@ -59,17 +61,21 @@ const GET_DIRECTIONS_VIEW_LOCATION_BUTTON_ICONS = [
     { code: 'circle-chevron-right', label: 'Circle Right' },
 ];
 
-export default function SidebarCustomize({ settings, setSettings }) {
+export default function SidebarCustomize({ settings, setSettings, features, setFeatures }) {
     const router = useRouter();
     const fileInputRef = useRef(null);
 
+    // Toggles the sliding panel: false shows the tools list, true slides it out
+    // to the left and brings the settings panel in from the right.
+    const [showSettings, setShowSettings] = useState(false);
+
     const [openSections, setOpenSections] = useState({
-        main: true,
+        main: false,
         search: false,
         searchInput: false,
         filter: false,
+        filterList: false,
         pin: false,
-        zoom: false,
         resultItem: false,
         getDirections: false,
         viewLocation: false,
@@ -85,6 +91,10 @@ export default function SidebarCustomize({ settings, setSettings }) {
 
     const updateGroup = (group, key, value) => {
         setSettings(prev => ({ ...prev, [group]: { ...prev[group], [key]: value } }));
+    };
+
+    const updateFeatures = (key, value) => {
+        setFeatures(prev => ({ ...prev, [key]: value }));
     };
 
     const handleImageUpload = (e) => {
@@ -103,7 +113,8 @@ export default function SidebarCustomize({ settings, setSettings }) {
         <div className={styles.sidebar}>
             <div className={styles.header}>
                 <Button
-                    icon={<LuSettings />}
+                    icon={showSettings ? <LuPalette /> : <LuSettings />}
+                    onClick={() => setShowSettings(prev => !prev)}
                 />
                 <Button
                     value="Back"
@@ -119,330 +130,403 @@ export default function SidebarCustomize({ settings, setSettings }) {
                 />
             </div>
 
-            <div className={styles.tools}>
-                <Section
-                    icon={<LuLayoutTemplate />}
-                    title="Main"
-                    isOpen={openSections.main}
-                    onToggle={() => toggleSection('main')}
-                >
-                    <SelectField
-                        label="Height"
-                        value={settings.height}
-                        onChange={(v) => update('height', v)}
-                        options={HEIGHT_OPTIONS}
-                    />
-                    <ColorField
-                        label="Background"
-                        value={settings.background}
-                        onChange={(v) => update('background', v)}
-                    />
-                    <ColorField
-                        label="Text Color"
-                        value={settings.text_color}
-                        onChange={(v) => update('text_color', v)}
-                    />
-                    <SelectField
-                        label="Font Family"
-                        value={settings.font_family}
-                        onChange={(v) => update('font_family', v)}
-                        options={FONT_FAMILIES}
-                    />
-                    <NumberField
-                        label="Root Font Size"
-                        value={settings.font_size}
-                        onChange={(v) => update('font_size', v)}
-                        suffix="px"
-                    />
-                </Section>
+            <div className={styles.panels}>
+                <div className={`${styles.track} ${showSettings ? styles.showSettings : ''}`}>
+                    <div className={styles.tools}>
+                        <Section
+                            icon={<LuLayoutTemplate />}
+                            title="Main"
+                            isOpen={openSections.main}
+                            onToggle={() => toggleSection('main')}
+                        >
+                            <SelectField
+                                label="Height"
+                                value={settings.height}
+                                onChange={(v) => update('height', v)}
+                                options={HEIGHT_OPTIONS}
+                            />
+                            <ColorField
+                                label="Background"
+                                value={settings.background}
+                                onChange={(v) => update('background', v)}
+                            />
+                            <ColorField
+                                label="Text Color"
+                                value={settings.text_color}
+                                onChange={(v) => update('text_color', v)}
+                            />
+                            <SelectField
+                                label="Font Family"
+                                value={settings.font_family}
+                                onChange={(v) => update('font_family', v)}
+                                options={FONT_FAMILIES}
+                            />
+                            <NumberField
+                                label="Root Font Size"
+                                value={settings.font_size}
+                                onChange={(v) => update('font_size', v)}
+                                suffix="px"
+                            />
+                        </Section>
 
-                <Section
-                    icon={<LuTextCursorInput />}
-                    title="Search Input"
-                    isOpen={openSections.searchInput}
-                    onToggle={() => toggleSection('searchInput')}
-                >
-                    <SelectField
-                        label="Border"
-                        value={settings.searchInput.border}
-                        onChange={(v) => updateGroup('searchInput', 'border', v)}
-                        options={BORDER_STYLES}
-                    />
-                    <ColorField
-                        label="Background"
-                        value={settings.searchInput.background}
-                        onChange={(v) => updateGroup('searchInput', 'background', v)}
-                    />
-                    <ColorField
-                        label="Text Color"
-                        value={settings.searchInput.text_color}
-                        onChange={(v) => updateGroup('searchInput', 'text_color', v)}
-                    />
-                    <ColorField
-                        label="Border Color"
-                        value={settings.searchInput.border_color}
-                        onChange={(v) => updateGroup('searchInput', 'border_color', v)}
-                    />
-                    <TextField
-                        label="Placeholder"
-                        value={settings.searchInput.placeholder}
-                        placeholder="Enter a location"
-                        onChange={(v) => updateGroup('searchInput', 'placeholder', v)}
-                    />
-                </Section>
+                        <Section
+                            icon={<LuTextCursorInput />}
+                            title="Search Input"
+                            isOpen={openSections.searchInput}
+                            onToggle={() => toggleSection('searchInput')}
+                        >
+                            <SelectField
+                                label="Border"
+                                value={settings.searchInput.border}
+                                onChange={(v) => updateGroup('searchInput', 'border', v)}
+                                options={BORDER_STYLES}
+                            />
+                            <ColorField
+                                label="Background"
+                                value={settings.searchInput.background}
+                                onChange={(v) => updateGroup('searchInput', 'background', v)}
+                            />
+                            <ColorField
+                                label="Text Color"
+                                value={settings.searchInput.text_color}
+                                onChange={(v) => updateGroup('searchInput', 'text_color', v)}
+                            />
+                            <ColorField
+                                label="Border Color"
+                                value={settings.searchInput.border_color}
+                                onChange={(v) => updateGroup('searchInput', 'border_color', v)}
+                            />
+                            <TextField
+                                label="Placeholder"
+                                value={settings.searchInput.placeholder}
+                                placeholder="Enter a location"
+                                onChange={(v) => updateGroup('searchInput', 'placeholder', v)}
+                            />
+                        </Section>
 
-                <Section
-                    icon={<LuSearch />}
-                    title="Search Button"
-                    isOpen={openSections.search}
-                    onToggle={() => toggleSection('search')}
-                >
-                    <SelectField
-                        label="Border"
-                        value={settings.search.border}
-                        onChange={(v) => updateGroup('search', 'border', v)}
-                        options={BORDER_STYLES}
-                    />
-                    <ColorField
-                        label="Color"
-                        value={settings.search.background}
-                        onChange={(v) => updateGroup('search', 'background', v)}
-                    />
-                    <TextField
-                        label="Label"
-                        value={settings.search.label}
-                        placeholder="Search"
-                        onChange={(v) => updateGroup('search', 'label', v)}
-                    />
-                    <ColorField
-                        label="Text Color"
-                        value={settings.search.text_color}
-                        onChange={(v) => updateGroup('search', 'text_color', v)}
-                    />
-                    <SelectField
-                        label="Icon"
-                        value={settings.search.icon}
-                        onChange={(v) => updateGroup('search', 'icon', v)}
-                        options={SEARCH_BUTTON_ICONS}
-                    />
-                </Section>
+                        <Section
+                            icon={<LuSearch />}
+                            title="Search Button"
+                            isOpen={openSections.search}
+                            onToggle={() => toggleSection('search')}
+                        >
+                            <SelectField
+                                label="Border"
+                                value={settings.search.border}
+                                onChange={(v) => updateGroup('search', 'border', v)}
+                                options={BORDER_STYLES}
+                            />
+                            <ColorField
+                                label="Color"
+                                value={settings.search.background}
+                                onChange={(v) => updateGroup('search', 'background', v)}
+                            />
+                            <TextField
+                                label="Label"
+                                value={settings.search.label}
+                                placeholder="Search"
+                                onChange={(v) => updateGroup('search', 'label', v)}
+                            />
+                            <ColorField
+                                label="Text Color"
+                                value={settings.search.text_color}
+                                onChange={(v) => updateGroup('search', 'text_color', v)}
+                            />
+                            <SelectField
+                                label="Icon"
+                                value={settings.search.icon}
+                                onChange={(v) => updateGroup('search', 'icon', v)}
+                                options={SEARCH_BUTTON_ICONS}
+                            />
+                        </Section>
 
-                <Section
-                    icon={<LuFilter />}
-                    title="Filter Button"
-                    isOpen={openSections.filter}
-                    onToggle={() => toggleSection('filter')}
-                >
-                    <SelectField
-                        label="Border"
-                        value={settings.filter.border}
-                        onChange={(v) => updateGroup('filter', 'border', v)}
-                        options={BORDER_STYLES}
-                    />
-                    <ColorField
-                        label="Color"
-                        value={settings.filter.background}
-                        onChange={(v) => updateGroup('filter', 'background', v)}
-                    />
-                    <TextField
-                        label="Label"
-                        value={settings.filter.label}
-                        placeholder="Filters"
-                        onChange={(v) => updateGroup('filter', 'label', v)}
-                    />
-                    <ColorField
-                        label="Text Color"
-                        value={settings.filter.text_color}
-                        onChange={(v) => updateGroup('filter', 'text_color', v)}
-                    />
-                    <SelectField
-                        label="Icon"
-                        value={settings.search.icon}
-                        onChange={(v) => updateGroup('filter', 'icon', v)}
-                        options={FILTER_BUTTON_ICONS}
-                    />
-                </Section>
+                        <Section
+                            icon={<LuFilter />}
+                            title="Filter Button"
+                            isOpen={openSections.filter}
+                            onToggle={() => toggleSection('filter')}
+                        >
+                            <SelectField
+                                label="Border"
+                                value={settings.filter.border}
+                                onChange={(v) => updateGroup('filter', 'border', v)}
+                                options={BORDER_STYLES}
+                            />
+                            <ColorField
+                                label="Color"
+                                value={settings.filter.background}
+                                onChange={(v) => updateGroup('filter', 'background', v)}
+                            />
+                            <TextField
+                                label="Label"
+                                value={settings.filter.label}
+                                placeholder="Filters"
+                                onChange={(v) => updateGroup('filter', 'label', v)}
+                            />
+                            <ColorField
+                                label="Text Color"
+                                value={settings.filter.text_color}
+                                onChange={(v) => updateGroup('filter', 'text_color', v)}
+                            />
+                            <SelectField
+                                label="Icon"
+                                value={settings.search.icon}
+                                onChange={(v) => updateGroup('filter', 'icon', v)}
+                                options={FILTER_BUTTON_ICONS}
+                            />
+                        </Section>
 
-                <Section
-                    icon={<LuRows3 />}
-                    title="Result Items"
-                    isOpen={openSections.resultItem}
-                    onToggle={() => toggleSection('resultItem')}
-                >
-                    <ColorField
-                        label="Selected Border"
-                        value={settings.resultItem.active_border_color}
-                        onChange={(v) => updateGroup('resultItem', 'active_border_color', v)}
-                    />
-                    <ColorField
-                        label="Border"
-                        value={settings.resultItem.border_color}
-                        onChange={(v) => updateGroup('resultItem', 'border_color', v)}
-                    />
-                    <ColorField
-                        label="Background"
-                        value={settings.resultItem.background}
-                        onChange={(v) => updateGroup('resultItem', 'background', v)}
-                    />
-                </Section>
+                        <Section
+                            icon={<MdFilterList />}
+                            title="Filter List"
+                            isOpen={openSections.filterList}
+                            onToggle={() => toggleSection('filterList')}
+                        >
+                            <ColorField
+                                label="BorderColor"
+                                value={settings.filterList.border_color}
+                                onChange={(v) => updateGroup('filterList', 'border_color', v)}
+                            />
+                            <ColorField
+                                label="Background Color"
+                                value={settings.filterList.background}
+                                onChange={(v) => updateGroup('filterList', 'background', v)}
+                            />
+                            <ColorField
+                                label="Text Color"
+                                value={settings.filterList.text_color}
+                                onChange={(v) => updateGroup('filterList', 'text_color', v)}
+                            />
+                            <ColorField
+                                label="Active Background"
+                                value={settings.filterList.active_background}
+                                onChange={(v) => updateGroup('filterList', 'active_background', v)}
+                            />
+                            <ColorField
+                                label="Active Text Color"
+                                value={settings.filterList.active_text_color}
+                                onChange={(v) => updateGroup('filterList', 'active_text_color', v)}
+                            />
+                        </Section>
 
-                <Section
-                    icon={<LuNavigation />}
-                    title="Get Directions Button"
-                    isOpen={openSections.getDirections}
-                    onToggle={() => toggleSection('getDirections')}
-                >
-                    <SelectField
-                        label="Border"
-                        value={settings.getDirections.border}
-                        onChange={(v) => updateGroup('getDirections', 'border', v)}
-                        options={BORDER_STYLES}
-                    />
-                    <ColorField
-                        label="Background"
-                        value={settings.getDirections.background}
-                        onChange={(v) => updateGroup('getDirections', 'background', v)}
-                    />
-                    <TextField
-                        label="Label"
-                        value={settings.getDirections.label}
-                        placeholder="Get Directions"
-                        onChange={(v) => updateGroup('getDirections', 'label', v)}
-                    />
-                    <ColorField
-                        label="Text Color"
-                        value={settings.getDirections.text_color}
-                        onChange={(v) => updateGroup('getDirections', 'text_color', v)}
-                    />
-                    <SelectField
-                        label="Icon"
-                        value={settings.getDirections.icon}
-                        onChange={(v) => updateGroup('getDirections', 'icon', v)}
-                        options={GET_DIRECTIONS_VIEW_LOCATION_BUTTON_ICONS}
-                    />
-                </Section>
 
-                <Section
-                    icon={<LuMapPinned />}
-                    title="View Location Button"
-                    isOpen={openSections.viewLocation}
-                    onToggle={() => toggleSection('viewLocation')}
-                >
-                    <SelectField
-                        label="Border"
-                        value={settings.viewLocation.border}
-                        onChange={(v) => updateGroup('viewLocation', 'border', v)}
-                        options={BORDER_STYLES}
-                    />
-                    <ColorField
-                        label="Background"
-                        value={settings.viewLocation.background}
-                        onChange={(v) => updateGroup('viewLocation', 'background', v)}
-                    />
-                    <TextField
-                        label="Label"
-                        value={settings.viewLocation.label}
-                        placeholder="View Location"
-                        onChange={(v) => updateGroup('viewLocation', 'label', v)}
-                    />
-                    <ColorField
-                        label="Text Color"
-                        value={settings.viewLocation.text_color}
-                        onChange={(v) => updateGroup('viewLocation', 'text_color', v)}
-                    />
-                    <SelectField
-                        label="Icon"
-                        value={settings.viewLocation.icon}
-                        onChange={(v) => updateGroup('viewLocation', 'icon', v)}
-                        options={GET_DIRECTIONS_VIEW_LOCATION_BUTTON_ICONS}
-                    />
-                </Section>
+                        <Section
+                            icon={<LuRows3 />}
+                            title="Result Items"
+                            isOpen={openSections.resultItem}
+                            onToggle={() => toggleSection('resultItem')}
+                        >
+                            <ColorField
+                                label="Selected Border"
+                                value={settings.resultItem.active_border_color}
+                                onChange={(v) => updateGroup('resultItem', 'active_border_color', v)}
+                            />
+                            <ColorField
+                                label="Border"
+                                value={settings.resultItem.border_color}
+                                onChange={(v) => updateGroup('resultItem', 'border_color', v)}
+                            />
+                            <ColorField
+                                label="Background"
+                                value={settings.resultItem.background}
+                                onChange={(v) => updateGroup('resultItem', 'background', v)}
+                            />
+                        </Section>
 
-                <Section
-                    icon={<LuMapPin />}
-                    title="Map Pin"
-                    isOpen={openSections.pin}
-                    onToggle={() => toggleSection('pin')}
-                >
-                    <ColorField
-                        label="Pin Color"
-                        value={settings.pin.color}
-                        onChange={(v) => updateGroup('pin', 'color', v)}
-                    />
-                    <SelectField
-                        label="Size"
-                        value={settings.pin.size}
-                        onChange={(v) => updateGroup('pin', 'size', v)}
-                        options={[{code: 'small', label: 'Small'}, {code: 'medium', label: 'Medium'}, {code: 'large', label: 'Large'}]}
-                    />
-                    <ColorField
-                        label="Text Color"
-                        value={settings.pin.text_color}
-                        onChange={(v) => updateGroup('pin', 'text_color', v)}
-                    />
-                    <NumberField
-                        label="Text Size"
-                        value={settings.pin.text_size}
-                        onChange={(v) => updateGroup('pin', 'text_size', v)}
-                        suffix="px"
-                    />
-                    <div className={styles.field}>
-                        <label>Custom Image</label>
-                        {settings.pin.image ? (
-                            <div className={styles.imagePreview}>
-                                <img src={settings.pin.image} alt="Pin preview" />
-                                <button
-                                    type="button"
-                                    className={styles.removeImage}
-                                    onClick={() => updateGroup('pin', 'image', null)}
-                                    aria-label="Remove image"
-                                >
-                                    <LuX />
-                                </button>
+                        <Section
+                            icon={<LuNavigation />}
+                            title="Get Directions Button"
+                            isOpen={openSections.getDirections}
+                            onToggle={() => toggleSection('getDirections')}
+                        >
+                            <SelectField
+                                label="Border"
+                                value={settings.getDirections.border}
+                                onChange={(v) => updateGroup('getDirections', 'border', v)}
+                                options={BORDER_STYLES}
+                            />
+                            <ColorField
+                                label="Background"
+                                value={settings.getDirections.background}
+                                onChange={(v) => updateGroup('getDirections', 'background', v)}
+                            />
+                            <TextField
+                                label="Label"
+                                value={settings.getDirections.label}
+                                placeholder="Get Directions"
+                                onChange={(v) => updateGroup('getDirections', 'label', v)}
+                            />
+                            <ColorField
+                                label="Text Color"
+                                value={settings.getDirections.text_color}
+                                onChange={(v) => updateGroup('getDirections', 'text_color', v)}
+                            />
+                            <SelectField
+                                label="Icon"
+                                value={settings.getDirections.icon}
+                                onChange={(v) => updateGroup('getDirections', 'icon', v)}
+                                options={GET_DIRECTIONS_VIEW_LOCATION_BUTTON_ICONS}
+                            />
+                        </Section>
+
+                        <Section
+                            icon={<LuMapPinned />}
+                            title="View Location Button"
+                            isOpen={openSections.viewLocation}
+                            onToggle={() => toggleSection('viewLocation')}
+                        >
+                            <SelectField
+                                label="Border"
+                                value={settings.viewLocation.border}
+                                onChange={(v) => updateGroup('viewLocation', 'border', v)}
+                                options={BORDER_STYLES}
+                            />
+                            <ColorField
+                                label="Background"
+                                value={settings.viewLocation.background}
+                                onChange={(v) => updateGroup('viewLocation', 'background', v)}
+                            />
+                            <TextField
+                                label="Label"
+                                value={settings.viewLocation.label}
+                                placeholder="View Location"
+                                onChange={(v) => updateGroup('viewLocation', 'label', v)}
+                            />
+                            <ColorField
+                                label="Text Color"
+                                value={settings.viewLocation.text_color}
+                                onChange={(v) => updateGroup('viewLocation', 'text_color', v)}
+                            />
+                            <SelectField
+                                label="Icon"
+                                value={settings.viewLocation.icon}
+                                onChange={(v) => updateGroup('viewLocation', 'icon', v)}
+                                options={GET_DIRECTIONS_VIEW_LOCATION_BUTTON_ICONS}
+                            />
+                        </Section>
+
+                        <Section
+                            icon={<LuMapPin />}
+                            title="Map Pin"
+                            isOpen={openSections.pin}
+                            onToggle={() => toggleSection('pin')}
+                        >
+                            <ColorField
+                                label="Pin Color"
+                                value={settings.pin.color}
+                                onChange={(v) => updateGroup('pin', 'color', v)}
+                            />
+                            <SelectField
+                                label="Size"
+                                value={settings.pin.size}
+                                onChange={(v) => updateGroup('pin', 'size', v)}
+                                options={[{code: 'small', label: 'Small'}, {code: 'medium', label: 'Medium'}, {code: 'large', label: 'Large'}]}
+                            />
+                            <ColorField
+                                label="Text Color"
+                                value={settings.pin.text_color}
+                                onChange={(v) => updateGroup('pin', 'text_color', v)}
+                            />
+                            <NumberField
+                                label="Text Size"
+                                value={settings.pin.text_size}
+                                onChange={(v) => updateGroup('pin', 'text_size', v)}
+                                suffix="px"
+                            />
+                            <div className={styles.field}>
+                                <label>Custom Image</label>
+                                {settings.pin.image ? (
+                                    <div className={styles.imagePreview}>
+                                        <img src={settings.pin.image} alt="Pin preview" />
+                                        <button
+                                            type="button"
+                                            className={styles.removeImage}
+                                            onClick={() => updateGroup('pin', 'image', null)}
+                                            aria-label="Remove image"
+                                        >
+                                            <LuX />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        className={styles.uploadButton}
+                                        onClick={() => fileInputRef.current?.click()}
+                                    >
+                                        <LuUpload />
+                                        Upload Image
+                                    </button>
+                                )}
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageUpload}
+                                    hidden
+                                />
                             </div>
-                        ) : (
-                            <button
-                                type="button"
-                                className={styles.uploadButton}
-                                onClick={() => fileInputRef.current?.click()}
-                            >
-                                <LuUpload />
-                                Upload Image
-                            </button>
-                        )}
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageUpload}
-                            hidden
+                        </Section>
+                    </div>
+                    <div className={styles.settings}>
+                        <Checkbox
+                            label="Search bar"
+                            name="show_search_box"
+                            description="Let users search by city, zip, or address"
+                            checked={features.show_search_bar}
+                            onChange={(v) => updateFeatures('show_search_bar', v)}
+                        />
+                        <Checkbox
+                            label="Detect my location"
+                            name="detect_location"
+                            description="Show a button to auto-detect user location"
+                            checked={features.detect_location}
+                            onChange={(v) => updateFeatures('detect_location', v)}
+                        />
+                        <Checkbox
+                            label="Show filters"
+                            name="show_filters"
+                            description="Display filters on the search form"
+                            checked={features.show_filters}
+                            onChange={(v) => updateFeatures('show_filters', v)}
+                        />
+                        <Checkbox
+                            label="Show search radius"
+                            name="show_radius"
+                            description="Display search radius on the search form"
+                            checked={features.show_radius}
+                            onChange={(v) => updateFeatures('show_radius', v)}
+                        />
+                        <Checkbox
+                            label="Show store list"
+                            name="show_store_list"
+                            description="Display a list of stores beside the map"
+                            checked={features.show_store_list}
+                            onChange={(v) => updateFeatures('show_store_list', v)}
+                        />
+                        <Checkbox
+                            label="Show directions button"
+                            name="show_directions"
+                            description="Link to Google Maps directions for each store"
+                            checked={features.show_directions}
+                            onChange={(v) => updateFeatures('show_directions', v)}
+                        />
+                        <Checkbox
+                            label="Show store hours"
+                            name="show_store_hours"
+                            description="Display opening hours on each store card"
+                            checked={features.show_store_hours}
+                            onChange={(v) => updateFeatures('show_store_hours', v)}
+                        />
+                        <Checkbox
+                            label="Powered by Storefindy"
+                            name="powered_by_storefindy"
+                            description="Show branding on your widget (free plan)"
+                            checked={features.powered_by_storefindy}
+                            onChange={(v) => updateFeatures('powered_by_storefindy', v)}
+                            disabled={true}
                         />
                     </div>
-                </Section>
-
-                <Section
-                    icon={<LuZoomIn />}
-                    title="Zoom Buttons"
-                    isOpen={openSections.zoom}
-                    onToggle={() => toggleSection('zoom')}
-                >
-                    <SelectField
-                        label="Border"
-                        value={settings.zoom.border}
-                        onChange={(v) => updateGroup('zoom', 'border', v)}
-                        options={BORDER_STYLES}
-                    />
-                    <ColorField
-                        label="Color"
-                        value={settings.zoom.background}
-                        onChange={(v) => updateGroup('zoom', 'background', v)}
-                    />
-                    <ColorField
-                        label="Text Color"
-                        value={settings.zoom.text_color}
-                        onChange={(v) => updateGroup('zoom', 'text_color', v)}
-                    />
-                </Section>
+                </div>
             </div>
         </div>
     );

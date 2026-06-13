@@ -13,7 +13,7 @@ export default function Checkbox({ label, name, description = null, checked, onC
                     id={name}
                     name={name}
                     checked={checked}
-                    onChange={onChange}
+                    onChange={(e) => onChange(e.target.checked)}
                     disabled={disabled}
                 />
                 <span className={styles.slider}></span>

@@ -36,6 +36,13 @@ export default function CustomizeWrapper({ data }) {
             text_color: settings.filter.text_color,
             icon: settings.filter.icon,
         },
+        filterList: {
+            border_color: settings.filterList.border_color,
+            background: settings.filterList.background,
+            text_color: settings.filterList.text_color,
+            active_background: settings.filterList.active_background,
+            active_text_color: settings.filterList.active_text_color,
+        },
         resultItem: {
             active_border_color: settings.resultItem.active_border_color,
             border_color: settings.resultItem.border_color,
@@ -62,18 +69,24 @@ export default function CustomizeWrapper({ data }) {
             text_size: settings.pin.text_size,
             image: settings.pin.image,
         },
-        zoom: {
-            border: settings.zoom.border,
-            background: settings.zoom.background,
-            text_color: settings.zoom.text_color,
-        },
     });
 
+    const [featuresData, setFeaturesData] = useState({
+        show_search_bar: data.show_search_bar,
+        detect_location: data.detect_location,
+        show_filters: data.show_filters,
+        show_radius: data.show_radius,
+        show_store_list: data.show_store_list,
+        show_directions: data.show_directions,
+        show_store_hours: data.show_store_hours,
+    });
 
     return<div className={styles.dashboard}>
         <SidebarCustomize
             settings={settingsData}
             setSettings={setSettingsData}
+            features={featuresData}
+            setFeatures={setFeaturesData}
         />
         <div className={styles.content}>
             <div className={styles.title}>
@@ -107,7 +120,8 @@ export default function CustomizeWrapper({ data }) {
                     // customize settings
                     settings={settingsData}
                     
-                    pin_color={data.settings?.pin?.color}
+                    // features settings
+                    features={featuresData}
                 />
             </div>
         </div>

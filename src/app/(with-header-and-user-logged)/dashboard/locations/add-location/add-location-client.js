@@ -110,6 +110,7 @@ export default function AddLocationPage({ locators, data }) {
     const [phone, setPhone] = useState(data?.phone || '');
     const [email, setEmail] = useState(data?.email || '');
     const [website, setWebsite] = useState(data?.website || '');
+    const [viewLocationUrl, setViewLocationUrl] = useState(data?.view_location_url || '');
 
     // Opening hours
     const [hours, setHours] = useState(data?.hours || DEFAULT_HOURS);
@@ -602,6 +603,15 @@ export default function AddLocationPage({ locators, data }) {
                         onChange={e => setWebsite(e.target.value)}
                         placeholder="https://yourstore.com"
                         error={err("website")}
+                    />
+                    <Input
+                        label="View Location URL"
+                        type="url"
+                        name="location_website_url"
+                        value={viewLocationUrl}
+                        onChange={e => setViewLocationUrl(e.target.value)}
+                        placeholder="https://yourstore.com/location/123"
+                        error={err("location_website_url")}
                     />
                     {/* <div>
                         <label style={{ display: 'block', marginBottom: '5px', fontSize: '13px' }}>Store Image URL</label>

@@ -4,6 +4,13 @@ export const formStyles = `
     flex-direction: row;
     gap: 10px;
 }
+.locator-sidebar .input-text-search-container {
+    position: relative;
+
+}
+.locator-sidebar .input-text-search-container button {
+    position: r
+}
 .locator-sidebar .inputs .input-search {
     flext: 1;
     width: 100%;
@@ -89,6 +96,7 @@ export const resultsStyles = `
 }
 .results ul.results-list > li .details .address,
 .results ul.results-list > li .details .phone,
+.results ul.results-list > li .details .website,
 .results ul.results-list > li .details .todays-hours p {
     display: flex;
     align-items: center;
@@ -172,6 +180,7 @@ export const resultsStyles = `
 .locator-sidebar .filter-panel .filter-empty {
     font-size: 90%;
     color: #777;
+    opacity: 0.6;
 }
 .locator-sidebar .radius-control {
     display: flex;
@@ -193,6 +202,7 @@ export const resultsStyles = `
 export const mapStyles = `
 .locator-map {
     flex: 1;
+    position: relative;
 }
 .locator-map .map-loading {
     display: flex;
@@ -203,6 +213,137 @@ export const mapStyles = `
 }
 .results ul.results-list > li.active {
     border-left-color: #185FA5;
+}
+.powered-by {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    z-index: 99999;
+    font-size: 9px;
+    text-align: right;
+    a {
+        color: #2563eb;
+        text-decoration: none;
+    }
+}
+
+/* Map pin popup — mirrors the result <li> layout so the bubble shows the same
+   UI and information as the list item. */
+.leaflet-popup-content {
+    margin: 14px 16px;
+}
+.locator-popup-card .title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+.locator-popup-card .title h2 {
+    margin: 0;
+    font-size: 120%;
+    font-weight: bold;
+}
+.locator-popup-card .title span {
+    padding-right: 10px;
+}
+.locator-popup-card .title p {
+    font-size: 90%;
+    margin: 0;
+}
+.locator-popup-card .details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding-left: 18px;
+}
+.locator-popup-card .details .address,
+.locator-popup-card .details .phone,
+.locator-popup-card .details .website,
+.locator-popup-card .details .todays-hours p {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 100%;
+    margin: 0;
+}
+.filters-checked span {
+    background-color: #e7e9e9;
+    font-size: 75%;
+    margin-right: 5px;
+    padding: 3px 7px;
+    border-radius: 7px;
+    color: #000;
+}
+.note {
+    font-size: 90%;
+    opacity: 0.7;
+}
+.locator-popup-card .details .todays-hours {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.locator-popup-card .details .btn-store-hours {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+}
+.locator-popup-card .details .btn-store-hours svg:last-child {
+    font-size: 70%;
+    transition: transform 0.2s ease;
+}
+.locator-popup-card .details .btn-store-hours.open svg:last-child {
+    transform: rotate(180deg);
+}
+.locator-popup-card .details .store-hours {
+    width: 100%;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+}
+.locator-popup-card .details .store-hours.open {
+    max-height: 500px;
+    opacity: 1;
+}
+.locator-popup-card .details .store-hours li {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 100%;
+}
+.locator-popup-card .details .store-hours li:last-child {
+    margin-bottom: 0;
+}
+.locator-popup-card .actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 100%;
+}
+.locator-popup-card .actions a {
+    flex: 1;
+    max-width: calc(50% - 5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    height: 40px;
+    padding: 0 15px;
+    background-color: #000;
+    color: #fff;
+    text-decoration: none;
+    cursor: pointer;
 }
 `;
 

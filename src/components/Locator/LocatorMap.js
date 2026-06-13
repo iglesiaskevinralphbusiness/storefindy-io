@@ -87,6 +87,7 @@ export default function LocatorMap({
     activeId = null,
     onMove = () => {},
     onSelect = () => {},
+    renderPopup = null,
 }) {
     const icon = useMemo(() => buildPinIcon(pinColor, pinSize), [pinColor, pinSize]);
     // Leaflet marker instances, keyed by location id, so the active one's popup
@@ -145,13 +146,21 @@ export default function LocatorMap({
                         opacity={activeId && activeId !== loc._id ? 0.6 : 1}
                         eventHandlers={{ click: () => onSelect(loc._id) }}
                     >
-                        <Popup>
-                            <strong>{loc.name}</strong>
-                            {loc.street || loc.city ? (
-                                <div>
-                                    {[loc.street, loc.city, loc.state, loc.postal].filter(Boolean).join(', ')}
-                                </div>
-                            ) : null}
+                        <Popup minWidth={240} maxWidth={300}>
+                            <div className="locator-popup-card">
+                                {renderPopup ? (
+                                    renderPopup(loc, index)
+                                ) : (
+                                    <>
+                                        <strong>{loc.name}</strong>
+                                        {loc.street || loc.city ? (
+                                            <div>
+                                                {[loc.street, loc.city, loc.state, loc.postal].filter(Boolean).join(', ')}
+                                            </div>
+                                        ) : null}
+                                    </>
+                                )}
+                            </div>
                         </Popup>
                     </Marker>
                 );

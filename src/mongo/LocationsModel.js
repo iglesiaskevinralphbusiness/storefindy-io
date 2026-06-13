@@ -48,6 +48,7 @@ const locationSchema = new mongoose.Schema({
     phone: { type: String, required: false, default: '' },
     email: { type: String, required: false, default: '' },
     website: { type: String, required: false, default: '' },
+    view_location_url: { type: String, required: false, default: '' },
     // Location Settings
     published: { type: Boolean, required: true, default: true },
     show_opening_hours: { type: Boolean, required: true, default: false },

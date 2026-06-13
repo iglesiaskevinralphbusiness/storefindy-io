@@ -56,9 +56,16 @@ const locatorSchema = new mongoose.Schema({
         filter: { // filter button
             border: { type: String, default: 'square' },
             background: { type: String, default: '#000' },
-            label: { type: String, default: 'Filters' },
+            label: { type: String, default: '' },
             text_color: { type: String, default: '#fff' },
             icon: { type: String, default: 'funnel' },
+        },
+        filterList: {
+            border_color: { type: String, default: '#e4e4e4' },
+            background: { type: String, default: '#fff' },
+            text_color: { type: String, default: '#000' },
+            active_background: { type: String, default: '#e4e4e4' },
+            active_text_color: { type: String, default: '#000' },
         },
         resultItem: {
             active_border_color: { type: String, default: '#185FA5' },
@@ -85,11 +92,6 @@ const locatorSchema = new mongoose.Schema({
             text_color: { type: String, default: '#ffffff' },
             text_size: { type: Number, default: 12 },
             image: { type: String, default: null },
-        },
-        zoom: {
-            border: { type: String, default: 'square' },
-            background: { type: String, default: '#ffffff' },
-            text_color: { type: String, default: '#1f1f1f' },
         },
     },
 

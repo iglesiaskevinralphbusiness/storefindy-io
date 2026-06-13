@@ -8,6 +8,8 @@ import { TbMapPinSearch } from "react-icons/tb";
 import { TbShoppingBagSearch } from "react-icons/tb";
 import { RiFilterFill } from "react-icons/ri";
 import { IoFilterCircleOutline } from "react-icons/io5";
+import { MdOutlineMyLocation } from "react-icons/md";
+import { FiLink } from "react-icons/fi";
 import { LuFilter, LuPhone, LuClock, LuListFilter, LuMap, LuMapPin, LuMapPinned, LuArrowRight, LuArrowLeft, LuChevronLeft, LuChevronRight, LuCircleChevronLeft, LuCircleChevronRight } from "react-icons/lu";
 import { formStyles, resultsStyles, mapStyles, userDefinedStyles } from './styles';
 import Link from 'next/link';
@@ -110,13 +112,23 @@ export default function Locator({
     // Result <li> nodes, keyed by location id, so the active one can be scrolled
     // to the top of the list when a map pin (or the item itself) is selected.
     const itemRefs = useRef({});
+    // The scrollable results <ul>, so selecting an item scrolls only the list
+    // and never the whole page.
+    const listRef = useRef(null);
 
     const toggleHours = (id) => setOpenHours((prev) => ({ ...prev, [id]: !prev[id] }));
 
-    // Keep the active item in sync with the map: scroll it to the top of the list.
+    // Keep the active item in sync with the map: scroll it to the top of the
+    // list. We adjust the list's own scroll position (rather than
+    // scrollIntoView, which scrolls every scrollable ancestor including the
+    // page) so only the .results-list ul moves.
     useEffect(() => {
         if (!activeId) return;
-        itemRefs.current[activeId]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const list = listRef.current;
+        const item = itemRefs.current[activeId];
+        if (!list || !item) return;
+        const delta = item.getBoundingClientRect().top - list.getBoundingClientRect().top;
+        list.scrollBy({ top: delta, behavior: 'smooth' });
     }, [activeId]);
 
     // Single entry point for every search (text, filter, radius, map-drag).
@@ -244,6 +256,109 @@ export default function Locator({
         return '';
     }
 
+    // Inner content of a single result — shared by the list <li> and the map
+    // popup so both render identical information and UI.
+    const renderLocationCard = (location, index, { showStoreHoursToggle = true } = {}) => (
+        <>
+            <div className="title">
+                <h2>
+                    <span>{location.name}</span>
+                </h2>
+                {typeof location.distance === 'number' && (
+                    <p>{location.distance.toFixed(1)} mi</p>
+                )}
+            </div>
+            <div className="details">
+                <p className="address"><LuMapPin /> {buildAddress(location)}</p>
+                {show_phone_number && location.phone && (
+                    <Link href={`tel:${location.phone}`} className="phone">
+                        <LuPhone /> {location.phone}
+                    </Link>
+                )}
+                {show_website_link && location.website && (
+                    <div className="website">
+                        <FiLink />
+                        <Link href={location.website} target="_blank">{location.website}</Link>
+                    </div>
+                )}
+                {show_store_hours && location.hours && (
+                    <>
+                        <div className="todays-hours">
+                            <p><LuClock /> Today&apos;s Hours:</p>
+                            <p>{todaysHours(location)}</p>
+                        </div>
+                        {showStoreHoursToggle && (
+                            <>
+                                <button
+                                    type="button"
+                                    className={`btn-store-hours${openHours[location._id] ? ' open' : ''}`}
+                                    onClick={() => toggleHours(location._id)}
+                                    aria-expanded={!!openHours[location._id]}
+                                >
+                                    <LuClock /> Store Hours <FaAngleDown />
+                                </button>
+                                <ul className={`store-hours${openHours[location._id] ? ' open' : ''}`}>
+                                    {WEEK.map(([key, label]) => {
+                                        const d = location.hours?.[key];
+                                        return (
+                                            <li key={key}>
+                                                <span>{label}</span>
+                                                <span>{d?.enabled ? `${formatTime(d.open)} - ${formatTime(d.close)}` : 'Closed'}</span>
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            </>
+                        )}
+                    </>
+                )}
+                {location.filters.length > 0 && (
+                    <div className="filters-checked">
+                        {location.filters.map((filter, index) => (
+                            <span
+                                index={'filter-'+index}
+                                key={filter}
+                                style={{
+                                    backgroundColor: settings.filterList.active_background,
+                                    color: settings.filterList.active_text_color,
+                                }}
+                            >{filter}</span>
+                        ))}
+                    </div>
+                )}
+                <div className="note">{location.custom_notes}</div>
+            </div>
+            <div className="actions">
+                {show_directions && (
+                    <Link
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${location.latitude},${location.longitude}`}
+                        target="_blank"
+                        style={{
+                            backgroundColor: settings.getDirections.background,
+                            color: settings.getDirections.text_color,
+                            borderRadius: getBorderStyle(settings.getDirections.border),
+                        }}
+                    >
+                        {getButtonIcon(settings.getDirections.icon)}{settings.getDirections.label}
+                    </Link>
+                )}
+                {show_website_link && location.view_location_url && (
+                    <Link
+                        href={location.view_location_url}
+                        target="_blank"
+                        style={{
+                            backgroundColor: settings.viewLocation.background,
+                            color: settings.viewLocation.text_color,
+                            borderRadius: getBorderStyle(settings.viewLocation.border),
+                        }}
+                    >
+                        {getButtonIcon(settings.viewLocation.icon)}{settings.viewLocation.label}
+                    </Link>
+                )}
+            </div>
+        </>
+    );
+
     return (
         <>
             <style>{locatorStyles}</style>
@@ -262,19 +377,21 @@ export default function Locator({
                     {show_search_bar && (
                         <form onSubmit={onSubmit}>
                             <div className="inputs">
-                                <input
-                                    type="text"
-                                    placeholder={settings.searchInput.placeholder}
-                                    className="input-search"
-                                    value={params.q}
-                                    onChange={(e) => setParams((p) => ({ ...p, q: e.target.value }))}
-                                    style={{
-                                        borderColor: settings.searchInput.border_color,
-                                        backgroundColor: settings.searchInput.background,
-                                        color: settings.searchInput.text_color,
-                                        borderRadius: getBorderStyle(settings.searchInput.border),
-                                    }}
-                                />
+                                <div className="input-text-search-container">
+                                    <input
+                                        type="text"
+                                        placeholder={settings.searchInput.placeholder}
+                                        className="input-search"
+                                        value={params.q}
+                                        onChange={(e) => setParams((p) => ({ ...p, q: e.target.value }))}
+                                        style={{
+                                            borderColor: settings.searchInput.border_color,
+                                            backgroundColor: settings.searchInput.background,
+                                            color: settings.searchInput.text_color,
+                                            borderRadius: getBorderStyle(settings.searchInput.border),
+                                        }}
+                                    />
+                                </div>
                                 <button
                                     type="submit"
                                     className="btn-search"
@@ -303,7 +420,13 @@ export default function Locator({
                             </div>
 
                             {(show_filters && showFilters) && (
-                                <div className="filter-panel">
+                                <div
+                                    className="filter-panel"
+                                    style={{
+                                        borderColor: settings.filterList.border_color,
+                                        backgroundColor: settings.filterList.background,
+                                    }}
+                                >
                                     {filters.map((f) => (
                                         <label key={f} className="filter-option">
                                             <input
@@ -311,11 +434,11 @@ export default function Locator({
                                                 checked={params.filters.includes(f)}
                                                 onChange={() => toggleFilter(f)}
                                             />
-                                            <span>{f}</span>
+                                            <span style={{ color: settings.filterList.text_color }}>{f}</span>
                                         </label>
                                     ))}
                                     {filters.length === 0 && (
-                                        <p className="filter-empty">No filters configured.</p>
+                                        <p className="filter-empty" style={{ color: settings.filterList.text_color }}>No filters configured.</p>
                                     )}
                                 </div>
                             )}
@@ -360,7 +483,7 @@ export default function Locator({
                         )}
 
                         {show_store_list && (
-                            <ul className="results-list">
+                            <ul className="results-list" ref={listRef}>
                                 {locations.map((location, index) => (
                                     <li
                                         key={location._id}
@@ -375,76 +498,7 @@ export default function Locator({
                                             }),
                                         }}
                                     >
-                                        <div className="title">
-                                            <h2>
-                                                <span>{index + 1}</span>
-                                                <span>{location.name}</span>
-                                            </h2>
-                                            {typeof location.distance === 'number' && (
-                                                <p>{location.distance.toFixed(1)} mi</p>
-                                            )}
-                                        </div>
-                                        <div className="details">
-                                            <p className="address"><LuMapPin /> {buildAddress(location)}</p>
-                                            {show_phone_number && location.phone && (
-                                                <Link href={`tel:${location.phone}`} className="phone"><LuPhone /> {location.phone}</Link>
-                                            )}
-                                            {show_store_hours && location.hours && (
-                                                <>
-                                                    <div className="todays-hours">
-                                                        <p><LuClock /> Today&apos;s Hours:</p>
-                                                        <p>{todaysHours(location)}</p>
-                                                    </div>
-                                                    <button
-                                                        type="button"
-                                                        className={`btn-store-hours${openHours[location._id] ? ' open' : ''}`}
-                                                        onClick={() => toggleHours(location._id)}
-                                                        aria-expanded={!!openHours[location._id]}
-                                                    >
-                                                        <LuClock /> Store Hours <FaAngleDown />
-                                                    </button>
-                                                    <ul className={`store-hours${openHours[location._id] ? ' open' : ''}`}>
-                                                        {WEEK.map(([key, label]) => {
-                                                            const d = location.hours?.[key];
-                                                            return (
-                                                                <li key={key}>
-                                                                    <span>{label}</span>
-                                                                    <span>{d?.enabled ? `${formatTime(d.open)} - ${formatTime(d.close)}` : 'Closed'}</span>
-                                                                </li>
-                                                            );
-                                                        })}
-                                                    </ul>
-                                                </>
-                                            )}
-                                        </div>
-                                        <div className="actions">
-                                            {show_directions && (
-                                                <Link
-                                                    href={`https://www.google.com/maps/dir/?api=1&destination=${location.latitude},${location.longitude}`}
-                                                    target="_blank"
-                                                    style={{
-                                                        backgroundColor: settings.getDirections.background,
-                                                        color: settings.getDirections.text_color,
-                                                        borderRadius: getBorderStyle(settings.getDirections.border),
-                                                    }}
-                                                >
-                                                    {getButtonIcon(settings.getDirections.icon)}{settings.getDirections.label}
-                                                </Link>
-                                            )}
-                                            {show_website_link && location.website && (
-                                                <Link
-                                                    href={location.website}
-                                                    target="_blank"
-                                                    style={{
-                                                        backgroundColor: settings.viewLocation.background,
-                                                        color: settings.viewLocation.text_color,
-                                                        borderRadius: getBorderStyle(settings.viewLocation.border),
-                                                    }}
-                                                >
-                                                    {getButtonIcon(settings.viewLocation.icon)}{settings.viewLocation.label}
-                                                </Link>
-                                            )}
-                                        </div>
+                                        {renderLocationCard(location, index)}
                                     </li>
                                 ))}
                             </ul>
@@ -467,8 +521,10 @@ export default function Locator({
                             activeId={activeId}
                             onMove={handleMapMove}
                             onSelect={setActiveId}
+                            renderPopup={(loc, index) => renderLocationCard(loc, index, { showStoreHoursToggle: false })}
                         />
                     </Suspense>
+                    <div className="powered-by">Mapping Locator Powered by <a href="https://www.storefindy.com" target="_blank">Storefindy</a> Copyright © {new Date().getFullYear()}, All Rights Reserved.</div>
                 </div>
             </div>
         </>
