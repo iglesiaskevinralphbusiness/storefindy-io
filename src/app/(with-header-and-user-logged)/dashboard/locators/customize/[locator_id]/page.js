@@ -1,4 +1,4 @@
-import { getLocatorById } from '@/actions/locator';
+import { getLocatorById, getAvailableCountriesBasedOnLocations } from '@/actions/locator';
 import { notFound } from 'next/navigation';
 import CustomizeWrapper from '@/components/Dashboard/CustomizeWrapper';
 
@@ -9,7 +9,8 @@ export default async function LocatorsCustomizePage({ params }) {
         return notFound();
     }
 
-    console.log(locator);
+    const countries = await getAvailableCountriesBasedOnLocations(locator_id);
+    const available_countries = countries.length > 0 ? countries : [locator.default_country];
 
-    return <CustomizeWrapper data={locator} />;
+    return <CustomizeWrapper data={locator} available_countries={available_countries} />;
 }

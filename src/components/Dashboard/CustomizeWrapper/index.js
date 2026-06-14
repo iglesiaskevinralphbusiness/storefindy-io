@@ -9,7 +9,7 @@ import { isEqual } from 'lodash';
 import { functionSaveCustomizeLocator } from '@/actions/locator';
 import { toast } from 'react-toastify';
 
-export default function CustomizeWrapper({ data }) {
+export default function CustomizeWrapper({ data, available_countries }) {
     const { settings } = data;
     console.log(data)
 
@@ -124,6 +124,7 @@ export default function CustomizeWrapper({ data }) {
                     // locator data
                     locator_id={data._id}
                     filters={data.filters}
+                    available_countries={available_countries}
 
                     // default settings
                     search_radius={data.search_radius}

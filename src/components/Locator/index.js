@@ -51,9 +51,33 @@ function todaysHours(loc) {
     return `${formatTime(day.open)} - ${formatTime(day.close)}`;
 }
 
+// Reverse-geocode a coordinate via the free OpenStreetMap Nominatim service.
+// Returns the lowercase ISO country code and a "city, state, postal" label for
+// the location. Used to default the country dropdown on first load and to sync
+// the search input + dropdown to the map's center after a drag.
+async function reverseGeocode(lat, lng) {
+    try {
+        const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=10`
+        );
+        if (!res.ok) return null;
+        const data = await res.json();
+        const a = data?.address || {};
+        const city = a.city || a.town || a.village || a.municipality || a.county || '';
+        const label = [city, a.state, a.postcode].filter(Boolean).join(', ');
+        return {
+            countryCode: a.country_code?.toLowerCase() || null,
+            label,
+        };
+    } catch {
+        return null;
+    }
+}
+
 export default function Locator({
     // Identity & map defaults
     locator_id,
+    available_countries = [default_country],
     search_radius = 10,
     default_zoom_level = 10,
     detect_location = true,
@@ -67,14 +91,33 @@ export default function Locator({
     // every fresh search. (maximum_results_shown is enforced server-side.)
     const defaultRadius = search_radius ?? 10;
     const defaultZoom = default_zoom_level ?? 10;
-    // When auto-detect is off, open the map on the locator's configured country
-    // (e.g. "jp", "us", "ph") instead of the hardcoded world fallback.
-    const countryView = !detect_location
-        ? COUNTRIES.find((c) => c.code === String(default_country || '').toLowerCase())
-        : null;
+    // Open the map on the locator's configured country (e.g. "jp", "us", "ph")
+    // instead of the hardcoded world fallback. This is the first-load view when
+    // auto-detect is off, and also the fallback when auto-detect is on but the
+    // browser blocks/denies geolocation.
+    const countryView = COUNTRIES.find((c) => c.code === String(default_country || '').toLowerCase());
     const defaultCenter = countryView ? [countryView.lat, countryView.lng] : null;
     // Radius choices, always including the locator's configured default.
     const radiusOptions = [...new Set([5, 10, 25, 50, 100, defaultRadius])].sort((a, b) => a - b);
+
+    // Country dropdown choices — restricted to the locator's configured
+    // available_countries (a list of codes like ["us", "ph"]). Falls back to the
+    // full list when none are configured.
+    const availableCodes = (available_countries || [])
+        .filter(Boolean)
+        .map((c) => String(c).toLowerCase());
+    // Ensure the locator's default country is always selectable, even if it was
+    // left out of the configured available_countries list.
+    const defaultCode = String(default_country || '').toLowerCase();
+    if (defaultCode && !availableCodes.includes(defaultCode)) {
+        availableCodes.push(defaultCode);
+    }
+    const countryOptions = availableCodes.length
+        ? COUNTRIES.filter((c) => availableCodes.includes(c.code))
+        : COUNTRIES;
+    // Only auto-default the dropdown to the geolocated country when there's an
+    // actual choice to make (2+ options).
+    const hasCountryChoices = countryOptions.length >= 2;
 
     // Search state. `radius` and `filters` live here so the same object can be
     // submitted to the API; `filters` will hold values like ["🏬 Mall", ...].
@@ -95,6 +138,9 @@ export default function Locator({
 
     const [locations, setLocations] = useState([]);
     const [center, setCenter] = useState(null);
+    // Separate from `center`: this is the only value that moves the map view via
+    // <Recenter>. Map-drag searches deliberately leave it untouched.
+    const [recenterCenter, setRecenterCenter] = useState(null);
     const [zoom, setZoom] = useState(defaultZoom);
     const [status, setStatus] = useState('idle'); // idle | loading | success | empty | error
     const [message, setMessage] = useState('');
@@ -125,8 +171,11 @@ export default function Locator({
     }, [activeId]);
 
     // Single entry point for every search (text, filter, radius, map-drag).
-    // `override` is merged onto the latest params so callers only pass what changed.
-    const runSearch = async (override = {}) => {
+    // `override` is merged onto the latest params so callers only pass what
+    // changed. `recenter` forces the map view to the result center — true for
+    // text-search/geolocation, but false for map-drag searches, where the user
+    // is already positioned and snapping the view back would fight their panning.
+    const runSearch = async (override = {}, { recenter = true } = {}) => {
         if (!locator_id) return;
         const p = { ...paramsRef.current, ...override };
         setParams(p);
@@ -149,7 +198,13 @@ export default function Locator({
             const data = await res.json();
             const items = data.locations || [];
             setLocations(items);
-            if (data.center) setCenter([data.center.lat, data.center.lng]);
+            if (data.center) {
+                // `center` drives the radius circle and follows every search.
+                setCenter([data.center.lat, data.center.lng]);
+                // `recenterCenter` is what actually moves the map view, so we
+                // only update it when a recenter was requested.
+                if (recenter) setRecenterCenter([data.center.lat, data.center.lng]);
+            }
             if (data.status === 'success' && items.length > 0) {
                 setStatus('success');
                 setMessage('');
@@ -163,12 +218,25 @@ export default function Locator({
         }
     };
 
-    // Optionally center the search on the visitor's location when the widget loads.
+    // Optionally center the search on the visitor's location when the widget
+    // loads. When the country dropdown offers a real choice (2+ options), also
+    // default it to the visitor's geolocated country (if it's one of the
+    // configured options). If geolocation is disabled or denied, the dropdown
+    // keeps its initial value of `default_country`.
     useEffect(() => {
         if (!locator_id) return;
         if (detect_location && typeof navigator !== 'undefined' && navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
-                (pos) => runSearch({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                async (pos) => {
+                    const { latitude, longitude } = pos.coords;
+                    let country;
+                    if (hasCountryChoices) {
+                        const geo = await reverseGeocode(latitude, longitude);
+                        const code = geo?.countryCode;
+                        if (code && availableCodes.includes(code)) country = code;
+                    }
+                    runSearch({ lat: latitude, lng: longitude, ...(country ? { country } : {}) });
+                },
                 () => {},
                 { timeout: 8000 }
             );
@@ -185,13 +253,26 @@ export default function Locator({
     };
 
     // Auto-search after the user pans/zooms the map (debounced). Coordinates take
-    // precedence over `q` server-side, so the query text in the input is preserved.
+    // precedence over `q` server-side. We also reverse-geocode the new center so
+    // the search input and country dropdown reflect what the map is showing.
     const dragTimer = useRef(null);
     const handleMapMove = (c, z) => {
         setZoom(z);
         if (dragTimer.current) clearTimeout(dragTimer.current);
-        dragTimer.current = setTimeout(() => {
-            runSearch({ lat: c.lat, lng: c.lng });
+        dragTimer.current = setTimeout(async () => {
+            const geo = await reverseGeocode(c.lat, c.lng);
+            const override = { lat: c.lat, lng: c.lng };
+            // Mirror the map's location into the search box and dropdown only
+            // when its country is one of the configured options. If the user
+            // dragged to a country outside the list, clear the input instead.
+            if (geo?.countryCode && availableCodes.includes(geo.countryCode)) {
+                override.country = geo.countryCode;
+                override.q = geo.label || '';
+            } else {
+                override.q = '';
+            }
+            // Don't recenter: the map is already where the user dragged it.
+            runSearch(override, { recenter: false });
         }, 600);
     };
 
@@ -426,7 +507,7 @@ export default function Locator({
                             </div>
                             
                             <div className="other-inputs">
-                                <div className="country-control">
+                                <div className="country-control" style={ countryOptions.length > 1 ? { display: 'flex', flex: 1 } : { display: 'none', flex: 1 }}>
                                     <label htmlFor="locator-country">Country</label>
                                     <select
                                         id="locator-country"
@@ -439,8 +520,7 @@ export default function Locator({
                                             borderRadius: getBorderStyle(settings.searchInput.border),
                                         }}
                                     >
-                                        <option value="">All countries</option>
-                                        {COUNTRIES.map((c) => (
+                                        {countryOptions.map((c) => (
                                             <option key={c.code} value={c.code}>{c.label}</option>
                                         ))}
                                     </select>
@@ -539,6 +619,7 @@ export default function Locator({
                         <LocatorMap
                             locations={locations}
                             center={center}
+                            recenterCenter={recenterCenter}
                             zoom={zoom}
                             defaultCenter={defaultCenter}
                             radiusMiles={features.show_map_radius_indicator ? params.radius : 0}

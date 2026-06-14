@@ -42,9 +42,11 @@ export const formStyles = `
 }
 .locator-sidebar .other-inputs .country-control {
     max-width: 265px;
+    flext: 1;
 }
 .locator-sidebar .other-inputs .radius-control {
-    max-width: 150px;
+    max-width: 147px;
+    flex: 1;
 }
 `;
 

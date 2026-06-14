@@ -48,10 +48,17 @@ function buildNumberedPinIcon(color = '#185FA5', number, size = 'small', textCol
 // feedback loop.
 function Recenter({ center, zoom }) {
     const map = useMap();
+    // Track the last center we applied so a zoom-only change (e.g. the parent's
+    // setZoom after a map drag) can't re-trigger setView and snap the map back
+    // to a stale center while the user is panning.
+    const lastApplied = useRef(null);
     useEffect(() => {
-        if (center && center.length === 2) {
-            map.setView(center, zoom ?? map.getZoom());
-        }
+        if (!center || center.length !== 2) return;
+        const [lat, lng] = center;
+        const prev = lastApplied.current;
+        if (prev && prev[0] === lat && prev[1] === lng) return;
+        lastApplied.current = [lat, lng];
+        map.setView(center, zoom ?? map.getZoom());
     }, [center, zoom, map]);
     return null;
 }
@@ -96,6 +103,7 @@ function FocusActive({ activeId, locations, zoom = 18, programmaticUntil }) {
 export default function LocatorMap({
     locations = [],
     center,
+    recenterCenter = null,
     zoom = 10,
     defaultCenter = null,
     radiusMiles,
@@ -148,7 +156,7 @@ export default function LocatorMap({
                 maxZoom={19}
             />
 
-            <Recenter center={center} zoom={zoom} />
+            <Recenter center={recenterCenter} zoom={zoom} />
             <MoveHandler onMove={onMove} programmaticUntil={programmaticUntil} />
             {focusedZoom && (
                 <FocusActive activeId={activeId} locations={locations} zoom={16} programmaticUntil={programmaticUntil} />

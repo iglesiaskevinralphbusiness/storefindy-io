@@ -132,6 +132,23 @@ export async function getLocatorById(locator_id) {
     return serializeForClient(locator);
 }
 
+export async function getAvailableCountriesBasedOnLocations(locator_id) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    // check if location_id is a valid ObjectId
+    if (!isValidObjectId(locator_id)) {
+        return null;
+    }
+
+    await dbConnect();
+    
+    const countries = await LocationModel.distinct('country', { locator_id })
+    return serializeForClient(countries);
+}
+
 export async function postDeleteLocator(locator_id) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
