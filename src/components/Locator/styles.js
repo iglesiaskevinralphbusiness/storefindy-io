@@ -35,6 +35,17 @@ export const formStyles = `
     color: #fff;
     cursor: pointer;
 }
+.locator-sidebar .other-inputs {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+.locator-sidebar .other-inputs .country-control {
+    max-width: 265px;
+}
+.locator-sidebar .other-inputs .radius-control {
+    max-width: 150px;
+}
 `;
 
 export const resultsStyles = `
@@ -175,20 +186,27 @@ export const resultsStyles = `
     color: #777;
     opacity: 0.6;
 }
-.locator-sidebar .radius-control {
+.locator-sidebar .radius-control,
+.locator-sidebar .country-control {
     display: flex;
     align-items: center;
     gap: 8px;
     margin-top: 10px;
     font-size: 95%;
 }
-.locator-sidebar .radius-control select {
+.locator-sidebar .radius-control select,
+.locator-sidebar .country-control select {
+    flex: 1;
     height: 40px;
     padding: 0 15px;
     border: 1px solid #d4d4d4;
     border-radius: 4px;
     font-size: 100%;
     outline: none;
+}
+.locator-sidebar .country-control select {
+    flex: 1;
+    min-width: 0;
 }
 `;
 

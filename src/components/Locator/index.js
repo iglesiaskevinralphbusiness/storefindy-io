@@ -84,6 +84,10 @@ export default function Locator({
         lng: null,
         radius: defaultRadius,
         filters: [],
+        // Country used to bias/restrict text-search geocoding. Defaults to the
+        // locator's configured country but the visitor can override it via the
+        // country dropdown so e.g. a US-default map can still find PH places.
+        country: String(default_country || '').toLowerCase(),
     });
     // Keep a ref in sync so the debounced map-drag handler reads fresh params.
     const paramsRef = useRef(params);
@@ -137,6 +141,7 @@ export default function Locator({
         }
         sp.set('radius', String(p.radius));
         if (p.filters.length) sp.set('filters', p.filters.join(','));
+        if (p.country) sp.set('country', p.country);
 
         setStatus('loading');
         try {
@@ -200,6 +205,20 @@ export default function Locator({
 
     const onRadiusChange = (e) => {
         runSearch({ radius: Number(e.target.value) });
+    };
+
+    // Changing the country only affects how a text query is geocoded. If the
+    // visitor has already typed something, re-run the search (clearing coords so
+    // the API re-geocodes the query against the new country); otherwise just
+    // remember the choice for the next search.
+    const onCountryChange = (e) => {
+        const country = e.target.value;
+        if (params.q.trim()) {
+            setZoom(defaultZoom);
+            runSearch({ country, lat: null, lng: null });
+        } else {
+            setParams((p) => ({ ...p, country }));
+        }
     };
 
     const getAppHeight = () => {
@@ -405,6 +424,49 @@ export default function Locator({
                                     </button>
                                 )}
                             </div>
+                            
+                            <div className="other-inputs">
+                                <div className="country-control">
+                                    <label htmlFor="locator-country">Country</label>
+                                    <select
+                                        id="locator-country"
+                                        value={params.country}
+                                        onChange={onCountryChange}
+                                        style={{
+                                            borderColor: settings.searchInput.border_color,
+                                            backgroundColor: settings.searchInput.background,
+                                            color: settings.searchInput.text_color,
+                                            borderRadius: getBorderStyle(settings.searchInput.border),
+                                        }}
+                                    >
+                                        <option value="">All countries</option>
+                                        {COUNTRIES.map((c) => (
+                                            <option key={c.code} value={c.code}>{c.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {features.show_radius && (
+                                    <div className="radius-control">
+                                        <label htmlFor="locator-radius">Radius</label>
+                                        <select
+                                            id="locator-radius"
+                                            value={params.radius}
+                                            onChange={onRadiusChange}
+                                            style={{
+                                                borderColor: settings.searchInput.border_color,
+                                                backgroundColor: settings.searchInput.background,
+                                                color: settings.searchInput.text_color,
+                                                borderRadius: getBorderStyle(settings.searchInput.border),
+                                            }}
+                                        >
+                                            {radiusOptions.map((r) => (
+                                                <option key={r} value={r}>{r} mi</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+                            </div>
 
                             {(features.show_filters && showFilters) && (
                                 <div
@@ -429,27 +491,7 @@ export default function Locator({
                                     )}
                                 </div>
                             )}
-
-                            {features.show_radius && (
-                                <div className="radius-control">
-                                    <label htmlFor="locator-radius">Radius</label>
-                                    <select
-                                        id="locator-radius"
-                                        value={params.radius}
-                                        onChange={onRadiusChange}
-                                        style={{
-                                            borderColor: settings.searchInput.border_color,
-                                            backgroundColor: settings.searchInput.background,
-                                            color: settings.searchInput.text_color,
-                                            borderRadius: getBorderStyle(settings.searchInput.border),
-                                        }}
-                                    >
-                                        {radiusOptions.map((r) => (
-                                            <option key={r} value={r}>{r} mi</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            )}
+                            
                         </form>
                     )}
 

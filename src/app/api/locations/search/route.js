@@ -69,6 +69,9 @@ export async function GET(request) {
     const lngParam = searchParams.get('lng');
     const radiusParam = searchParams.get('radius');
     const filtersParam = searchParams.get('filters') || '';
+    // Country chosen in the widget's dropdown; biases/restricts geocoding so an
+    // ambiguous place name resolves to the intended country.
+    const countryParam = (searchParams.get('country') || '').trim().toLowerCase();
 
     if (!locatorId || !isValidObjectId(locatorId)) {
         return json({ status: 'error', message: 'A valid locator is required.', locations: [] }, 400);
@@ -105,7 +108,7 @@ export async function GET(request) {
         }
         center = { lat, lng };
     } else if (query) {
-        const geo = await geocode(query, locator.default_country);
+        const geo = await geocode(query, countryParam || locator.default_country);
         if (!geo) {
             return json({
                 status: 'not_found',
