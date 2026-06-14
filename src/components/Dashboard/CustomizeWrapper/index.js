@@ -6,9 +6,12 @@ import SidebarCustomize from '@/components/Dashboard/SidebarCustomize';
 import { RiArrowRightLine } from 'react-icons/ri';
 import { serializeForClient } from '@/utils/helpers';
 import { isEqual } from 'lodash';
+import { functionSaveCustomizeLocator } from '@/actions/locator';
+import { toast } from 'react-toastify';
 
 export default function CustomizeWrapper({ data }) {
     const { settings } = data;
+    console.log(data)
 
     const [settingsDefault, setSettingsDefault] = useState({
         height: settings.height,
@@ -91,8 +94,15 @@ export default function CustomizeWrapper({ data }) {
     const [featuresData, setFeaturesData] = useState(featuresDefault);
 
     const handleClickSave = () => {
-        console.log('Saving locator settings', settingsData);
-        console.log('Saving locator features', featuresData);
+        functionSaveCustomizeLocator(data._id, settingsData, featuresData).then((res) => {
+            if(res.status === 'success') {
+                setSettingsDefault(settingsData);
+                setFeaturesDefault(featuresData);
+                toast.success(res.message);
+            } else {
+                toast.error(res.message);
+            }
+        });
     };
 
     return<div className={styles.dashboard}>

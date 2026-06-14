@@ -144,3 +144,30 @@ export async function postDeleteLocator(locator_id) {
     await LocationModel.deleteMany({ locator_id });
     return { status: "success", message: 'Locator deleted successfully' };
 }
+
+export async function functionSaveCustomizeLocator(locator_id, settings, features) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    // check if locator_id is a valid ObjectId
+    if (!isValidObjectId(locator_id)) {
+        return { status: "error", message: 'Invalid locator ID' };
+    }
+
+    await dbConnect();
+
+    // check if locator is owned by the user
+    const locator = await LocatorModel.findOne({ _id: locator_id, user_id: session.user.id });
+    if (!locator) {
+        return { status: "error", message: 'You are not authorized to update this locator' };
+    }
+
+    // update locator
+    const { focused_zoom, ...restFeatures } = features;
+    await LocatorModel.findByIdAndUpdate(locator_id, { settings, focused_zoom, ...restFeatures }, { new: true });
+
+    // return the updated locator
+    return { status: "success", message: 'Locator settings and features updated successfully' };
+}

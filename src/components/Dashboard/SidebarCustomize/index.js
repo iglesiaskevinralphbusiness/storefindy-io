@@ -294,7 +294,7 @@ export default function SidebarCustomize({ settings, setSettings, features, setF
                                 />
                                 <SelectField
                                     label="Icon"
-                                    value={settings.search.icon}
+                                    value={settings.filter.icon}
                                     onChange={(v) => updateGroup('filter', 'icon', v)}
                                     options={FILTER_BUTTON_ICONS}
                                 />
