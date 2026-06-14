@@ -196,7 +196,7 @@ export default function LocatorsCreatePage({ data=null }) {
                             <Checkbox
                                 label="Detect my location"
                                 name="detect_location"
-                                description="Show a button to auto-detect user location"
+                                description="Allow users to auto-detect their location"
                                 checked={detectLocation}
                                 onChange={() => setDetectLocation(!detectLocation)}
                             />
@@ -210,7 +210,7 @@ export default function LocatorsCreatePage({ data=null }) {
                             <Checkbox
                                 label="Show search radius"
                                 name="show_radius"
-                                description="Display search radius on the search form"
+                                description="Display a combobox to select the search radius on the form"
                                 checked={showRadius}
                                 onChange={() => setShowRadius(!showRadius)}
                             />
@@ -231,7 +231,7 @@ export default function LocatorsCreatePage({ data=null }) {
                             <Checkbox
                                 label="Show store hours"
                                 name="show_store_hours"
-                                description="Display opening hours on each store card"
+                                description="Display opening hours on each store card for all locations"
                                 checked={showStoreHours}
                                 onChange={() => setShowStoreHours(!showStoreHours)}
                             />

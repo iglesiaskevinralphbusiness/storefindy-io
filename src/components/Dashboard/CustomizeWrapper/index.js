@@ -4,12 +4,13 @@ import { useState } from 'react';
 import Locator from '@/components/Locator';
 import SidebarCustomize from '@/components/Dashboard/SidebarCustomize';
 import { RiArrowRightLine } from 'react-icons/ri';
-
+import { serializeForClient } from '@/utils/helpers';
+import { isEqual } from 'lodash';
 
 export default function CustomizeWrapper({ data }) {
     const { settings } = data;
 
-    const [settingsData, setSettingsData] = useState({
+    const [settingsDefault, setSettingsDefault] = useState({
         height: settings.height,
         background: settings.background,
         text_color: settings.text_color,
@@ -70,8 +71,14 @@ export default function CustomizeWrapper({ data }) {
             image: settings.pin.image,
         },
     });
+    const [featuresDefault, setFeaturesDefault] = useState({
+        //
+        show_map_radius_indicator: data.show_map_radius_indicator,
+        show_map_pin_number: data.show_map_pin_number,
+        form_style: data.form_style,
+        focused_zoom: data.focused_zoom,
 
-    const [featuresData, setFeaturesData] = useState({
+        //
         show_search_bar: data.show_search_bar,
         detect_location: data.detect_location,
         show_filters: data.show_filters,
@@ -80,6 +87,13 @@ export default function CustomizeWrapper({ data }) {
         show_directions: data.show_directions,
         show_store_hours: data.show_store_hours,
     });
+    const [settingsData, setSettingsData] = useState(settingsDefault);
+    const [featuresData, setFeaturesData] = useState(featuresDefault);
+
+    const handleClickSave = () => {
+        console.log('Saving locator settings', settingsData);
+        console.log('Saving locator features', featuresData);
+    };
 
     return<div className={styles.dashboard}>
         <SidebarCustomize
@@ -87,6 +101,8 @@ export default function CustomizeWrapper({ data }) {
             setSettings={setSettingsData}
             features={featuresData}
             setFeatures={setFeaturesData}
+            handleSave={handleClickSave}
+            isSaveDisabled={isEqual(settingsDefault, settingsData) && isEqual(featuresDefault, featuresData)}
         />
         <div className={styles.content}>
             <div className={styles.title}>
@@ -108,14 +124,9 @@ export default function CustomizeWrapper({ data }) {
                     show_filters={data.show_filters}
                     show_radius={data.show_radius}
                     show_store_list={data.show_store_list}
-                    show_phone_number={data.show_phone_number}
                     show_store_hours={data.show_store_hours}
                     show_directions={data.show_directions}
                     show_website_link={data.show_website_link}
-
-                    // customize settings
-                    show_map_radius_indicator={data.show_map_radius_indicator}
-                    shap_map_pin_number={data.shap_map_pin_number}
 
                     // customize settings
                     settings={settingsData}

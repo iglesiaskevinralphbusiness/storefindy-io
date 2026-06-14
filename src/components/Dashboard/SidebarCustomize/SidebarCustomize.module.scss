@@ -42,6 +42,14 @@
     }
     .settings {
         padding: 0 10px;
+        .field {
+            padding: 16px 0 0;
+            label {
+                color: #1f1f1f;
+                font-size: 14px;
+                font-weight: 600;
+            }
+        }
     }
 }
 

@@ -4,13 +4,6 @@ export const formStyles = `
     flex-direction: row;
     gap: 10px;
 }
-.locator-sidebar .input-text-search-container {
-    position: relative;
-
-}
-.locator-sidebar .input-text-search-container button {
-    position: r
-}
 .locator-sidebar .inputs .input-search {
     flext: 1;
     width: 100%;

@@ -28,8 +28,9 @@ const locatorSchema = new mongoose.Schema({
     powered_by_storefindy: { type: Boolean, required: false, default: true },
     // customize settings
     show_map_radius_indicator: { type: Boolean, required: false, default: false },
-    shap_map_pin_number: { type: Boolean, required: false, default: true },
-
+    show_map_pin_number: { type: Boolean, required: false, default: true },
+    form_style: { type: String, required: false, default: 'style-1' },
+    focused_zoom: { type: Boolean, required: false, default: true },
 
     // CUSTOM UI
     settings: {

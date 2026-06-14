@@ -59,20 +59,9 @@ export default function Locator({
     detect_location = true,
     default_country = '',
     filters = [],
-    // Feature toggles
-    show_search_bar = true,
-    show_filters = false,
-    show_radius = false,
-    show_store_list = true,
-    show_phone_number = true,
-    show_store_hours = false,
-    show_directions = true,
-    show_website_link = true,
-    // customize settings
-    show_map_radius_indicator=false,
-    shap_map_pin_number=true,
     // Theme / labels
     settings = {},
+    features = {},
 }) {
     // Configured defaults — the source of truth for the map's first load and for
     // every fresh search. (maximum_results_shown is enforced server-side.)
@@ -270,18 +259,18 @@ export default function Locator({
             </div>
             <div className="details">
                 <p className="address"><LuMapPin /> {buildAddress(location)}</p>
-                {show_phone_number && location.phone && (
+                {location.phone && (
                     <Link href={`tel:${location.phone}`} className="phone">
                         <LuPhone /> {location.phone}
                     </Link>
                 )}
-                {show_website_link && location.website && (
+                {location.website && (
                     <div className="website">
                         <FiLink />
                         <Link href={location.website} target="_blank">{location.website}</Link>
                     </div>
                 )}
-                {show_store_hours && location.hours && (
+                {features.show_store_hours && location.hours && (
                     <>
                         <div className="todays-hours">
                             <p><LuClock /> Today&apos;s Hours:</p>
@@ -329,7 +318,7 @@ export default function Locator({
                 <div className="note">{location.custom_notes}</div>
             </div>
             <div className="actions">
-                {show_directions && (
+                {features.show_directions && (
                     <Link
                         href={`https://www.google.com/maps/dir/?api=1&destination=${location.latitude},${location.longitude}`}
                         target="_blank"
@@ -342,7 +331,7 @@ export default function Locator({
                         {getButtonIcon(settings.getDirections.icon)}{settings.getDirections.label}
                     </Link>
                 )}
-                {show_website_link && location.view_location_url && (
+                {location.view_location_url && (
                     <Link
                         href={location.view_location_url}
                         target="_blank"
@@ -374,24 +363,22 @@ export default function Locator({
                 }
             >
                 <div className="locator-sidebar">
-                    {show_search_bar && (
+                    {features.show_search_bar && (
                         <form onSubmit={onSubmit}>
                             <div className="inputs">
-                                <div className="input-text-search-container">
-                                    <input
-                                        type="text"
-                                        placeholder={settings.searchInput.placeholder}
-                                        className="input-search"
-                                        value={params.q}
-                                        onChange={(e) => setParams((p) => ({ ...p, q: e.target.value }))}
-                                        style={{
-                                            borderColor: settings.searchInput.border_color,
-                                            backgroundColor: settings.searchInput.background,
-                                            color: settings.searchInput.text_color,
-                                            borderRadius: getBorderStyle(settings.searchInput.border),
-                                        }}
-                                    />
-                                </div>
+                                <input
+                                    type="text"
+                                    placeholder={settings.searchInput.placeholder}
+                                    className="input-search"
+                                    value={params.q}
+                                    onChange={(e) => setParams((p) => ({ ...p, q: e.target.value }))}
+                                    style={{
+                                        borderColor: settings.searchInput.border_color,
+                                        backgroundColor: settings.searchInput.background,
+                                        color: settings.searchInput.text_color,
+                                        borderRadius: getBorderStyle(settings.searchInput.border),
+                                    }}
+                                />
                                 <button
                                     type="submit"
                                     className="btn-search"
@@ -403,7 +390,7 @@ export default function Locator({
                                 >
                                     {getButtonIcon(settings.search.icon)}{settings.search.label}
                                 </button>
-                                {show_filters && (
+                                {features.show_filters && (
                                     <button
                                         type="button"
                                         className="btn-filter"
@@ -419,7 +406,7 @@ export default function Locator({
                                 )}
                             </div>
 
-                            {(show_filters && showFilters) && (
+                            {(features.show_filters && showFilters) && (
                                 <div
                                     className="filter-panel"
                                     style={{
@@ -443,7 +430,7 @@ export default function Locator({
                                 </div>
                             )}
 
-                            {show_radius && (
+                            {features.show_radius && (
                                 <div className="radius-control">
                                     <label htmlFor="locator-radius">Radius</label>
                                     <select
@@ -482,7 +469,7 @@ export default function Locator({
                             <p className="results-count"><LuMapPin /> Search a city, state, or postal code to find locations.</p>
                         )}
 
-                        {show_store_list && (
+                        {features.show_store_list && (
                             <ul className="results-list" ref={listRef}>
                                 {locations.map((location, index) => (
                                     <li
@@ -512,13 +499,14 @@ export default function Locator({
                             center={center}
                             zoom={zoom}
                             defaultCenter={defaultCenter}
-                            radiusMiles={show_map_radius_indicator ? params.radius : 0}
-                            showPinNumber={shap_map_pin_number}
+                            radiusMiles={features.show_map_radius_indicator ? params.radius : 0}
+                            showPinNumber={features.show_map_pin_number}
                             pinColor={settings.pin.color}
                             pinSize={settings.pin.size}
                             pinTextColor={settings.pin.text_color}
                             pinTextSize={settings.pin.text_size}
                             activeId={activeId}
+                            focusedZoom={features.focused_zoom}
                             onMove={handleMapMove}
                             onSelect={setActiveId}
                             renderPopup={(loc, index) => renderLocationCard(loc, index, { showStoreHoursToggle: false })}

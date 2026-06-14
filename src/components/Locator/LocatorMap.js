@@ -58,18 +58,38 @@ function Recenter({ center, zoom }) {
 
 // Reports the map center back to the parent after the user pans or zooms, so
 // the parent can re-run the search around the new viewport center.
-function MoveHandler({ onMove }) {
+// `programmaticUntil` suppresses events fired by our own zoom-to-pin animation
+// (see <FocusActive />) so focusing a result doesn't kick off a fresh search.
+function MoveHandler({ onMove, programmaticUntil }) {
     const map = useMap();
+    const isProgrammatic = () => Date.now() < (programmaticUntil?.current ?? 0);
     useMapEvents({
         dragend() {
+            if (isProgrammatic()) return;
             const c = map.getCenter();
             onMove({ lat: c.lat, lng: c.lng }, map.getZoom());
         },
         zoomend() {
+            if (isProgrammatic()) return;
             const c = map.getCenter();
             onMove({ lat: c.lat, lng: c.lng }, map.getZoom());
         },
     });
+    return null;
+}
+
+// Zooms the map in on the active location whenever a result is selected — by
+// clicking its pin or its entry in the store list. We mark the move as
+// programmatic so MoveHandler ignores the resulting zoom/move events.
+function FocusActive({ activeId, locations, zoom = 18, programmaticUntil }) {
+    const map = useMap();
+    useEffect(() => {
+        if (!activeId) return;
+        const loc = locations.find((l) => l._id === activeId);
+        if (!loc || typeof loc.latitude !== 'number' || typeof loc.longitude !== 'number') return;
+        if (programmaticUntil) programmaticUntil.current = Date.now() + 1500;
+        map.flyTo([loc.latitude, loc.longitude], zoom, { duration: 0.6 });
+    }, [activeId, locations, zoom, map, programmaticUntil]);
     return null;
 }
 
@@ -85,6 +105,7 @@ export default function LocatorMap({
     pinTextColor,
     pinTextSize,
     activeId = null,
+    focusedZoom = false,
     onMove = () => {},
     onSelect = () => {},
     renderPopup = null,
@@ -93,6 +114,9 @@ export default function LocatorMap({
     // Leaflet marker instances, keyed by location id, so the active one's popup
     // can be opened programmatically when an item is selected in the list.
     const markerRefs = useRef({});
+    // Timestamp (ms) until which map move/zoom events are treated as
+    // programmatic (our zoom-to-pin animation) and must not trigger a search.
+    const programmaticUntil = useRef(0);
 
     useEffect(() => {
         if (activeId && markerRefs.current[activeId]) {
@@ -125,7 +149,10 @@ export default function LocatorMap({
             />
 
             <Recenter center={center} zoom={zoom} />
-            <MoveHandler onMove={onMove} />
+            <MoveHandler onMove={onMove} programmaticUntil={programmaticUntil} />
+            {focusedZoom && (
+                <FocusActive activeId={activeId} locations={locations} zoom={16} programmaticUntil={programmaticUntil} />
+            )}
 
             {center && radiusMiles > 0 && (
                 <Circle
