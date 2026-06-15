@@ -4,14 +4,17 @@ import { useState } from 'react';
 import Locator from '@/components/Locator';
 import SidebarCustomize from '@/components/Dashboard/SidebarCustomize';
 import { RiArrowRightLine } from 'react-icons/ri';
-import { serializeForClient } from '@/utils/helpers';
 import { isEqual } from 'lodash';
 import { functionSaveCustomizeLocator } from '@/actions/locator';
 import { toast } from 'react-toastify';
+import { FaDesktop, FaMobileScreenButton } from "react-icons/fa6";
+
 
 export default function CustomizeWrapper({ data, available_countries }) {
     const { settings } = data;
     console.log(data)
+
+    const [viewMode, setViewMode] = useState('desktop');
 
     const [settingsDefault, setSettingsDefault] = useState({
         height: settings.height,
@@ -105,7 +108,7 @@ export default function CustomizeWrapper({ data, available_countries }) {
         });
     };
 
-    return<div className={styles.dashboard}>
+    return<div className={`${styles.dashboard} ${styles.customizeLocator}`}>
         <SidebarCustomize
             settings={settingsData}
             setSettings={setSettingsData}
@@ -115,11 +118,18 @@ export default function CustomizeWrapper({ data, available_countries }) {
             isSaveDisabled={isEqual(settingsDefault, settingsData) && isEqual(featuresDefault, featuresData)}
         />
         <div className={styles.content}>
-            <div className={styles.title}>
-                <h1>Customize Locator</h1>
-                <p>Dashboard <RiArrowRightLine /> My Locators <RiArrowRightLine /> Customize Locator</p>
+            <div className={styles.columnsTitle}>
+                <div className={styles.title}>
+                    <h1>Customize Locator</h1>
+                    <p>Dashboard <RiArrowRightLine /> My Locators <RiArrowRightLine /> Customize Locator</p>
+                </div>
+                <div className={styles.customizeViewButtons}>
+                    <button className={viewMode === 'desktop' ? styles.active : ''} onClick={() => setViewMode('desktop')}><FaDesktop /></button>
+                    <button className={viewMode === 'mobile' ? styles.active : ''} onClick={() => setViewMode('mobile')}><FaMobileScreenButton /></button>
+                </div>
             </div>
             <div className={styles.body} style={{ padding: '0' }}>
+                <div className={`${styles.locatorWrapper} ${viewMode === 'desktop' ? styles.desktop : styles.mobile}`}>
                 <Locator
                     // locator data
                     locator_id={data._id}
@@ -145,6 +155,7 @@ export default function CustomizeWrapper({ data, available_countries }) {
                     // features settings
                     features={featuresData}
                 />
+                </div>
             </div>
         </div>
     </div>

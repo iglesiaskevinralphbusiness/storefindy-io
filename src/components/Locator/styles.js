@@ -166,6 +166,7 @@ export const resultsStyles = `
 .results ul.results-list > li .details .store-hours {
     width: 100%;
     max-height: 0;
+    padding-left: 18px;
     overflow: hidden;
     opacity: 0;
     transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
@@ -241,6 +242,11 @@ export const resultsStyles = `
     border-radius: 4px;
     font-size: 100%;
     outline: none;
+
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24'><path d='M7 10l5 5 5-5' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>") no-repeat right 0.30rem center;
 }
 .locator-sidebar .country-control select {
     flex: 1;

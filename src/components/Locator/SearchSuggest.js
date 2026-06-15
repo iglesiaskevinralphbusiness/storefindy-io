@@ -75,8 +75,11 @@ export default function SearchSuggest({
     // Cancels the in-flight request when a newer keystroke arrives, so slow or
     // out-of-order responses can never overwrite fresher results.
     const abortRef = useRef(null);
-    // Avoids re-opening the dropdown right after a suggestion was picked.
-    const skipNextFetch = useRef(false);
+    // True only when the latest `value` change came from the user typing in the
+    // input. Programmatic changes — picking a suggestion, or the map drag
+    // syncing its reverse-geocoded address into the box — leave it false, so the
+    // dropdown never opens for text the user didn't type.
+    const userTypedRef = useRef(false);
 
     const show = (condensed) => {
         setSuggestions(condensed);
@@ -89,10 +92,20 @@ export default function SearchSuggest({
     // dropdown, so typing "california" while the dropdown is on Philippines
     // still surfaces US results.
     useEffect(() => {
-        if (skipNextFetch.current) {
-            skipNextFetch.current = false;
+        // Only surface suggestions for text the user actually typed. When the
+        // value was set programmatically (a suggestion pick, or the map drag
+        // updating the address bar), close the dropdown and bail without
+        // fetching.
+        if (!userTypedRef.current) {
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+            if (abortRef.current) abortRef.current.abort();
+            setSuggestions([]);
+            setActiveIndex(-1);
+            setOpen(false);
             return;
         }
+        userTypedRef.current = false;
+
         const query = (value || '').trim();
         if (debounceRef.current) clearTimeout(debounceRef.current);
 
@@ -143,9 +156,8 @@ export default function SearchSuggest({
     }, []);
 
     const pick = (s) => {
-        // Don't let the value-change effect re-open the dropdown for the text we
-        // just programmatically set.
-        skipNextFetch.current = true;
+        // The value-change effect won't re-open the dropdown for this
+        // programmatic update because userTypedRef stays false.
         setOpen(false);
         setSuggestions([]);
         setActiveIndex(-1);
@@ -185,7 +197,12 @@ export default function SearchSuggest({
                 placeholder={placeholder}
                 className={className}
                 value={value}
-                onChange={(e) => onChange(e.target.value)}
+                onChange={(e) => {
+                    // Mark this as a real keystroke so the value-change effect
+                    // fetches and opens the dropdown.
+                    userTypedRef.current = true;
+                    onChange(e.target.value);
+                }}
                 onFocus={() => suggestions.length > 0 && setOpen(true)}
                 onKeyDown={onKeyDown}
                 style={inputStyle}

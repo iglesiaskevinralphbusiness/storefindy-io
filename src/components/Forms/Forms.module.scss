@@ -140,6 +140,11 @@
         border: 1px solid #e4e4e4;
         border-radius: 8px;
         font-size: 13px;
+
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24'><path d='M7 10l5 5 5-5' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>") no-repeat right 0.30rem center;
     }
     select:focus {
         outline: none;
