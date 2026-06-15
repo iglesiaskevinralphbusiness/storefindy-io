@@ -16,6 +16,8 @@ import Link from 'next/link';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { COUNTRIES } from '@/utils/constant/countries';
 
+import SearchSuggest from './SearchSuggest';
+
 // Leaflet touches `window`, so the map is loaded lazily and only rendered after
 // mount. React.lazy works in both the Next.js bundle and the esbuild widget bundle.
 const LocatorMap = lazy(() => import('./LocatorMap'));
@@ -466,13 +468,26 @@ export default function Locator({
                     {features.show_search_bar && (
                         <form onSubmit={onSubmit}>
                             <div className="inputs">
-                                <input
-                                    type="text"
+                                <SearchSuggest
                                     placeholder={settings.searchInput.placeholder}
-                                    className="input-search"
                                     value={params.q}
-                                    onChange={(e) => setParams((p) => ({ ...p, q: e.target.value }))}
-                                    style={{
+                                    onChange={(q) => setParams((p) => ({ ...p, q }))}
+                                    onSelect={(s) => {
+                                        // Suggestion carries exact coordinates, so
+                                        // search on those directly rather than
+                                        // re-geocoding the text. Snap back to the
+                                        // configured zoom for the result.
+                                        setZoom(defaultZoom);
+                                        runSearch({
+                                            q: s.label,
+                                            lat: s.lat,
+                                            lng: s.lng,
+                                            ...(s.countryCode && availableCodes.includes(s.countryCode)
+                                                ? { country: s.countryCode }
+                                                : {}),
+                                        });
+                                    }}
+                                    inputStyle={{
                                         borderColor: settings.searchInput.border_color,
                                         backgroundColor: settings.searchInput.background,
                                         color: settings.searchInput.text_color,

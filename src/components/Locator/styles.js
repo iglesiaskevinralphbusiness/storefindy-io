@@ -4,6 +4,10 @@ export const formStyles = `
     flex-direction: row;
     gap: 10px;
 }
+.locator-sidebar .inputs .search-suggest {
+    position: relative;
+    flex: 1;
+}
 .locator-sidebar .inputs .input-search {
     flext: 1;
     width: 100%;
@@ -12,6 +16,38 @@ export const formStyles = `
     border: 1px solid #000;
     font-size: 100%;
     outline: none;
+    box-sizing: border-box;
+}
+.locator-sidebar .inputs .search-suggest-list {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    margin: 0;
+    padding: 4px 0;
+    list-style: none;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+    max-height: 260px;
+    overflow-y: auto;
+}
+.locator-sidebar .inputs .search-suggest-list li {
+    padding: 9px 15px;
+    font-size: 100%;
+    color: #222;
+    cursor: pointer;
+}
+.locator-sidebar .inputs .search-suggest-list li.active,
+.locator-sidebar .inputs .search-suggest-list li:hover {
+    background-color: #f2f4f7;
+}
+.locator-sidebar .inputs .search-suggest-match {
+    background: transparent;
+    font-weight: 700;
+    color: inherit;
 }
 .locator-sidebar .inputs .btn-search {
     display: flex;

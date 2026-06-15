@@ -5,7 +5,7 @@ import { useState, useActionState, useEffect } from 'react';
 import { postCreateLocator, postEditLocator } from '@/actions/locator';
 import Sidebar from '@/components/Dashboard/Sidebar';
 import { RiArrowRightLine } from "react-icons/ri";
-import { LuInfo, LuCheck, LuChevronLeft, LuPlus } from "react-icons/lu";
+import { LuInfo, LuCheck, LuChevronLeft, LuPlus, LuPencil, LuTrash2, LuX } from "react-icons/lu";
 import { TbWorld } from "react-icons/tb";
 import { HiMiniMagnifyingGlass } from "react-icons/hi2";
 import { PiGear } from "react-icons/pi";
@@ -29,6 +29,8 @@ export default function LocatorsCreatePage({ data=null }) {
     const [maximumResultsShown, setMaximumResultsShown] = useState(data?.maximum_results_shown || '10');
     const [filterTitle, setFilterTitle] = useState('');
     const [filters, setFilters] = useState(data?.filters || []);
+    const [editingIndex, setEditingIndex] = useState(null);
+    const [editingValue, setEditingValue] = useState('');
     const [showSearchBar, setShowSearchBar] = useState(data?.show_search_bar || true);
     const [detectLocation, setDetectLocation] = useState(data?.detect_location || true);
     const [showFilters, setShowFilters] = useState(data?.show_filters || true);
@@ -52,6 +54,35 @@ export default function LocatorsCreatePage({ data=null }) {
                 setFilterTitle('');
                 setShowFilters(true);
             }
+        }
+    }
+    const handleClickEditFilter = (index) => {
+        setEditingIndex(index);
+        setEditingValue(filters[index]);
+    }
+    const handleClickCancelEdit = () => {
+        setEditingIndex(null);
+        setEditingValue('');
+    }
+    const handleClickSaveEdit = (index) => {
+        const title = editingValue.trim();
+        if(title === '') {
+            toast.error('Filter title cannot be empty!');
+            return;
+        }
+        if(filters.some((filter, i) => i !== index && filter === title)) {
+            toast.error('Filter already exists!');
+            return;
+        }
+        setFilters(prev => prev.map((filter, i) => i === index ? title : filter));
+        setEditingIndex(null);
+        setEditingValue('');
+    }
+    const handleClickDeleteFilter = (index) => {
+        setFilters(prev => prev.filter((_, i) => i !== index));
+        if(editingIndex === index) {
+            setEditingIndex(null);
+            setEditingValue('');
         }
     }
     const handleClickCreateLocator = () => {
@@ -174,7 +205,33 @@ export default function LocatorsCreatePage({ data=null }) {
                                     {filters.length > 0 ? (
                                         <ul>
                                             {filters.map((filter, index) => (
-                                                <li key={'filter' + index}>{filter}</li>
+                                                <li key={'filter' + index}>
+                                                    {editingIndex === index ? (
+                                                        <div className={styles.filtersItemEdit}>
+                                                            <input
+                                                                type="text"
+                                                                value={editingValue}
+                                                                maxLength={40}
+                                                                autoFocus
+                                                                onChange={e => setEditingValue(e.target.value)}
+                                                                onKeyDown={e => {
+                                                                    if(e.key === 'Enter') { e.preventDefault(); handleClickSaveEdit(index); }
+                                                                    if(e.key === 'Escape') { e.preventDefault(); handleClickCancelEdit(); }
+                                                                }}
+                                                            />
+                                                            <button type="button" title="Save" onClick={() => handleClickSaveEdit(index)}><LuCheck /></button>
+                                                            <button type="button" title="Cancel" onClick={() => handleClickCancelEdit()}><LuX /></button>
+                                                        </div>
+                                                    ) : (
+                                                        <div className={styles.filtersItem}>
+                                                            <span>{filter}</span>
+                                                            <div className={styles.filtersItemActions}>
+                                                                <button type="button" title="Edit" onClick={() => handleClickEditFilter(index)}><LuPencil /></button>
+                                                                <button type="button" title="Delete" onClick={() => handleClickDeleteFilter(index)}><LuTrash2 /></button>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </li>
                                             ))}
                                         </ul>
                                     ) : (

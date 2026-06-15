@@ -89,10 +89,64 @@
                 text-align: center;
             }
             ul {
+                width: 100%;
                 padding: 0 20px;
                 li {
                     list-style: decimal;
                     padding: 5px 0;
+                    .filtersItem {
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        span {
+                            flex: 1;
+                            word-break: break-word;
+                        }
+                        .filtersItemActions {
+                            display: flex;
+                            align-items: center;
+                            gap: 4px;
+                            opacity: 0;
+                            transition: opacity 0.15s;
+                        }
+                        &:hover .filtersItemActions {
+                            opacity: 1;
+                        }
+                    }
+                    .filtersItemEdit {
+                        display: flex;
+                        align-items: center;
+                        gap: 6px;
+                        input {
+                            flex: 1;
+                            min-width: 0;
+                            padding: 6px 10px;
+                            font-size: 14px;
+                            border: 1px solid #e4e4e4;
+                            border-radius: 8px;
+                            outline: none;
+                            &:focus {
+                                border-color: #378ADD;
+                            }
+                        }
+                    }
+                    button {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 6px;
+                        border: none;
+                        background: transparent;
+                        color: #5F5E5A;
+                        cursor: pointer;
+                        border-radius: 6px;
+                        line-height: 1;
+                        transition: all 0.15s;
+                        &:hover {
+                            background-color: #f0f0f0;
+                            color: #185FA5;
+                        }
+                    }
                 }
             }
         }
