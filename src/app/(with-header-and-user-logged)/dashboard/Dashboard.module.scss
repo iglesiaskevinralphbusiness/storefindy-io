@@ -444,7 +444,6 @@
     }
 }
 
-
 .customizeLocator {
     .customizeViewButtons {
         padding: 0 20px;
@@ -488,5 +487,320 @@
             margin: 20px auto;
             overflow-y: auto;
         }
+    }
+}
+
+.embedLocator {
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
+
+    .embedContent {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    /* LOCATOR SELECTOR */
+    .locatorBar {
+        background: #fff;
+        border: 1px solid #e5e5e3;
+        border-radius: 10px;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .locatorBarLabel {
+        font-weight: 500;
+        color: #888;
+        white-space: nowrap;
+    }
+    .locatorSelectWrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+    }
+    .locatorDot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #3B6D11;
+        flex-shrink: 0;
+    }
+    .locatorSelect {
+        font-weight: 500;
+        color: #1a1a1a;
+        border: none;
+        background: transparent;
+        outline: none;
+        cursor: pointer;
+        flex: 1;
+    }
+    .locatorId {
+        font-size: 11px;
+        color: #aaa;
+        font-family: monospace;
+        background: #f5f5f3;
+        padding: 2px 8px;
+        border-radius: 4px;
+    }
+    .locatorBarActions {
+        display: flex;
+        gap: 6px;
+    }
+    .barBtn {
+        padding: 5px 10px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        background: transparent;
+        color: #555;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        &:hover {
+            background: #f5f5f3;
+        }
+    }
+
+    /* TWO COL */
+    .twoCol {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+
+    /* CARD */
+    .card {
+        background: #fff;
+        border: 1px solid #e5e5e3;
+        border-radius: 10px;
+        padding: 16px;
+    }
+    .cardTitle {
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #f0f0ee;
+        svg {
+            font-size: 15px;
+            color: #185FA5;
+        }
+        .badge {
+            margin-left: auto;
+            font-size: 10px;
+            font-weight: 500;
+            padding: 2px 8px;
+            border-radius: 10px;
+            &.green {
+                background: #EAF3DE;
+                color: #3B6D11;
+            }
+            &.blue {
+                background: #dbeeff;
+                color: #185FA5;
+            }
+        }
+    }
+
+    /* STATS */
+    .embedStats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+    .statCard {
+        background: #fafaf8;
+        border: 1px solid #e5e5e3;
+        border-radius: 8px;
+        padding: 10px 12px;
+        text-align: center;
+    }
+    .statValue {
+        font-weight: 700;
+        color: #1a1a1a;
+    }
+    .statLabel {
+        color: #aaa;
+        margin-top: 2px;
+    }
+    .statTrend {
+        color: #3B6D11;
+        margin-top: 2px;
+    }
+
+    /* PLATFORM TABS */
+    .platformTabs {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+    }
+    .platformTab {
+        font-size: 11px;
+        padding: 5px 12px;
+        border-radius: 20px;
+        border: 1px solid #ddd;
+        background: #fafaf8;
+        color: #555;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        svg {
+            font-size: 12px;
+        }
+        &:hover {
+            border-color: #378ADD;
+            color: #185FA5;
+        }
+        &.active {
+            background: #185FA5;
+            color: #fff;
+            border-color: #185FA5;
+        }
+    }
+
+    /* CODE BLOCK */
+    .codeWrap {
+        position: relative;
+        background: #1e1e2e;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .codeTopbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+        background: #16162a;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .codeLang {
+        font-size: 12px;
+        color: #888;
+        font-family: monospace;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .codeDots {
+        display: flex;
+        gap: 4px;
+    }
+    .codeDot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+    .codeActions {
+        display: flex;
+        gap: 6px;
+    }
+    .codeBtn {
+        font-size: 11px;
+        padding: 3px 8px;
+        border-radius: 5px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        background: transparent;
+        color: #aaa;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        &:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+        }
+        &.copied {
+            background: #1a3a1a;
+            border-color: #3B6D11;
+            color: #8ec853;
+        }
+    }
+    pre {
+        padding: 14px;
+        margin: 0;
+        overflow-x: auto;
+        font-size: 13px;
+        line-height: 1.7;
+        font-family: 'Courier New', monospace;
+        color: #cdd6f4;
+        white-space: pre;
+        &::-webkit-scrollbar {
+            height: 4px;
+        }
+        &::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 4px;
+        }
+    }
+    .cTag { color: #89b4fa; }
+    .cAttr { color: #cba6f7; }
+    .cVal { color: #a6e3a1; }
+    .cComment { color: #6c7086; font-style: italic; }
+    .cKey { color: #f38ba8; }
+    .cStr { color: #a6e3a1; }
+    .cNum { color: #fab387; }
+
+    /* INSTALL STEPS */
+    .installSteps {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .installStep {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+    }
+    .stepNum {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #185FA5;
+        color: #fff;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+    .stepContent {
+        flex: 1;
+    }
+    .stepTitle {
+        font-weight: 500;
+        color: #1a1a1a;
+        margin-bottom: 3px;
+    }
+    .stepDesc {
+        font-size: 13px;
+        color: #888;
+        line-height: 1.5;
+        code {
+            font-size: 10px;
+            background: #f5f5f3;
+            padding: 1px 5px;
+            border-radius: 3px;
+        }
+    }
+    .stepCode {
+        font-size: 10px;
+        font-family: monospace;
+        background: #f0f0ee;
+        padding: 4px 8px;
+        border-radius: 5px;
+        color: #555;
+        margin-top: 4px;
+        display: inline-block;
+        border: 1px solid #e5e5e3;
     }
 }
