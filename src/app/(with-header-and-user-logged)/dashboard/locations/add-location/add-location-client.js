@@ -3,13 +3,13 @@ import styles from '../../Dashboard.module.scss';
 import { useState, useEffect, forwardRef, useActionState } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import { LuInfo, LuMapPin, LuHouse, LuPhone, LuClock, LuSettings, LuCheck, LuChevronLeft, LuPlus, LuRefreshCw, LuImage, LuSearch, LuTrash2 } from "react-icons/lu";
+import { LuInfo, LuMapPin, LuHouse, LuPhone, LuClock, LuSettings, LuCheck, LuChevronLeft, LuPlus, LuRefreshCw, LuImage, LuSearch, LuTrash2, LuPencil } from "react-icons/lu";
 import Input from '@/components/Forms/Input';
 import Textarea from '@/components/Forms/Textarea';
 import Select from '@/components/Forms/Select';
 import Checkbox from '@/components/Forms/Checkbox';
 import Button from '@/components/Forms/Button';
-import { COUNTRIES } from '@/utils/constant';
+import { COUNTRIES, SOCIAL_MEDIA_LINKS } from '@/utils/constant';
 import { toast } from 'react-toastify';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -111,6 +111,11 @@ export default function AddLocationPage({ locators, data }) {
     const [email, setEmail] = useState(data?.email || '');
     const [website, setWebsite] = useState(data?.website || '');
     const [viewLocationUrl, setViewLocationUrl] = useState(data?.view_location_url || '');
+    const [socialMediaLinks, setSocialMediaLinks] = useState(data?.social_media_links || []);
+    // Social media form: the dropdown selection, the link input, and which entry is being edited (null = adding).
+    const [socialCode, setSocialCode] = useState(SOCIAL_MEDIA_LINKS[0].code);
+    const [socialLink, setSocialLink] = useState('');
+    const [editingSocialIndex, setEditingSocialIndex] = useState(null);
 
     // Opening hours
     const [hours, setHours] = useState(data?.hours || DEFAULT_HOURS);
@@ -158,11 +163,22 @@ export default function AddLocationPage({ locators, data }) {
     // On deny/unavailable, mapCenter stays on defaultMapLocation.
     useEffect(() => {
         if (typeof navigator === 'undefined' || !navigator.geolocation) return;
-        navigator.geolocation.getCurrentPosition(
-            pos => setUserLocation([pos.coords.latitude, pos.coords.longitude]),
-            () => { /* permission denied or unavailable — keep the fallback */ },
-            { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 },
-        );
+        // kCLErrorLocationUnknown (POSITION_UNAVAILABLE, code 2) is usually transient
+        // on first load — CoreLocation hasn't acquired a fix yet. Retry once before
+        // falling back to defaultMapLocation. PERMISSION_DENIED (code 1) is terminal.
+        const request = (canRetry) => {
+            navigator.geolocation.getCurrentPosition(
+                pos => setUserLocation([pos.coords.latitude, pos.coords.longitude]),
+                err => {
+                    if (canRetry && err && err.code === err.POSITION_UNAVAILABLE) {
+                        request(false);
+                    }
+                    // otherwise keep the fallback (defaultMapLocation)
+                },
+                { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 },
+            );
+        };
+        request(true);
     }, []);
 
     const toggleCategory = (category) => {
@@ -285,11 +301,46 @@ export default function AddLocationPage({ locators, data }) {
         }
     };
 
+    // Adds a new social media link, or saves the one currently being edited.
+    const saveSocialMediaLink = () => {
+        const link = socialLink.trim();
+        if (!link) {
+            toast.error('Please enter a link.');
+            return;
+        }
+        if (editingSocialIndex !== null) {
+            setSocialMediaLinks(prev => prev.map((item, i) => i === editingSocialIndex ? { code: socialCode, link } : item));
+        } else {
+            setSocialMediaLinks(prev => [...prev, { code: socialCode, link }]);
+        }
+        setSocialCode(SOCIAL_MEDIA_LINKS[0].code);
+        setSocialLink('');
+        setEditingSocialIndex(null);
+    };
+
+    // Loads an entry back into the form for editing.
+    const editSocialMediaLink = (index) => {
+        const item = socialMediaLinks[index];
+        setSocialCode(item.code);
+        setSocialLink(item.link);
+        setEditingSocialIndex(index);
+    };
+
+    const removeSocialMediaLink = (index) => {
+        setSocialMediaLinks(prev => prev.filter((_, i) => i !== index));
+        // If the removed row was being edited, reset the form back to "add" mode.
+        if (editingSocialIndex === index) {
+            setSocialCode(SOCIAL_MEDIA_LINKS[0].code);
+            setSocialLink('');
+            setEditingSocialIndex(null);
+        }
+    };
+
     const isValid = storeName.trim() !== '' && locatorId !== '' && lat !== '' && lng !== '' && city.trim() !== '' && stateProvince.trim() !== '';
 
 
     // form submit handler
-    const postCreateLocationWithParams = data ? postEditLocation.bind(null, data._id, categories, hours, holidays) : postCreateLocation.bind(null, categories, hours, holidays);
+    const postCreateLocationWithParams = data ? postEditLocation.bind(null, data._id, categories, hours, holidays, socialMediaLinks) : postCreateLocation.bind(null, categories, hours, holidays, socialMediaLinks);
     const [state, action, pending] = useActionState(postCreateLocationWithParams, { status: "idle" });
     const err = (field) => state.status === "error" ? state.errors[field] : undefined;
     useEffect(() => {
@@ -613,15 +664,57 @@ export default function AddLocationPage({ locators, data }) {
                         placeholder="https://yourstore.com/location/123"
                         error={err("location_website_url")}
                     />
-                    {/* <div>
-                        <label style={{ display: 'block', marginBottom: '5px', fontSize: '13px' }}>Store Image URL</label>
-                        <div className={styles.imgUpload} onClick={() => toast.info('Image upload coming soon!')}>
-                            <LuImage />
-                            <strong>Click to upload store image</strong>
-                            <p>PNG, JPG up to 2MB</p>
+                    {/* social media links */}
+                    <div className={styles.social}>
+                        <label style={{ display: 'block', marginBottom: '5px', fontSize: '13px' }}>Social Media Links</label>
+                        <div className={styles.geocode}>
+                            <Select
+                                name="social_media_code"
+                                value={socialCode}
+                                onChange={e => setSocialCode(e.target.value)}
+                                options={SOCIAL_MEDIA_LINKS}
+                            />
+                            <Input
+                                type="url"
+                                name="social_media_link"
+                                value={socialLink}
+                                onChange={e => setSocialLink(e.target.value)}
+                                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); saveSocialMediaLink(); } }}
+                                placeholder="https://facebook.com/yourstore"
+                            />
+                            <Button
+                                value={editingSocialIndex !== null ? 'Update' : 'Add'}
+                                icon={editingSocialIndex !== null ? <LuCheck /> : <LuPlus />}
+                                primary={true}
+                                onClick={saveSocialMediaLink}
+                            />
                         </div>
-                    </div> */}
-                </div>   
+                        {socialMediaLinks.length > 0 && (
+                            <div className={styles.socialList}>
+                                {socialMediaLinks.map((item, index) => {
+                                    const media = SOCIAL_MEDIA_LINKS.find(m => m.code === item.code);
+                                    return (
+                                        <div className={styles.socialItem} key={`${item.code}-${index}`}>
+                                            <span className={styles.socialIcon}>{media?.icon}</span>
+                                            <div className={styles.socialInfo}>
+                                                <strong>{media?.label || item.code}</strong>
+                                                <a href={item.link} target="_blank" rel="noreferrer">{item.link}</a>
+                                            </div>
+                                            <LuPencil
+                                                style={{ cursor: 'pointer', color: '#185FA5', flexShrink: 0 }}
+                                                onClick={() => editSocialMediaLink(index)}
+                                            />
+                                            <LuTrash2
+                                                style={{ cursor: 'pointer', color: '#c0392b', flexShrink: 0 }}
+                                                onClick={() => removeSocialMediaLink(index)}
+                                            />
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                </div>
 
                 <div className={styles.block}>
                     <h2><LuSettings /> Location Settings</h2>

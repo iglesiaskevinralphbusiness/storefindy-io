@@ -6,6 +6,11 @@ const daySchema = new mongoose.Schema({
     close: { type: String, required: true },
 }, { _id: false });
 
+const socialMediaLinkSchema = new mongoose.Schema({
+    code: { type: String, required: true },
+    link: { type: String, required: true },
+}, { _id: false });
+
 const holidaySchema = new mongoose.Schema({
     from:    { type: String, required: true },
     to:      { type: String, required: true },
@@ -49,6 +54,7 @@ const locationSchema = new mongoose.Schema({
     email: { type: String, required: false, default: '' },
     website: { type: String, required: false, default: '' },
     view_location_url: { type: String, required: false, default: '' },
+    social_media_links: { type: [socialMediaLinkSchema], required: false, default: [] }, // { code: 'facebook', link: 'https://www.facebook.com/yourstore' }
     // Location Settings
     published: { type: Boolean, required: true, default: true },
     show_opening_hours: { type: Boolean, required: true, default: false },

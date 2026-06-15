@@ -329,6 +329,22 @@ export const mapStyles = `
     font-size: 90%;
     opacity: 0.7;
 }
+.social-media-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+.social-media-links a {
+    display: inline-flex;
+    align-items: center;
+    font-size: 130%;
+    line-height: 1;
+    transition: opacity 0.15s ease;
+}
+.social-media-links a:hover {
+    opacity: 0.7;
+}
 .locator-popup-card .details .todays-hours {
     display: flex;
     align-items: center;

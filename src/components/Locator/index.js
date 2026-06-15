@@ -15,6 +15,7 @@ import { formStyles, resultsStyles, mapStyles, userDefinedStyles } from './style
 import Link from 'next/link';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { COUNTRIES } from '@/utils/constant/countries';
+import { SOCIAL_MEDIA_LINKS } from '@/utils/constant';
 
 import SearchSuggest from './SearchSuggest';
 
@@ -228,20 +229,38 @@ export default function Locator({
     useEffect(() => {
         if (!locator_id) return;
         if (detect_location && typeof navigator !== 'undefined' && navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                async (pos) => {
-                    const { latitude, longitude } = pos.coords;
-                    let country;
-                    if (hasCountryChoices) {
-                        const geo = await reverseGeocode(latitude, longitude);
-                        const code = geo?.countryCode;
-                        if (code && availableCodes.includes(code)) country = code;
-                    }
-                    runSearch({ lat: latitude, lng: longitude, ...(country ? { country } : {}) });
-                },
-                () => {},
-                { timeout: 8000 }
-            );
+            const onSuccess = async (pos) => {
+                const { latitude, longitude } = pos.coords;
+                let country;
+                if (hasCountryChoices) {
+                    const geo = await reverseGeocode(latitude, longitude);
+                    const code = geo?.countryCode;
+                    if (code && availableCodes.includes(code)) country = code;
+                }
+                runSearch({ lat: latitude, lng: longitude, ...(country ? { country } : {}) });
+            };
+
+            // kCLErrorLocationUnknown (POSITION_UNAVAILABLE, code 2) is usually
+            // transient: on first load CoreLocation often hasn't acquired a fix
+            // yet. Retry once before giving up. PERMISSION_DENIED (code 1) is
+            // terminal, so we don't retry that — we just keep the default view.
+            const request = (canRetry) => {
+                navigator.geolocation.getCurrentPosition(
+                    onSuccess,
+                    (err) => {
+                        if (canRetry && err && err.code === err.POSITION_UNAVAILABLE) {
+                            request(false);
+                        }
+                        // On terminal failure we keep the locator's default-country
+                        // view (defaultCenter) — same as when detect_location is off.
+                    },
+                    // maximumAge lets a recently-acquired fix be reused instantly,
+                    // which avoids the cold-start failure entirely when one exists.
+                    { timeout: 8000, maximumAge: 600000, enableHighAccuracy: false }
+                );
+            };
+
+            request(true);
         }
     }, [locator_id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -386,7 +405,7 @@ export default function Locator({
                                     onClick={() => toggleHours(location._id)}
                                     aria-expanded={!!openHours[location._id]}
                                 >
-                                    <LuClock /> Store Hours <FaAngleDown />
+                                    <LuClock /> Business Hours <FaAngleDown />
                                 </button>
                                 <ul className={`store-hours${openHours[location._id] ? ' open' : ''}`}>
                                     {WEEK.map(([key, label]) => {
@@ -417,7 +436,27 @@ export default function Locator({
                         ))}
                     </div>
                 )}
-                <div className="note">{location.custom_notes}</div>
+                {location.social_media_links.length > 0 && (
+                    <div className="social-media-links">
+                        {location.social_media_links.map((link) => {
+                            const media = SOCIAL_MEDIA_LINKS.find((m) => m.code === link.code);
+                            return (
+                                <Link
+                                    href={link.link}
+                                    target="_blank"
+                                    key={link.code}
+                                    title={media?.label || link.code}
+                                    aria-label={media?.label || link.code}
+                                >
+                                    {media?.icon || <FiLink />}
+                                </Link>
+                            );
+                        })}
+                    </div>
+                )}
+                {location.custom_notes && (
+                    <div className="note">{location.custom_notes}</div>
+                )}
             </div>
             <div className="actions">
                 {features.show_directions && (

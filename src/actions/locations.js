@@ -22,7 +22,7 @@ const DEFAULT_IMPORT_HOURS = {
     Sun: { enabled: false, open: '08:00', close: '17:00' },
 };
 
-export async function postCreateLocation(categories, hours, holidays, _prev, formData) {
+export async function postCreateLocation(categories, hours, holidays, socialMediaLinks, _prev, formData) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
         redirect('/sign-in');
@@ -48,6 +48,11 @@ export async function postCreateLocation(categories, hours, holidays, _prev, for
         email: formData.get('email').trim(),
         website: formData.get('website').trim(),
         view_location_url: (formData.get('location_website_url') || '').trim(),
+        social_media_links: Array.isArray(socialMediaLinks)
+            ? socialMediaLinks
+                .map((item) => ({ code: String(item?.code ?? '').trim(), link: String(item?.link ?? '').trim() }))
+                .filter((item) => item.code && item.link)
+            : [],
         location_status: formData.get('location_status'),
         hours,
         holidays,
@@ -141,7 +146,7 @@ export async function postCreateLocation(categories, hours, holidays, _prev, for
     }
 }
 
-export async function postEditLocation(location_id, categories, hours, holidays, _prev, formData) {
+export async function postEditLocation(location_id, categories, hours, holidays, socialMediaLinks, _prev, formData) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
         redirect('/sign-in');
@@ -167,6 +172,11 @@ export async function postEditLocation(location_id, categories, hours, holidays,
         email: formData.get('email').trim(),
         website: formData.get('website').trim(),
         view_location_url: (formData.get('location_website_url') || '').trim(),
+        social_media_links: Array.isArray(socialMediaLinks)
+            ? socialMediaLinks
+                .map((item) => ({ code: String(item?.code ?? '').trim(), link: String(item?.link ?? '').trim() }))
+                .filter((item) => item.code && item.link)
+            : [],
         location_status: formData.get('location_status'),
         hours,
         holidays,
