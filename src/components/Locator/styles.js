@@ -369,16 +369,30 @@ export const userDefinedStyles = `
 .small-app .results ul.results-list {
     height: 390px;
 }
+.small-app.form2columns .results ul.results-list {
+    height: 338px;
+}
+
 .medium-app {
     height: 665px;
 }
 .medium-app .results ul.results-list {
     height: 553px;
 }
+.medium-app .results ul.results-list {
+    height: 553px;
+}
+.medium-app.form2columns .results ul.results-list {
+    height: 501px;
+}
+    
 .large-app {
     height: 765px;
 }
 .large-app .results ul.results-list {
     height: 657px;
+}
+.large-app.form2columns .results ul.results-list {
+    height: 605px;
 }
 `;

@@ -452,7 +452,7 @@ export default function Locator({
         <>
             <style>{locatorStyles}</style>
             <div
-                className={`locator ${getAppHeight()}`}
+                className={`locator ${getAppHeight()} ${countryOptions.length > 1 && features.show_radius ? 'form2columns' : ''}`}
                 style={
                     {
                         backgroundColor: settings.background,
