@@ -10,7 +10,7 @@ import { RiFilterFill } from "react-icons/ri";
 import { IoFilterCircleOutline } from "react-icons/io5";
 import { MdOutlineMyLocation } from "react-icons/md";
 import { FiLink } from "react-icons/fi";
-import { LuFilter, LuPhone, LuClock, LuListFilter, LuMap, LuMapPin, LuMapPinned, LuArrowRight, LuArrowLeft, LuChevronLeft, LuChevronRight, LuCircleChevronLeft, LuCircleChevronRight } from "react-icons/lu";
+import { LuFilter, LuPhone, LuClock, LuListFilter, LuMap, LuMapPin, LuMapPinned, LuArrowRight, LuArrowLeft, LuChevronLeft, LuChevronRight, LuCircleChevronLeft, LuCircleChevronRight, LuX } from "react-icons/lu";
 import { formStyles, resultsStyles, mapStyles, userDefinedStyles } from './styles';
 import Link from 'next/link';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
@@ -610,6 +610,18 @@ export default function Locator({
                                         backgroundColor: settings.filterList.background,
                                     }}
                                 >
+                                    <div className="filter-panel-header">
+                                        <span className="filter-panel-title" style={{ color: settings.filterList.text_color }}>Filters</span>
+                                        <button
+                                            type="button"
+                                            className="btn-filter-close"
+                                            onClick={() => setShowFilters(false)}
+                                            aria-label="Close filters"
+                                            style={{ color: settings.filterList.text_color }}
+                                        >
+                                            <LuX />
+                                        </button>
+                                    </div>
                                     {filters.map((f) => (
                                         <label key={f} className="filter-option">
                                             <input
@@ -714,6 +726,9 @@ export const locatorStyles = `
     width: 470px;
     padding: 24px;
     box-sizing: border-box;
+}
+.locator-sidebar form {
+    position: sticky;
 }
 ${formStyles}
 ${resultsStyles}

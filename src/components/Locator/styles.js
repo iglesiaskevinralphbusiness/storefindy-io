@@ -212,6 +212,32 @@ export const resultsStyles = `
     padding: 12px;
     border: 1px solid #e7e9e9;
     border-radius: 6px;
+    position: absolute;
+    width: 100%;
+}
+.locator-sidebar .filter-panel .filter-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+.locator-sidebar .filter-panel .filter-panel-title {
+    font-weight: 700;
+}
+.locator-sidebar .filter-panel .btn-filter-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    line-height: 1;
+    font-size: 18px;
+    opacity: 0.7;
+}
+.locator-sidebar .filter-panel .btn-filter-close:hover {
+    opacity: 1;
 }
 .locator-sidebar .filter-panel .filter-option {
     display: flex;
