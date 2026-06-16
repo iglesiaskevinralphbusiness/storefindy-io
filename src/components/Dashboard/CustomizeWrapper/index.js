@@ -8,89 +8,16 @@ import { isEqual } from 'lodash';
 import { functionSaveCustomizeLocator } from '@/actions/locator';
 import { toast } from 'react-toastify';
 import { FaDesktop, FaMobileScreenButton } from "react-icons/fa6";
+import { generateSettingsDefault, generateFeaturesDefault } from '@/utils/helpers';
+
 
 export default function CustomizeWrapper({ data, available_countries, onPreview }) {
     const { settings } = data;
 
     const [viewMode, setViewMode] = useState('desktop');
 
-    const [settingsDefault, setSettingsDefault] = useState({
-        height: settings.height,
-        background: settings.background,
-        text_color: settings.text_color,
-        font_family: settings.font_family,
-        font_size: settings.font_size,
-        searchInput: {
-            border: settings.searchInput.border,
-            background: settings.searchInput.background,
-            text_color: settings.searchInput.text_color,
-            border_color: settings.searchInput.border_color,
-            placeholder: settings.searchInput.placeholder,
-        },
-        search: {
-            border: settings.search.border,
-            background: settings.search.background,
-            label: settings.search.label,
-            text_color: settings.search.text_color,
-            icon: settings.search.icon,
-        },
-        filter: {
-            border: settings.filter.border,
-            background: settings.filter.background,
-            label: settings.filter.label,
-            text_color: settings.filter.text_color,
-            icon: settings.filter.icon,
-        },
-        filterList: {
-            border_color: settings.filterList.border_color,
-            background: settings.filterList.background,
-            text_color: settings.filterList.text_color,
-            active_background: settings.filterList.active_background,
-            active_text_color: settings.filterList.active_text_color,
-        },
-        resultItem: {
-            active_border_color: settings.resultItem.active_border_color,
-            border_color: settings.resultItem.border_color,
-            background: settings.resultItem.background,
-        },
-        getDirections: {
-            border: settings.getDirections.border,
-            background: settings.getDirections.background,
-            label: settings.getDirections.label,
-            text_color: settings.getDirections.text_color,
-            icon: settings.getDirections.icon,
-        },
-        viewLocation: {
-            border: settings.viewLocation.border,
-            background: settings.viewLocation.background,
-            label: settings.viewLocation.label,
-            text_color: settings.viewLocation.text_color,
-            icon: settings.viewLocation.icon,
-        },
-        pin: {
-            color: settings.pin.color,
-            size: settings.pin.size,
-            text_color: settings.pin.text_color,
-            text_size: settings.pin.text_size,
-            image: settings.pin.image,
-        },
-    });
-    const [featuresDefault, setFeaturesDefault] = useState({
-        //
-        show_map_radius_indicator: data.show_map_radius_indicator,
-        show_map_pin_number: data.show_map_pin_number,
-        form_style: data.form_style,
-        focused_zoom: data.focused_zoom,
-
-        //
-        show_search_bar: data.show_search_bar,
-        detect_location: data.detect_location,
-        show_filters: data.show_filters,
-        show_radius: data.show_radius,
-        show_store_list: data.show_store_list,
-        show_directions: data.show_directions,
-        show_store_hours: data.show_store_hours,
-    });
+    const [settingsDefault, setSettingsDefault] = useState(generateSettingsDefault(settings));
+    const [featuresDefault, setFeaturesDefault] = useState(generateFeaturesDefault(data));
     const [settingsData, setSettingsData] = useState(settingsDefault);
     const [featuresData, setFeaturesData] = useState(featuresDefault);
 

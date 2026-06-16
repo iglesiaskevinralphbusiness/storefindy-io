@@ -3,15 +3,15 @@ import { useState, useEffect } from 'react';
 import { LuMapPin } from "react-icons/lu";
 import styles from './Locators.module.scss';
 
-// Palettes adapted from the customize reference UI
+// Light-only palettes adapted from the customize reference UI.
+// Every entry uses a distinct hue family so two previews never share a color.
 const PALETTES = [
-    { mapBg: 'linear-gradient(135deg, #dce8f5 0%, #c8dff0 100%)', pinColor: '#E05C2A', dark: false },
-    { mapBg: 'linear-gradient(135deg, #e8f0de 0%, #d5e8c0 100%)', pinColor: '#639922', dark: false },
-    { mapBg: 'linear-gradient(135deg, #3a3a38 0%, #2c2c2a 100%)', pinColor: '#F0A500', dark: true },
-    { mapBg: 'linear-gradient(135deg, #dddaf5 0%, #ccc8f0 100%)', pinColor: '#534AB7', dark: false },
-    { mapBg: 'linear-gradient(135deg, #fde6dd 0%, #f8cfc0 100%)', pinColor: '#A32D2D', dark: false },
-    { mapBg: 'linear-gradient(135deg, #d9f0f0 0%, #bfe6e6 100%)', pinColor: '#0E7C86', dark: false },
-    { mapBg: 'linear-gradient(135deg, #1f2a44 0%, #16203a 100%)', pinColor: '#5FA8FF', dark: true },
+    { mapBg: 'linear-gradient(135deg, #dce8f5 0%, #c8dff0 100%)', pinColor: '#E05C2A', dark: false }, // blue
+    { mapBg: 'linear-gradient(135deg, #e8f0de 0%, #d5e8c0 100%)', pinColor: '#639922', dark: false }, // green
+    { mapBg: 'linear-gradient(135deg, #dddaf5 0%, #ccc8f0 100%)', pinColor: '#534AB7', dark: false }, // purple
+    { mapBg: 'linear-gradient(135deg, #fde6dd 0%, #f8cfc0 100%)', pinColor: '#A32D2D', dark: false }, // peach
+    { mapBg: 'linear-gradient(135deg, #d9f0f0 0%, #bfe6e6 100%)', pinColor: '#0E7C86', dark: false }, // teal
+    { mapBg: 'linear-gradient(135deg, #fdf3d9 0%, #f8e7b5 100%)', pinColor: '#B8860B', dark: false }, // amber
 ];
 
 function randomBetween(min, max) {

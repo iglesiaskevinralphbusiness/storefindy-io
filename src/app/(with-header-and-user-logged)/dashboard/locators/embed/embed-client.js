@@ -43,12 +43,12 @@ export default function LocatorsEmbedPageClient({ locators, activeLocatorId=null
         const [copied, setCopied] = useState(null);
 
     const copyText = {
-        html: `<div id="storefindy-widget"></div>\n<script src="https://storefindy.io/widget.js" data-locator-id="${locatorId}" data-target="storefindy-widget"></script>`,
-        react: `import { useEffect } from 'react';\n\nexport default function StoreLocator() {\n  useEffect(() => {\n    const script = document.createElement('script');\n    script.src = 'https://storefindy.io/widget.js';\n    script.dataset.locatorId = '${locatorId}';\n    script.dataset.target = 'storefindy-widget';\n    document.body.appendChild(script);\n  }, []);\n\n  return <div id="storefindy-widget" />;\n}`,
-        vue: `<template>\n  <div id="storefindy-widget"></div>\n</template>\n\n<script setup>\nimport { onMounted } from 'vue';\n\nonMounted(() => {\n  const script = document.createElement('script');\n  script.src = 'https://storefindy.io/widget.js';\n  script.dataset.locatorId = '${locatorId}';\n  script.dataset.target = 'storefindy-widget';\n  document.body.appendChild(script);\n});\n</script>`,
-        angular: `import { Component, OnInit } from '@angular/core';\n\n@Component({\n  selector: 'app-store-locator',\n  template: '<div id="storefindy-widget"></div>',\n})\nexport class StoreLocatorComponent implements OnInit {\n  ngOnInit(): void {\n    const script = document.createElement('script');\n    script.src = 'https://storefindy.io/widget.js';\n    script.dataset.locatorId = '${locatorId}';\n    script.dataset.target = 'storefindy-widget';\n    document.body.appendChild(script);\n  }\n}`,
-        wordpress: `[storefindy id="${locatorId}"]\n\n<div id="storefindy-widget"></div>\n<script src="https://storefindy.io/widget.js" data-locator-id="${locatorId}"></script>`,
-        shopify: `<div id="storefindy-widget"></div>\n<script src="https://storefindy.io/widget.js" data-locator-id="${locatorId}" data-target="storefindy-widget"></script>`,
+        html: `<locator-widget locator="${locatorId}"></locator-widget>\n<script src="https://storefindy.io/widget.js"></script>`,
+        react: `import { useEffect } from 'react';\n\nexport default function StoreLocator() {\n  useEffect(() => {\n    const script = document.createElement('script');\n    script.src = 'https://storefindy.io/widget.js';\n    script.async = true;\n    document.body.appendChild(script);\n  }, []);\n\n  return <locator-widget locator="${locatorId}"></locator-widget>;\n}`,
+        vue: `<template>\n  <locator-widget locator="${locatorId}"></locator-widget>\n</template>\n\n<script setup>\nimport { onMounted } from 'vue';\n\nonMounted(() => {\n  const script = document.createElement('script');\n  script.src = 'https://storefindy.io/widget.js';\n  script.async = true;\n  document.body.appendChild(script);\n});\n</script>`,
+        angular: `import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';\n\n@Component({\n  selector: 'app-store-locator',\n  template: '<locator-widget locator="${locatorId}"></locator-widget>',\n  schemas: [CUSTOM_ELEMENTS_SCHEMA],\n})\nexport class StoreLocatorComponent implements OnInit {\n  ngOnInit(): void {\n    const script = document.createElement('script');\n    script.src = 'https://storefindy.io/widget.js';\n    document.body.appendChild(script);\n  }\n}`,
+        wordpress: `<locator-widget locator="${locatorId}"></locator-widget>\n<script src="https://storefindy.io/widget.js"></script>`,
+        shopify: `<locator-widget locator="${locatorId}"></locator-widget>\n<script src="https://storefindy.io/widget.js"></script>`,
     };
 
     const fileNames = {
@@ -83,11 +83,10 @@ export default function LocatorsEmbedPageClient({ locators, activeLocatorId=null
                         {'  '}useEffect(() {'=>'} {'{'}{'\n'}
                         {'    '}<span className={styles.cKey}>const</span> script = document.<span className={styles.cTag}>createElement</span>(<span className={styles.cStr}>'script'</span>);{'\n'}
                         {'    '}script.src = <span className={styles.cStr}>'https://storefindy.io/widget.js'</span>;{'\n'}
-                        {'    '}script.dataset.locatorId = <span className={styles.cStr}>'{locatorId}'</span>;{'\n'}
-                        {'    '}script.dataset.target = <span className={styles.cStr}>'storefindy-widget'</span>;{'\n'}
+                        {'    '}script.async = <span className={styles.cKey}>true</span>;{'\n'}
                         {'    '}document.body.<span className={styles.cTag}>appendChild</span>(script);{'\n'}
                         {'  '}{'}'}, []);{'\n\n'}
-                        {'  '}<span className={styles.cKey}>return</span>{' '}<span className={styles.cTag}>&lt;div</span>{' '}<span className={styles.cAttr}>id</span>=<span className={styles.cVal}>"storefindy-widget"</span>{' '}<span className={styles.cTag}>/&gt;</span>;{'\n'}
+                        {'  '}<span className={styles.cKey}>return</span>{' '}<span className={styles.cTag}>&lt;locator-widget</span>{' '}<span className={styles.cAttr}>locator</span>=<span className={styles.cVal}>"{locatorId}"</span><span className={styles.cTag}>&gt;&lt;/locator-widget&gt;</span>;{'\n'}
                         {'}'}
                     </pre>
                 );
@@ -95,15 +94,14 @@ export default function LocatorsEmbedPageClient({ locators, activeLocatorId=null
                 return (
                     <pre>
                         <span className={styles.cTag}>&lt;template&gt;</span>{'\n'}
-                        {'  '}<span className={styles.cTag}>&lt;div</span>{' '}<span className={styles.cAttr}>id</span>=<span className={styles.cVal}>"storefindy-widget"</span><span className={styles.cTag}>&gt;&lt;/div&gt;</span>{'\n'}
+                        {'  '}<span className={styles.cTag}>&lt;locator-widget</span>{' '}<span className={styles.cAttr}>locator</span>=<span className={styles.cVal}>"{locatorId}"</span><span className={styles.cTag}>&gt;&lt;/locator-widget&gt;</span>{'\n'}
                         <span className={styles.cTag}>&lt;/template&gt;</span>{'\n\n'}
                         <span className={styles.cTag}>&lt;script</span>{' '}<span className={styles.cAttr}>setup</span><span className={styles.cTag}>&gt;</span>{'\n'}
                         <span className={styles.cKey}>import</span>{' '}{'{ onMounted }'}{' '}<span className={styles.cKey}>from</span>{' '}<span className={styles.cStr}>'vue'</span>;{'\n\n'}
                         <span className={styles.cTag}>onMounted</span>(() {'=>'} {'{'}{'\n'}
                         {'  '}<span className={styles.cKey}>const</span> script = document.<span className={styles.cTag}>createElement</span>(<span className={styles.cStr}>'script'</span>);{'\n'}
                         {'  '}script.src = <span className={styles.cStr}>'https://storefindy.io/widget.js'</span>;{'\n'}
-                        {'  '}script.dataset.locatorId = <span className={styles.cStr}>'{locatorId}'</span>;{'\n'}
-                        {'  '}script.dataset.target = <span className={styles.cStr}>'storefindy-widget'</span>;{'\n'}
+                        {'  '}script.async = <span className={styles.cKey}>true</span>;{'\n'}
                         {'  '}document.body.<span className={styles.cTag}>appendChild</span>(script);{'\n'}
                         {'}'});{'\n'}
                         <span className={styles.cTag}>&lt;/script&gt;</span>
@@ -112,17 +110,16 @@ export default function LocatorsEmbedPageClient({ locators, activeLocatorId=null
             case 'angular':
                 return (
                     <pre>
-                        <span className={styles.cKey}>import</span>{' '}{'{ Component, OnInit }'}{' '}<span className={styles.cKey}>from</span>{' '}<span className={styles.cStr}>'@angular/core'</span>;{'\n\n'}
+                        <span className={styles.cKey}>import</span>{' '}{'{ Component, OnInit, CUSTOM_ELEMENTS_SCHEMA }'}{' '}<span className={styles.cKey}>from</span>{' '}<span className={styles.cStr}>'@angular/core'</span>;{'\n\n'}
                         <span className={styles.cAttr}>@Component</span>({'{'}{'\n'}
                         {'  '}selector: <span className={styles.cStr}>'app-store-locator'</span>,{'\n'}
-                        {'  '}template: <span className={styles.cStr}>'&lt;div id="storefindy-widget"&gt;&lt;/div&gt;'</span>,{'\n'}
+                        {'  '}template: <span className={styles.cStr}>'&lt;locator-widget locator="{locatorId}"&gt;&lt;/locator-widget&gt;'</span>,{'\n'}
+                        {'  '}schemas: [<span className={styles.cTag}>CUSTOM_ELEMENTS_SCHEMA</span>],{'\n'}
                         {'}'}){'\n'}
                         <span className={styles.cKey}>export class</span>{' '}<span className={styles.cTag}>StoreLocatorComponent</span>{' '}<span className={styles.cKey}>implements</span>{' '}<span className={styles.cTag}>OnInit</span>{' '}{'{'}{'\n'}
                         {'  '}<span className={styles.cTag}>ngOnInit</span>(): <span className={styles.cKey}>void</span> {'{'}{'\n'}
                         {'    '}<span className={styles.cKey}>const</span> script = document.<span className={styles.cTag}>createElement</span>(<span className={styles.cStr}>'script'</span>);{'\n'}
                         {'    '}script.src = <span className={styles.cStr}>'https://storefindy.io/widget.js'</span>;{'\n'}
-                        {'    '}script.dataset.locatorId = <span className={styles.cStr}>'{locatorId}'</span>;{'\n'}
-                        {'    '}script.dataset.target = <span className={styles.cStr}>'storefindy-widget'</span>;{'\n'}
                         {'    '}document.body.<span className={styles.cTag}>appendChild</span>(script);{'\n'}
                         {'  '}{'}'}{'\n'}
                         {'}'}
@@ -131,39 +128,26 @@ export default function LocatorsEmbedPageClient({ locators, activeLocatorId=null
             case 'wordpress':
                 return (
                     <pre>
-                        <span className={styles.cComment}>// Option 1: Use shortcode in page/post</span>{'\n'}
-                        [storefindy id=<span className={styles.cStr}>"{locatorId}"</span>]{'\n\n'}
-                        <span className={styles.cComment}>// Option 2: Add to theme's footer.php</span>{'\n'}
-                        <span className={styles.cTag}>&lt;div</span>{' '}<span className={styles.cAttr}>id</span>=<span className={styles.cVal}>"storefindy-widget"</span><span className={styles.cTag}>&gt;&lt;/div&gt;</span>{'\n'}
-                        <span className={styles.cTag}>&lt;script</span>{'\n'}
-                        {'  '}<span className={styles.cAttr}>src</span>=<span className={styles.cVal}>"https://storefindy.io/widget.js"</span>{'\n'}
-                        {'  '}<span className={styles.cAttr}>data-locator-id</span>=<span className={styles.cVal}>"{locatorId}"</span>{'\n'}
-                        <span className={styles.cTag}>&gt;&lt;/script&gt;</span>
+                        <span className={styles.cComment}>// Add via a Custom HTML block or your theme's footer.php</span>{'\n'}
+                        <span className={styles.cTag}>&lt;locator-widget</span>{' '}<span className={styles.cAttr}>locator</span>=<span className={styles.cVal}>"{locatorId}"</span><span className={styles.cTag}>&gt;&lt;/locator-widget&gt;</span>{'\n'}
+                        <span className={styles.cTag}>&lt;script</span>{' '}<span className={styles.cAttr}>src</span>=<span className={styles.cVal}>"https://storefindy.io/widget.js"</span><span className={styles.cTag}>&gt;&lt;/script&gt;</span>
                     </pre>
                 );
             case 'shopify':
                 return (
                     <pre>
                         <span className={styles.cComment}>{'{%- comment -%}'}{'\n'}  Add to your theme section or page template{'\n'}{'{%- endcomment -%}'}</span>{'\n\n'}
-                        <span className={styles.cTag}>&lt;div</span>{' '}<span className={styles.cAttr}>id</span>=<span className={styles.cVal}>"storefindy-widget"</span><span className={styles.cTag}>&gt;&lt;/div&gt;</span>{'\n\n'}
-                        <span className={styles.cTag}>&lt;script</span>{'\n'}
-                        {'  '}<span className={styles.cAttr}>src</span>=<span className={styles.cVal}>"https://storefindy.io/widget.js"</span>{'\n'}
-                        {'  '}<span className={styles.cAttr}>data-locator-id</span>=<span className={styles.cVal}>"{locatorId}"</span>{'\n'}
-                        {'  '}<span className={styles.cAttr}>data-target</span>=<span className={styles.cVal}>"storefindy-widget"</span>{'\n'}
-                        <span className={styles.cTag}>&gt;&lt;/script&gt;</span>
+                        <span className={styles.cTag}>&lt;locator-widget</span>{' '}<span className={styles.cAttr}>locator</span>=<span className={styles.cVal}>"{locatorId}"</span><span className={styles.cTag}>&gt;&lt;/locator-widget&gt;</span>{'\n'}
+                        <span className={styles.cTag}>&lt;script</span>{' '}<span className={styles.cAttr}>src</span>=<span className={styles.cVal}>"https://storefindy.io/widget.js"</span><span className={styles.cTag}>&gt;&lt;/script&gt;</span>
                     </pre>
                 );
             default:
                 return (
                     <pre>
                         <span className={styles.cComment}>&lt;!-- Place this where you want the locator --&gt;</span>{'\n'}
-                        <span className={styles.cTag}>&lt;div</span>{' '}<span className={styles.cAttr}>id</span>=<span className={styles.cVal}>"storefindy-widget"</span><span className={styles.cTag}>&gt;&lt;/div&gt;</span>{'\n\n'}
+                        <span className={styles.cTag}>&lt;locator-widget</span>{' '}<span className={styles.cAttr}>locator</span>=<span className={styles.cVal}>"{locatorId}"</span><span className={styles.cTag}>&gt;&lt;/locator-widget&gt;</span>{'\n\n'}
                         <span className={styles.cComment}>&lt;!-- Add before closing &lt;/body&gt; tag --&gt;</span>{'\n'}
-                        <span className={styles.cTag}>&lt;script</span>{'\n'}
-                        {'  '}<span className={styles.cAttr}>src</span>=<span className={styles.cVal}>"https://storefindy.io/widget.js"</span>{'\n'}
-                        {'  '}<span className={styles.cAttr}>data-locator-id</span>=<span className={styles.cVal}>"{locatorId}"</span>{'\n'}
-                        {'  '}<span className={styles.cAttr}>data-target</span>=<span className={styles.cVal}>"storefindy-widget"</span>{'\n'}
-                        <span className={styles.cTag}>&gt;&lt;/script&gt;</span>
+                        <span className={styles.cTag}>&lt;script</span>{' '}<span className={styles.cAttr}>src</span>=<span className={styles.cVal}>"https://storefindy.io/widget.js"</span><span className={styles.cTag}>&gt;&lt;/script&gt;</span>
                     </pre>
                 );
         }
@@ -272,9 +256,9 @@ export default function LocatorsEmbedPageClient({ locators, activeLocatorId=null
                                     <div className={styles.installStep}>
                                         <div className={styles.stepNum}>1</div>
                                         <div className={styles.stepContent}>
-                                            <div className={styles.stepTitle}>Add the container div</div>
+                                            <div className={styles.stepTitle}>Add the widget element</div>
                                             <div className={styles.stepDesc}>
-                                                Paste the <code>&lt;div&gt;</code> tag where you want the locator to appear on your page.
+                                                Paste the <code>&lt;locator-widget&gt;</code> tag where you want the locator to appear on your page.
                                             </div>
                                         </div>
                                     </div>
