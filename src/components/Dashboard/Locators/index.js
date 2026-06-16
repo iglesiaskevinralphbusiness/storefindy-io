@@ -10,6 +10,7 @@ import Link from 'next/link';
 import Modal from '@/components/Modal';
 import { postDeleteLocator } from '@/actions/locator';
 import { toast } from 'react-toastify';
+import MapPreview from './MapPreview';
 
 export default function Locators({ data=[] }) {
     const router = useRouter();
@@ -31,9 +32,7 @@ export default function Locators({ data=[] }) {
                 {
                     data.map((locator, index) => {
                         return <li className={styles.locator} key={'locator' + index}>
-                            <div className={styles.map}>
-            
-                            </div>
+                            <MapPreview />
                             <div className={styles.info}>
                                 <div className={styles.name}>
                                     <h3>{ locator.name }</h3>
