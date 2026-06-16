@@ -51,6 +51,11 @@ const config = {
 	loader: { '.tsx': 'tsx', '.ts': 'ts', '.js': 'jsx', '.png': 'dataurl' },
 	minify: !dev,
 	sourcemap: dev,
+	// `next/link` (pulled in via components/Locator) references runtime
+	// `process.env.*` keys like `__NEXT_ROUTER_BASEPATH` that we don't statically
+	// define. In a plain HTML page there's no `process` global, so those throw.
+	// Shim a minimal `process` so any leftover lookups resolve to `undefined`.
+	banner: { js: 'var process=typeof process!=="undefined"?process:{env:{}};' },
 	define: {
 		'process.env.NODE_ENV': JSON.stringify(dev ? 'development' : 'production'),
 		...publicDefines,

@@ -422,7 +422,7 @@ export default function Locator({
                         )}
                     </>
                 )}
-                {location.filters.length > 0 && (
+                {location.filters?.length > 0 && (
                     <div className="filters-checked">
                         {location.filters.map((filter, index) => (
                             <span
@@ -436,7 +436,7 @@ export default function Locator({
                         ))}
                     </div>
                 )}
-                {location.social_media_links.length > 0 && (
+                {location.social_media_links?.length > 0 && (
                     <div className="social-media-links">
                         {location.social_media_links.map((link) => {
                             const media = SOCIAL_MEDIA_LINKS.find((m) => m.code === link.code);
@@ -701,7 +701,9 @@ export default function Locator({
                             renderPopup={(loc, index) => renderLocationCard(loc, index, { showStoreHoursToggle: false })}
                         />
                     </Suspense>
-                    <div className="powered-by">Mapping Locator Powered by <a href="https://www.storefindy.com" target="_blank">Storefindy</a> Copyright © {new Date().getFullYear()}, All Rights Reserved.</div>
+                    {features.powered_by_storefindy !== false && (
+                        <div className="powered-by">Mapping Locator Powered by <a href="https://www.storefindy.com" target="_blank">Storefindy</a> Copyright © {new Date().getFullYear()}, All Rights Reserved.</div>
+                    )}
                 </div>
             </div>
         </>
@@ -729,6 +731,20 @@ export const locatorStyles = `
 }
 .locator-sidebar form {
     position: sticky;
+}
+.locator p {
+    padding: 0;
+    margin: 0;
+}
+.locator ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    width: auto;
+}
+.locator a {
+    text-decoration: none;
+    color: inherit;
 }
 ${formStyles}
 ${resultsStyles}

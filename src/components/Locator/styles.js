@@ -58,6 +58,7 @@ export const formStyles = `
     padding: 0 15px;
     background-color: #000;
     color: #fff;
+    border: none;
     cursor: pointer;
 }
 .locator-sidebar .inputs .btn-filter {
@@ -69,6 +70,7 @@ export const formStyles = `
     padding: 0 15px;
     background-color: #000;
     color: #fff;
+    border: none;
     cursor: pointer;
 }
 .locator-sidebar .other-inputs {
@@ -97,6 +99,8 @@ export const resultsStyles = `
 .results .results-error,
 .results .results-count {
     display: block;
+    margin: 0;
+    padding: 0;
 }
 .results .results-count svg {
     display: inline;
@@ -105,6 +109,9 @@ export const resultsStyles = `
 .results ul.results-list {
     height: calc(100% - 315px);
     overflow-y: auto;
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 .results ul.results-list > li {
     margin-bottom: 15px;
@@ -127,6 +134,8 @@ export const resultsStyles = `
     padding-right: 10px;
 }
 .results ul.results-list > li .title p {
+    margin: 0;
+    padding: 0;
     font-size: 90%;
 }
 .results ul.results-list > li .details {
@@ -155,6 +164,12 @@ export const resultsStyles = `
     align-items: center;
     gap: 5px;
     cursor: pointer;
+    background: none;
+    border: none;
+    margin: 0;
+    padding: 0;
+    font-family: inherit;
+    font-size: inherit;
 }
 .results ul.results-list > li .details .btn-store-hours svg:last-child {
     font-size: 70%;
@@ -164,7 +179,7 @@ export const resultsStyles = `
     transform: rotate(180deg);
 }
 .results ul.results-list > li .details .store-hours {
-    width: 100%;
+    width: auto;
     max-height: 0;
     padding-left: 18px;
     overflow: hidden;
@@ -203,6 +218,9 @@ export const resultsStyles = `
     background-color: #000;
     color: #fff;
     cursor: pointer;
+}
+.results ul.results-list > li .actions a:hover {
+    opacity: 0.8;
 }
 .locator-sidebar .filter-panel {
     display: flex;
@@ -284,6 +302,7 @@ export const mapStyles = `
 .locator-map {
     flex: 1;
     position: relative;
+    overflow: hidden;
 }
 .locator-map .map-loading {
     display: flex;

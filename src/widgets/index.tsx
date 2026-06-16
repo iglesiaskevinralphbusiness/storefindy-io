@@ -1,18 +1,10 @@
 import { defineWidget } from './defineWidget';
-import MyWidget, { myWidgetStyles } from './MyWidget';
 import { locatorStyles } from '../components/Locator';
 import LocatorWidget from './LocatorWidget';
 
-defineWidget({
-	tagName: 'my-widget',
-	component: MyWidget,
-	observedAttributes: ['title', 'theme'],
-	styles: myWidgetStyles,
-});
-
-defineWidget({
-	tagName: 'locator',
+defineWidget<{ locator?: string }>({
+	tagName: 'locator-widget',
 	component: LocatorWidget,
-	observedAttributes: [],
+	observedAttributes: ['locator'],
 	styles: locatorStyles,
 });
