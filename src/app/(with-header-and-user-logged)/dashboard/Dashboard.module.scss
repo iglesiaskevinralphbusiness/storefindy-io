@@ -510,6 +510,7 @@
         display: flex;
         align-items: center;
         gap: 12px;
+        margin-bottom: 20px;
     }
     .locatorBarLabel {
         font-weight: 500;
@@ -537,6 +538,9 @@
         outline: none;
         cursor: pointer;
         flex: 1;
+        padding: 6px 10px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
     }
     .locatorId {
         font-size: 11px;
@@ -748,6 +752,29 @@
     .cKey { color: #f38ba8; }
     .cStr { color: #a6e3a1; }
     .cNum { color: #fab387; }
+
+    .cmsNote {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        margin-top: 12px;
+        padding: 10px 12px;
+        font-size: 12.5px;
+        line-height: 1.5;
+        color: #555;
+        background: #f0f6fc;
+        border: 1px solid #d6e6f5;
+        border-radius: 8px;
+        svg {
+            flex-shrink: 0;
+            margin-top: 2px;
+            color: #185FA5;
+        }
+        strong {
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+    }
 
     /* INSTALL STEPS */
     .installSteps {
