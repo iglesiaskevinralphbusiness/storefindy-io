@@ -36,6 +36,21 @@ const publicDefines = Object.fromEntries(
 		.map(([k, v]) => [`process.env.${k}`, JSON.stringify(v)]),
 );
 
+// Pre-bundle Leaflet's stylesheet into a single string (with its marker/layer
+// .png images inlined as data URLs) so the widget can inject it INTO its shadow
+// root. The `import 'leaflet/dist/leaflet.css'` in LocatorMap only ever lands in
+// the document <head>, which cannot cross the shadow boundary — leaving the
+// map's tiles without `position:absolute` and rendering them in a diagonal
+// staircase. We hand this CSS to the bundle via a `define` (see below).
+const leafletCssResult = await build({
+	entryPoints: [resolve(root, 'node_modules/leaflet/dist/leaflet.css')],
+	bundle: true,
+	minify: !dev,
+	loader: { '.png': 'dataurl' },
+	write: false,
+});
+const leafletCss = leafletCssResult.outputFiles[0].text;
+
 /** @type {import('esbuild').BuildOptions} */
 const config = {
 	entryPoints: [resolve(root, 'src/widgets/index.tsx')],
@@ -58,6 +73,8 @@ const config = {
 	banner: { js: 'var process=typeof process!=="undefined"?process:{env:{}};' },
 	define: {
 		'process.env.NODE_ENV': JSON.stringify(dev ? 'development' : 'production'),
+		// Leaflet's CSS, inlined so index.tsx can inject it into the shadow root.
+		'process.env.__LEAFLET_CSS__': JSON.stringify(leafletCss),
 		...publicDefines,
 	},
 	logLevel: 'info',

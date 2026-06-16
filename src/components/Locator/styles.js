@@ -17,6 +17,7 @@ export const formStyles = `
     font-size: 100%;
     outline: none;
     box-sizing: border-box;
+    font-family: inherit;
 }
 .locator-sidebar .inputs .search-suggest-list {
     position: absolute;
@@ -60,6 +61,7 @@ export const formStyles = `
     color: #fff;
     border: none;
     cursor: pointer;
+    font-family: inherit;
 }
 .locator-sidebar .inputs .btn-filter {
     display: flex;
@@ -232,6 +234,7 @@ export const resultsStyles = `
     border-radius: 6px;
     position: absolute;
     width: 100%;
+    box-sizing: border-box;
 }
 .locator-sidebar .filter-panel .filter-panel-header {
     display: flex;
@@ -286,6 +289,7 @@ export const resultsStyles = `
     border-radius: 4px;
     font-size: 100%;
     outline: none;
+    font-family: inherit;
 
     appearance: none;
     -webkit-appearance: none;
