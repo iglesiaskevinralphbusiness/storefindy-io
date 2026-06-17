@@ -72,6 +72,8 @@ const locatorSchema = new mongoose.Schema({
         },
         resultItem: {
             active_border_color: { type: String, default: '#185FA5' },
+            active_background: { type: String, default: '#ffffff' },
+            border: { type: String, default: 'square' },
             border_color: { type: String, default: '#e4e4e4' },
             background: { type: String, default: '#ffffff' },
         },

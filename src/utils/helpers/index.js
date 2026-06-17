@@ -55,6 +55,8 @@ export function generateSettingsDefault(settings) {
         },
         resultItem: {
             active_border_color: settings.resultItem.active_border_color,
+            active_background: settings.resultItem.active_background,
+            border: settings.resultItem.border,
             border_color: settings.resultItem.border_color,
             background: settings.resultItem.background,
         },

@@ -352,20 +352,32 @@ export default function SidebarCustomize({ settings, setSettings, features, setF
                                 onToggle={() => toggleSection('resultItem')}
                             >
                                 <ColorField
-                                    label="Selected Border"
-                                    value={settings.resultItem.active_border_color}
-                                    onChange={(v) => updateGroup('resultItem', 'active_border_color', v)}
-                                />
-                                <ColorField
-                                    label="Border"
-                                    value={settings.resultItem.border_color}
-                                    onChange={(v) => updateGroup('resultItem', 'border_color', v)}
-                                />
-                                <ColorField
                                     label="Background"
                                     value={settings.resultItem.background}
                                     onChange={(v) => updateGroup('resultItem', 'background', v)}
                                 />
+                                <SelectField
+                                    label="Border"
+                                    value={settings.resultItem.border}
+                                    onChange={(v) => updateGroup('resultItem', 'border', v)}
+                                    options={[{ code: 'none', label: 'None' }, ...BORDER_STYLES]}
+                                />
+                                <ColorField
+                                    label="Border Color"
+                                    value={settings.resultItem.border_color}
+                                    onChange={(v) => updateGroup('resultItem', 'border_color', v)}
+                                />
+                                <ColorField
+                                    label="Selected Background"
+                                    value={settings.resultItem.active_background}
+                                    onChange={(v) => updateGroup('resultItem', 'active_background', v)}
+                                />
+                                <ColorField
+                                    label="Selected Border"
+                                    value={settings.resultItem.active_border_color}
+                                    onChange={(v) => updateGroup('resultItem', 'active_border_color', v)}
+                                />
+
                             </Section>
 
                             <Section

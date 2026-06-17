@@ -676,7 +676,11 @@ export default function Locator({
                                             backgroundColor: settings.resultItem.background,
                                             ...(activeId === location._id && {
                                                 borderColor: settings.resultItem.active_border_color,
+                                                backgroundColor: settings.resultItem.active_background,
                                             }),
+                                            borderRadius: getBorderStyle(settings.resultItem.border),
+                                            borderStyle: settings.resultItem.border === 'none' || settings.resultItem.border === '' || !settings.resultItem.border ? 'none' : 'solid',
+                                        
                                         }}
                                     >
                                         {renderLocationCard(location, index)}
