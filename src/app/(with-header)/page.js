@@ -23,6 +23,7 @@ import {
     TbPlus,
 } from 'react-icons/tb';
 import styles from './page.module.scss';
+import { plans } from '@/utils/constant/pricing';
 
 const industries = [
     { icon: TbShoppingBag, label: 'Retail' },
@@ -52,60 +53,7 @@ const steps = [
     { num: '4', title: 'Paste the embed code', desc: 'Copy one script tag and paste it into your website. Your store locator is live instantly.' },
 ];
 
-const plans = [
-    {
-        name: 'Free',
-        price: '$0',
-        period: '/ month',
-        desc: 'Everything you need to get started — free forever.',
-        features: [
-            { ok: true, text: '1 Free locator' },
-            { ok: true, text: 'Up to 25 locations' },
-            { ok: true, text: 'Basic customization' },
-            { ok: true, text: 'CSV import' },
-            { ok: true, text: 'Embed on any website' },
-            { ok: false, text: 'Remove Storefindy branding' },
-            { ok: false, text: 'Analytics & insights' },
-        ],
-        cta: 'Get started free',
-        ctaClass: 'free',
-    },
-    {
-        name: 'Pro',
-        price: '$10',
-        period: '/ month',
-        desc: 'For growing businesses that need more power and no branding.',
-        badge: 'Most popular',
-        featured: true,
-        features: [
-            { ok: true, text: '3 locators' },
-            { ok: true, text: 'Up to 500 locations' },
-            { ok: true, text: 'Full customization' },
-            { ok: true, text: 'CSV import' },
-            { ok: true, text: 'Basic analytics' },
-            { ok: false, text: 'Advanced insights & heatmap' },
-        ],
-        cta: 'Start Pro free trial',
-        ctaClass: 'pro',
-    },
-    {
-        name: 'Business',
-        price: '$30',
-        period: '/ month',
-        desc: 'For multi-location brands that need full insights and scale.',
-        features: [
-            { ok: true, text: '7 locators' },
-            { ok: true, text: 'Unlimited locations' },
-            { ok: true, text: 'Full customization' },
-            { ok: true, text: 'CSV import' },
-            { ok: true, text: 'Remove Storefindy branding' },
-            { ok: true, text: 'Advanced analytics & heatmap' },
-            { ok: true, text: 'Priority support' },
-        ],
-        cta: 'Contact sales',
-        ctaClass: 'biz',
-    },
-];
+
 
 const testimonials = [
     {
