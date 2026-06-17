@@ -23,6 +23,8 @@ export function generateSettingsDefault(settings) {
         text_color: settings.text_color,
         font_family: settings.font_family,
         font_size: settings.font_size,
+        border: settings.border,
+        border_color: settings.border_color,
         searchInput: {
             border: settings.searchInput.border,
             background: settings.searchInput.background,

@@ -39,6 +39,8 @@ const locatorSchema = new mongoose.Schema({
         text_color: { type: String, default: '#000000' },
         font_family: { type: String, default: 'system-ui, sans-serif' },
         font_size: { type: Number, default: 14 },
+        border: { type: String, default: 'none' },
+        border_color: { type: String, default: '#000' },
 
         searchInput: {
             border: { type: String, default: 'square' },

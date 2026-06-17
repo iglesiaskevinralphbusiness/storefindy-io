@@ -191,6 +191,17 @@ export default function SidebarCustomize({ settings, setSettings, features, setF
                                     onChange={(v) => update('font_size', v)}
                                     suffix="px"
                                 />
+                                <SelectField
+                                    label="Border Wrapper"
+                                    value={settings.border}
+                                    onChange={(v) => update('border', v)}
+                                    options={[{ code: 'none', label: 'None' }, ...BORDER_STYLES]}
+                                />
+                                <ColorField
+                                    label="Border Color"
+                                    value={settings.border_color}
+                                    onChange={(v) => update('border_color', v)}
+                                />
                             </Section>
 
                             <Section

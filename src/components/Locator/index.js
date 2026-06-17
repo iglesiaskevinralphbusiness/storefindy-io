@@ -331,6 +331,7 @@ export default function Locator({
     }
 
     const getBorderStyle = (value) => {
+        if(value === 'none') return '0';
         if(value === 'rounded') return '10px';
         if(value === 'pill') return '20px';
         if(value === 'square') return '0';
@@ -492,6 +493,7 @@ export default function Locator({
     return (
         <>
             <style>{locatorStyles}</style>
+            
             <div
                 className={`locator ${getAppHeight()} ${countryOptions.length > 1 && features.show_radius ? 'form2columns' : ''}`}
                 style={
@@ -499,7 +501,11 @@ export default function Locator({
                         backgroundColor: settings.background,
                         color: settings.text_color,
                         fontFamily: settings.font_family,
-                        fontSize: settings.font_size
+                        fontSize: settings.font_size,
+                        borderRadius: getBorderStyle(settings.border),
+                        borderColor: settings.border_color,
+                        borderStyle: settings.border === 'none' || settings.border === '' || !settings.border ? 'none' : 'solid',
+                        borderWidth: settings.border === 'none' || settings.border === '' || !settings.border ? '0px' : '1px'
                     }
                 }
             >
