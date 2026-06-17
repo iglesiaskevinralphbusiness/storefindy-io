@@ -1,7 +1,8 @@
 .hero {
+    padding: 50px 0 72px;
     h1 {
         max-width: 1000px;
-        margin: 72px auto 42px;
+        margin: 50px auto 42px;
         font-size: 63px;
         text-align: center;
     }
@@ -16,4 +17,430 @@
         justify-content: center;
         gap: 20px;
     }
+}
+
+/* Shared section headings */
+.sectionLabel {
+    font-size: 14px;
+    font-weight: 500;
+    color: #171717;
+    background: #ffe54c;
+    padding: 3px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+.sectionTitle {
+    font-size: 32px;
+    font-weight: 500;
+    color: #171717;
+    margin-bottom: 10px;
+    line-height: 1.2;
+}
+.sectionSub {
+    font-size: 16px;
+    color: #666;
+    line-height: 1.7;
+    max-width: 520px;
+    margin-bottom: 48px;
+}
+
+/* LOGOS */
+.logos {
+    padding: 32px 40px;
+    text-align: center;
+    border-top: 0.5px solid #f0f0ee;
+    border-bottom: 0.5px solid #f0f0ee;
+    p {
+        font-size: 14px;
+        color: #171717;
+        margin-bottom: 28px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+}
+.logosRow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+.logoPill {
+    font-size: 14px;
+    font-weight: 500;
+    color: #171717;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    svg { font-size: 16px; }
+}
+
+/* FEATURES */
+.features {
+    padding: 72px 40px;
+    background: #fff;
+}
+.featuresGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+.featureCard {
+    border: 0.5px solid #e5e5e3;
+    border-radius: 12px;
+    padding: 20px;
+    background: #fff;
+    transition: border-color 0.15s;
+    &:hover { border-color: #ffe54c; }
+}
+.featureIcon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #fffbe6;
+    border: 0.5px solid #ffe54c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+    svg { font-size: 20px; color: #171717; }
+}
+.featureTitle {
+    font-size: 15px;
+    font-weight: 500;
+    color: #171717;
+    margin-bottom: 6px;
+}
+.featureDesc {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+}
+
+/* HOW IT WORKS */
+.howitworks {
+    padding: 72px 40px;
+    background: #f9f9f7;
+    border-top: 0.5px solid #f0f0ee;
+    border-bottom: 0.5px solid #f0f0ee;
+}
+.stepsGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-top: 40px;
+    position: relative;
+    &::before {
+        content: '';
+        position: absolute;
+        top: 28px;
+        left: calc(12.5% + 19px);
+        right: calc(12.5% + 19px);
+        height: 0.5px;
+        background: #ddd;
+        z-index: 0;
+    }
+}
+.stepCard {
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+.stepNum {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #ffe54c;
+    border: 0.5px solid #f5d800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #171717;
+}
+.stepTitle {
+    font-size: 15px;
+    font-weight: 500;
+    color: #171717;
+    margin-bottom: 6px;
+}
+.stepDesc {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+}
+
+/* PRICING */
+.pricing {
+    padding: 72px 40px;
+    background: #fff;
+}
+.pricingGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 40px;
+}
+.pricingCard {
+    border: 0.5px solid #e5e5e3;
+    border-radius: 14px;
+    padding: 24px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    &.featured {
+        border: 2px solid #ffe54c;
+        background: #fffbe6;
+    }
+}
+.pricingBadge {
+    font-size: 10px;
+    font-weight: 500;
+    background: #ffe54c;
+    color: #171717;
+    padding: 3px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 10px;
+    width: fit-content;
+}
+.pricingName {
+    font-size: 14px;
+    font-weight: 500;
+    color: #171717;
+    margin-bottom: 4px;
+}
+.pricingPrice {
+    font-size: 36px;
+    font-weight: 500;
+    color: #171717;
+    margin-bottom: 4px;
+    line-height: 1;
+    span {
+        font-size: 14px;
+        font-weight: 400;
+        color: #888;
+    }
+}
+.pricingDesc {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+.pricingDivider {
+    height: 0.5px;
+    background: #e5e5e3;
+    margin-bottom: 16px;
+}
+.pricingFeatures {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    margin-bottom: 20px;
+}
+.pricingFeature {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+    color: #555;
+    svg {
+        font-size: 14px;
+        color: #3B6D11;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+    &.no {
+        color: #aaa;
+        svg { color: #bbb; }
+    }
+}
+.btnPricing {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    &.free {
+        background: #171717;
+        color: #ffe54c;
+        &:hover { background: #2a2a2a; }
+    }
+    &.pro {
+        background: #ffe54c;
+        color: #171717;
+        &:hover { background: #f5d800; }
+    }
+    &.biz {
+        background: #f5f5f3;
+        color: #171717;
+        border: 0.5px solid #ddd;
+        &:hover { background: #eee; }
+    }
+}
+
+/* TESTIMONIALS */
+.testimonials {
+    padding: 72px 40px;
+    background: #f9f9f7;
+    border-top: 0.5px solid #f0f0ee;
+}
+.testimonialsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 40px;
+}
+.testimonialCard {
+    background: #fff;
+    border: 0.5px solid #e5e5e3;
+    border-radius: 12px;
+    padding: 18px;
+}
+.testimonialStars {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 10px;
+    svg { font-size: 13px; color: #ffe54c; }
+}
+.testimonialText {
+    font-size: 12px;
+    color: #444;
+    line-height: 1.7;
+    margin-bottom: 14px;
+    font-style: italic;
+}
+.testimonialAuthor {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.authorAvatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #ffe54c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 500;
+    color: #171717;
+    flex-shrink: 0;
+}
+.authorName {
+    font-size: 12px;
+    font-weight: 500;
+    color: #171717;
+}
+.authorRole {
+    font-size: 10px;
+    color: #aaa;
+    margin-top: 1px;
+}
+
+/* FAQ */
+.faq {
+    padding: 72px 40px;
+    background: #fff;
+    border-top: 0.5px solid #f0f0ee;
+}
+.faqList {
+    max-width: 680px;
+    margin: 40px auto 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+.faqItem {
+    border-bottom: 0.5px solid #f0f0ee;
+}
+.faqQ {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0;
+    cursor: pointer;
+    gap: 12px;
+    width: 100%;
+    background: none;
+    border: none;
+    text-align: left;
+}
+.faqQText {
+    font-size: 14px;
+    font-weight: 500;
+    color: #171717;
+}
+.faqIcon {
+    font-size: 16px;
+    color: #aaa;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+    &.open {
+        transform: rotate(45deg);
+        color: #171717;
+    }
+}
+.faqA {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.7;
+    padding-bottom: 16px;
+}
+
+/* CTA BANNER */
+.ctaBanner {
+    margin: 0 40px 60px;
+    background: #171717;
+    border-radius: 16px;
+    padding: 48px 40px;
+    text-align: center;
+    h2 {
+        font-size: 28px;
+        font-weight: 500;
+        color: #fff;
+        margin-bottom: 10px;
+    }
+    p {
+        font-size: 14px;
+        color: rgba(255,255,255,0.6);
+        margin-bottom: 28px;
+        line-height: 1.6;
+    }
+}
+.ctaBannerActions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+.btnCtaYellow {
+    font-size: 14px;
+    font-weight: 500;
+    padding: 12px 28px;
+    border-radius: 10px;
+    background: #ffe54c;
+    color: #171717;
+    border: none;
+    cursor: pointer;
+    &:hover { background: #f5d800; }
+}
+.btnCtaGhost {
+    font-size: 14px;
+    padding: 12px 24px;
+    border-radius: 10px;
+    background: transparent;
+    color: rgba(255,255,255,0.7);
+    border: 0.5px solid rgba(255,255,255,0.2);
+    cursor: pointer;
+    &:hover { background: rgba(255,255,255,0.08); }
 }
