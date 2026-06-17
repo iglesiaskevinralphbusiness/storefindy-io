@@ -228,6 +228,7 @@ export const resultsStyles = `
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+    top: 40px;
     margin-top: 10px;
     padding: 12px;
     border: 1px solid #e7e9e9;
