@@ -3,6 +3,7 @@ import GoogleProvider from 'next-auth/providers/google';
 import { dbConnect } from '@/config/mongo.config';
 import { UserModel } from '@/mongo';
 
+/** @type {import('next-auth').AuthOptions} */
 export const authOptions = {
 	providers: [
 		GoogleProvider({
