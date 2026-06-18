@@ -46,6 +46,7 @@ export const plans = [
             { ok: true, text: 'CSV import' },
             { ok: true, text: 'Remove Storefindy branding' },
             { ok: true, text: 'Advanced analytics & heatmap' },
+            { ok: true, text: 'API access' },
             { ok: true, text: 'Priority support' },
         ],
         cta: 'Contact sales',

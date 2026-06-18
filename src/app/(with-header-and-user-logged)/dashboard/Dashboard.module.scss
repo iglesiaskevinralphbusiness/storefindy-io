@@ -922,6 +922,53 @@
         color: #ffffffdb;
     }
 
+    /* FREE BANNER (white) */
+    .bannerFree {
+        background: #fff;
+        border: 1px solid #e5e5e3;
+        border-radius: 10px;
+        padding: 18px 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .bannerFreeIcon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        background: #fffbe6;
+        border: 1px solid #ffe54c;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        svg {
+            font-size: 22px;
+            color: #171717;
+        }
+    }
+    .bannerFreeName {
+        font-size: 15px;
+        font-weight: 500;
+        color: #1a1a1a;
+        margin-bottom: 3px;
+    }
+    .bannerFreeDesc {
+        font-size: 11px;
+        color: #888;
+        line-height: 1.5;
+    }
+    .bannerFreePrice {
+        font-size: 22px;
+        font-weight: 500;
+        color: #1a1a1a;
+        span {
+            font-size: 11px;
+            font-weight: 400;
+            color: #aaa;
+        }
+    }
+
     /* CARD */
     .card {
         background: #fff;
@@ -959,6 +1006,14 @@
             &.pro {
                 background: #171717;
                 color: #ffe54c;
+            }
+            &.fromDb {
+                background: #f0f0ee;
+                color: #555;
+            }
+            &.fromStripe {
+                background: #ede9fe;
+                color: #635bff;
             }
         }
     }
@@ -1123,12 +1178,12 @@
     .plansGrid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
+        gap: 20px;
     }
     .planCard {
         border: 1px solid #e5e5e3;
         border-radius: 10px;
-        padding: 16px;
+        padding: 20px;
         background: #fff;
         display: flex;
         flex-direction: column;
@@ -1294,6 +1349,122 @@
         }
         strong {
             color: #635bff;
+        }
+    }
+
+    /* LEMON SQUEEZY PORTAL BOX */
+    .lemonPortalBox {
+        background: #fffdf2;
+        border: 1px solid #f2d584;
+        border-radius: 10px;
+        padding: 16px 18px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+    .lemonPortalIcon {
+        width: 42px;
+        height: 42px;
+        background: #ffc233;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        svg {
+            font-size: 24px;
+            color: #171717;
+        }
+    }
+    .lemonPortalInfo {
+        flex: 1;
+    }
+    .lemonPortalTitle {
+        font-size: 13px;
+        font-weight: 500;
+        color: #1a1a1a;
+        margin-bottom: 3px;
+    }
+    .lemonPortalDesc {
+        font-size: 11px;
+        color: #888;
+        line-height: 1.5;
+    }
+    .lemonPortalFeatures {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-top: 7px;
+    }
+    .lemonFeaturePill {
+        font-size: 10px;
+        background: #fff4ce;
+        color: #92700a;
+        padding: 2px 8px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        svg {
+            font-size: 11px;
+        }
+    }
+    .btnLemonPortal {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        padding: 9px 16px;
+        border-radius: 8px;
+        border: none;
+        background: #ffc233;
+        color: #171717;
+        cursor: pointer;
+        white-space: nowrap;
+        flex-shrink: 0;
+        &:hover {
+            background: #f0b100;
+        }
+        svg {
+            font-size: 14px;
+        }
+    }
+
+    /* SOURCE LEGEND */
+    .sourceLegend {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+        padding: 10px 14px;
+        background: #fafaf8;
+        border: 1px solid #e5e5e3;
+        border-radius: 8px;
+        margin-top: 12px;
+    }
+    .sourceLegendTitle {
+        font-size: 11px;
+        font-weight: 500;
+        color: #555;
+    }
+    .sourceItem {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11px;
+        color: #888;
+    }
+    .sourceDot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        &.dbDot {
+            background: #555;
+        }
+        &.lemonDot {
+            background: #e8a800;
         }
     }
 
@@ -1668,6 +1839,100 @@
         text-align: center;
         margin-top: 10px;
         line-height: 1.5;
+    }
+
+    /* LEMON SQUEEZY REDIRECT MODAL */
+    .modalLemonRedirect {
+        text-align: center;
+        padding: 10px 0;
+    }
+    .lemonRedirectIcon {
+        width: 52px;
+        height: 52px;
+        background: #ffc233;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 14px;
+        svg {
+            font-size: 28px;
+            color: #171717;
+        }
+    }
+    .lemonRedirectTitle {
+        font-size: 14px;
+        font-weight: 500;
+        color: #1a1a1a;
+        margin-bottom: 6px;
+    }
+    .lemonRedirectDesc {
+        font-size: 12px;
+        color: #888;
+        line-height: 1.6;
+        margin-bottom: 18px;
+    }
+    .lemonRedirectPlan {
+        background: #fffbe6;
+        border: 1px solid #ffe54c;
+        border-radius: 8px;
+        padding: 10px 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+        text-align: left;
+    }
+    .lemonRedirectPlanName {
+        font-size: 12px;
+        font-weight: 500;
+        color: #1a1a1a;
+    }
+    .lemonRedirectPlanSub {
+        font-size: 10px;
+        color: #888;
+        margin-top: 2px;
+    }
+    .lemonRedirectPlanPrice {
+        font-size: 16px;
+        font-weight: 500;
+        color: #1a1a1a;
+        span {
+            font-size: 11px;
+            font-weight: 400;
+            color: #aaa;
+        }
+    }
+    .btnGoLemon {
+        width: 100%;
+        padding: 11px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        background: #ffc233;
+        color: #171717;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        &:hover {
+            background: #f0b100;
+        }
+        svg {
+            font-size: 14px;
+        }
+    }
+    .modalCancelLink {
+        font-size: 11px;
+        color: #aaa;
+        text-align: center;
+        margin-top: 10px;
+        cursor: pointer;
+        &:hover {
+            color: #555;
+        }
     }
 
     /* PRO / SUBSCRIBED BANNER */

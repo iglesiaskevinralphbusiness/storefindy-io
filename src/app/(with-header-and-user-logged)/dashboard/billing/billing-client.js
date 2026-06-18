@@ -15,101 +15,91 @@ import {
     TbCreditCard,
     TbMail,
     TbShieldCheck,
-    TbBrandStripe,
+    TbLemon2,
     TbCircleCheck,
     TbCircleX,
     TbCheck,
     TbRocket,
-    TbShieldLock,
     TbFileInvoice,
-    TbDownload,
-    TbAlertTriangle,
     TbX,
-    TbLock,
-    TbClock,
     TbArrowDown,
+    TbRefresh,
+    TbExternalLink,
 } from 'react-icons/tb';
 
 /*
- * Subscription state.
+ * Phase 1 — Lemon Squeezy-portal-driven billing.
  *
- * This is hardcoded demo data for now. When the database / Stripe is wired up,
- * replace SUBSCRIPTIONS + the initial `useState` below with the real customer
- * record (status, plan, renewal date, saved card, usage, invoices). The whole
- * page is driven off the `sub` object, so the UI will follow automatically.
+ * The page is split by data source:
+ *   • Your database       → plan name, status, renewal date, usage counts
+ *   • Lemon Squeezy portal → payment method, invoices, plan changes, cancellation
  *
- * The dev toggle in the header lets you flip between "Free" and "Subscribed"
- * states while building — delete it (and the `devToggle` block) once real data
- * is in place.
+ * So there are no inline card forms / invoice tables here — anything that touches
+ * money is handed off to Lemon Squeezy via the portal button + redirect modal.
+ * Lemon Squeezy is a Merchant of Record, so it also handles tax/VAT and receipts.
+ *
+ * SUBSCRIPTIONS is hardcoded demo data. When the database / Lemon Squeezy is wired
+ * up, replace it (and the initial `useState`) with the real customer record; the
+ * whole page is driven off the `sub` object, so the UI follows automatically.
+ *
+ * The dev toggle in the header flips between "Free" and "Subscribed" while
+ * building — delete it (and the `devToggle` block) once real data is in place.
  */
 const SUBSCRIPTIONS = {
     free: {
         status: 'free',
         planName: 'Free',
         billingEmail: 'mystore@email.com',
+        planStarted: '-',
+        planStartedLabel: 'Plan started',
         renewal: null,
-        card: null,
-        nextInvoice: null,
         usage: [
-            { icon: <TbMap />, label: 'Locators', used: 1, limit: '1', percent: 100, fill: 'warn', hint: "You've reached the limit. Upgrade to create more locators." },
-            { icon: <TbMapPin />, label: 'Locations', used: 12, limit: '25', percent: 48, fill: '', hint: '13 locations remaining on your plan.' },
-            { icon: <TbEye />, label: 'Widget Views', used: '1,204', limit: 'unlimited', percent: 100, fill: 'ok', hint: 'Widget views are unlimited on all plans.' },
-        ],
-        invoices: [
-            { id: '#INV-2026-001', date: 'Jun 1, 2026', plan: 'Free', amount: '$0.00', status: 'free' },
-            { id: '#INV-2026-000', date: 'May 1, 2026', plan: 'Free', amount: '$0.00', status: 'free' },
+            { icon: <TbMap />, label: 'Locators', used: 1, limit: '1', percent: 100, fill: 'warn', hint: 'Limit reached. Upgrade to create more.' },
+            { icon: <TbMapPin />, label: 'Locations', used: 12, limit: '25', percent: 48, fill: '', hint: '13 locations remaining.' },
+            { icon: <TbEye />, label: 'Widget Views', used: '1,204', limit: 'unlimited', percent: 100, fill: 'ok', hint: 'Unlimited on all plans.' },
         ],
     },
     pro: {
         status: 'active',
         planName: 'Pro',
         billingEmail: 'mystore@email.com',
+        planStarted: 'April 1, 2026',
+        planStartedLabel: 'Subscribed since',
         renewal: 'July 1, 2026',
-        card: { brand: 'VISA', last4: '4242' },
-        nextInvoice: { date: 'July 1, 2026', amount: '$10', plan: 'Pro' },
         usage: [
-            { icon: <TbMap />, label: 'Locators', used: 2, limit: '3', percent: 66, fill: '', hint: '1 locator slot remaining on your plan.' },
-            { icon: <TbMapPin />, label: 'Locations', used: 87, limit: '500', percent: 17, fill: 'ok', hint: '413 locations remaining on your plan.' },
-            { icon: <TbEye />, label: 'Widget Views', used: '4,821', limit: 'unlimited', percent: 100, fill: 'ok', hint: 'Widget views are unlimited on all plans.' },
-        ],
-        invoices: [
-            { id: '#INV-2026-003', date: 'Jun 1, 2026', plan: 'Pro', amount: '$10.00', status: 'paid' },
-            { id: '#INV-2026-002', date: 'May 1, 2026', plan: 'Pro', amount: '$10.00', status: 'paid' },
-            { id: '#INV-2026-001', date: 'Apr 1, 2026', plan: 'Pro', amount: '$10.00', status: 'paid' },
-            { id: '#INV-2026-000', date: 'Mar 1, 2026', plan: 'Free', amount: '$0.00', status: 'free' },
-        ],
-        downgradeLoses: [
-            'Locators reduced from 3 to 1 (2 will be hidden)',
-            'Locations reduced from 500 to 25 (62 will be hidden)',
-            'Storefindy branding will reappear on widget',
-            'Analytics & insights access removed',
+            { icon: <TbMap />, label: 'Locators', used: 2, limit: '3', percent: 66, fill: '', hint: '1 locator slot remaining.' },
+            { icon: <TbMapPin />, label: 'Locations', used: 87, limit: '500', percent: 17, fill: 'ok', hint: '413 locations remaining.' },
+            { icon: <TbEye />, label: 'Widget Views', used: '4,821', limit: 'unlimited', percent: 100, fill: 'ok', hint: 'Unlimited on all plans.' },
         ],
     },
 };
 
 export default function BillingPageClient() {
-    // TODO: replace with the real subscription state from the database / Stripe.
+    // TODO: replace with the real subscription state from the database / Lemon Squeezy.
     const [subKey, setSubKey] = useState('free');
-    const [modal, setModal] = useState(null); // { type: 'upgrade'|'downgrade'|'cancel'|'card', plan? }
+    const [modal, setModal] = useState(null); // { plan }
 
     const sub = SUBSCRIPTIONS[subKey];
     const isSubscribed = sub.status !== 'free';
     const currentIndex = plans.findIndex((p) => p.name === sub.planName);
     const currentPlan = plans[currentIndex] || plans[0];
 
-    const openModal = (type, plan = null) => setModal({ type, plan });
+    const openModal = (plan) => setModal({ plan });
     const closeModal = () => setModal(null);
     const overlayClose = (e) => {
         if (e.target === e.currentTarget) closeModal();
+    };
+    // Placeholder — in production this opens the Lemon Squeezy Customer Portal.
+    const goToLemonPortal = () => {
+        // window.location.href = portalUrl;
     };
 
     return (
         <div className={styles.billing}>
             <div className={styles.billingContent}>
 
-                {/* TOP ACTIONS */}
+                {/* TOP ACTIONS — DEV-ONLY toggle until the database is wired up */}
                 <div className={styles.billingHeader}>
-                    {/* DEV-ONLY: toggle subscription state until the database is wired up */}
                     <div className={styles.devToggle}>
                         <span>Dev state:</span>
                         <button
@@ -127,9 +117,6 @@ export default function BillingPageClient() {
                             Subscribed
                         </button>
                     </div>
-                    <button className={styles.manageBtn} type="button">
-                        <TbBrandStripe /> Manage on Stripe
-                    </button>
                 </div>
 
                 {/* CURRENT PLAN BANNER */}
@@ -152,16 +139,16 @@ export default function BillingPageClient() {
                         </div>
                     </div>
                 ) : (
-                    <div className={styles.currentPlanBar}>
-                        <div className={styles.planBarIcon}><TbSparkles /></div>
+                    <div className={styles.bannerFree}>
+                        <div className={styles.bannerFreeIcon}><TbSparkles /></div>
                         <div className={styles.planBarInfo}>
-                            <div className={styles.planBarName}>You are on the {sub.planName} plan</div>
-                            <div className={styles.planBarDesc}>
-                                Upgrade anytime to unlock more locators, locations, and advanced features.
+                            <div className={styles.bannerFreeName}>{sub.planName} Plan</div>
+                            <div className={styles.bannerFreeDesc}>
+                                You&apos;re on the free plan. Upgrade anytime to unlock more locators, locations, and remove branding.
                             </div>
                         </div>
                         <div className={styles.planBarRight}>
-                            <div className={styles.planBarPrice}>
+                            <div className={styles.bannerFreePrice}>
                                 {currentPlan.price} <span>{currentPlan.period}</span>
                             </div>
                             <div className={styles.planBarRenewal}>No renewal — free forever</div>
@@ -169,16 +156,14 @@ export default function BillingPageClient() {
                     </div>
                 )}
 
-                {/* USAGE + BILLING INFO */}
+                {/* USAGE + PLAN INFO */}
                 <div className={styles.twoCol}>
 
-                    {/* USAGE */}
+                    {/* USAGE — from your DB */}
                     <div className={styles.card}>
                         <div className={styles.cardTitle}>
                             <TbChartBar /> Current Usage
-                            <span className={`${styles.badge} ${isSubscribed ? styles.pro : styles.yellow}`}>
-                                {sub.planName} plan
-                            </span>
+                            <span className={`${styles.badge} ${styles.fromDb}`}>From your DB</span>
                         </div>
                         {sub.usage.map((item) => (
                             <div className={styles.usageItem} key={item.label}>
@@ -199,9 +184,12 @@ export default function BillingPageClient() {
                         ))}
                     </div>
 
-                    {/* BILLING INFO */}
+                    {/* PLAN INFO — from your DB */}
                     <div className={styles.card}>
-                        <div className={styles.cardTitle}><TbReceipt /> Billing Information</div>
+                        <div className={styles.cardTitle}>
+                            <TbReceipt /> Plan Information
+                            <span className={`${styles.badge} ${styles.fromDb}`}>From your DB</span>
+                        </div>
                         <div className={styles.billingRow}>
                             <span className={styles.billingKey}><TbCrown /> Current plan</span>
                             <span className={styles.billingVal}>
@@ -209,57 +197,79 @@ export default function BillingPageClient() {
                             </span>
                         </div>
                         <div className={styles.billingRow}>
-                            <span className={styles.billingKey}><TbCalendar /> Billing cycle</span>
-                            <span className={styles.billingVal}>Monthly</span>
+                            <span className={styles.billingKey}><TbCalendar /> {sub.planStartedLabel}</span>
+                            <span className={styles.billingVal}>{sub.planStarted}</span>
                         </div>
                         <div className={styles.billingRow}>
                             <span className={styles.billingKey}><TbCalendarEvent /> Next renewal</span>
                             {sub.renewal ? (
                                 <span className={`${styles.billingVal} ${styles.renewal}`}>{sub.renewal}</span>
                             ) : (
-                                <span className={styles.billingVal}>
-                                    — <span className={styles.na}>N/A on free plan</span>
-                                </span>
+                                <span className={`${styles.billingVal} ${styles.muted}`}>N/A — free plan</span>
                             )}
                         </div>
                         <div className={styles.billingRow}>
-                            <span className={styles.billingKey}><TbCreditCard /> Payment method</span>
-                            {sub.card ? (
-                                <span className={styles.billingVal}>
-                                    <span className={styles.cardChip}>
-                                        <span className={styles.cardBrand}><span>{sub.card.brand}</span></span>
-                                        <span className={styles.cardNum}>•••• {sub.card.last4}</span>
-                                    </span>
-                                    <button className={styles.editLink} type="button" onClick={() => openModal('card')}>Update</button>
-                                </span>
-                            ) : (
-                                <span className={`${styles.billingVal} ${styles.muted}`}>No card on file</span>
-                            )}
+                            <span className={styles.billingKey}><TbCircleCheck /> Status</span>
+                            <span className={styles.billingVal}>
+                                <span className={`${styles.tag} ${styles.active}`}>Active</span>
+                            </span>
                         </div>
                         <div className={styles.billingRow}>
                             <span className={styles.billingKey}><TbMail /> Billing email</span>
-                            <span className={styles.billingVal}>
-                                {sub.billingEmail}
-                                <button className={styles.editLink} type="button">Edit</button>
-                            </span>
-                        </div>
-                        <div className={styles.billingRow}>
-                            <span className={styles.billingKey}><TbShieldCheck /> Payment gateway</span>
-                            <span className={styles.billingVal}>
-                                <TbBrandStripe className={styles.stripeIcon} /> Stripe
-                            </span>
+                            <span className={`${styles.billingVal} ${styles.muted}`}>{sub.billingEmail}</span>
                         </div>
                     </div>
 
+                </div>
+
+                {/* LEMON SQUEEZY PORTAL — the one button that handles everything money-related */}
+                <div className={styles.lemonPortalBox}>
+                    <div className={styles.lemonPortalIcon}><TbLemon2 /></div>
+                    <div className={styles.lemonPortalInfo}>
+                        <div className={styles.lemonPortalTitle}>
+                            {isSubscribed ? 'Manage your subscription on Lemon Squeezy' : 'Upgrade your plan via Lemon Squeezy'}
+                        </div>
+                        <div className={styles.lemonPortalDesc}>
+                            {isSubscribed
+                                ? 'Update your payment method, download past invoices, change your plan, or cancel — all inside the Lemon Squeezy portal.'
+                                : 'Securely upgrade your plan, manage payment methods, and download tax-compliant invoices — all handled by Lemon Squeezy.'}
+                        </div>
+                        <div className={styles.lemonPortalFeatures}>
+                            {isSubscribed ? (
+                                <>
+                                    <span className={styles.lemonFeaturePill}><TbCreditCard /> Update payment method</span>
+                                    <span className={styles.lemonFeaturePill}><TbFileInvoice /> Download invoices</span>
+                                    <span className={styles.lemonFeaturePill}><TbRefresh /> Change plan</span>
+                                    <span className={styles.lemonFeaturePill}><TbX /> Cancel anytime</span>
+                                </>
+                            ) : (
+                                <>
+                                    <span className={styles.lemonFeaturePill}><TbCreditCard /> Add payment method</span>
+                                    <span className={styles.lemonFeaturePill}><TbFileInvoice /> Tax-compliant invoices</span>
+                                    <span className={styles.lemonFeaturePill}><TbShieldCheck /> Secure checkout</span>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                    {isSubscribed ? (
+                        <button className={styles.btnLemonPortal} type="button" onClick={goToLemonPortal}>
+                            <TbExternalLink /> Manage on Lemon Squeezy
+                        </button>
+                    ) : (
+                        <button
+                            className={styles.btnLemonPortal}
+                            type="button"
+                            onClick={() => openModal(plans[1] || currentPlan)}
+                        >
+                            <TbExternalLink /> Upgrade with Lemon Squeezy
+                        </button>
+                    )}
                 </div>
 
                 {/* PLANS & PRICING */}
                 <div className={styles.card}>
                     <div className={styles.cardTitle}>
                         <TbCrown /> Plans &amp; Pricing
-                        <span className={`${styles.badge} ${isSubscribed ? styles.pro : styles.yellow}`}>
-                            {isSubscribed ? `On ${sub.planName}` : 'Upgrade anytime'}
-                        </span>
                     </div>
                     <div className={styles.plansGrid}>
                         {plans.map((plan, idx) => {
@@ -309,15 +319,15 @@ export default function BillingPageClient() {
                                         <button
                                             className={`${styles.planBtn} ${styles.downgradeBtn}`}
                                             type="button"
-                                            onClick={() => openModal('downgrade', plan)}
+                                            onClick={goToLemonPortal}
                                         >
-                                            <TbArrowDown /> Downgrade to {plan.name}
+                                            <TbArrowDown /> Downgrade on Lemon Squeezy
                                         </button>
                                     ) : (
                                         <button
                                             className={`${styles.planBtn} ${styles.upgradeBtn}`}
                                             type="button"
-                                            onClick={() => openModal('upgrade', plan)}
+                                            onClick={() => openModal(plan)}
                                         >
                                             <TbRocket /> Upgrade to {plan.name}
                                         </button>
@@ -327,113 +337,22 @@ export default function BillingPageClient() {
                         })}
                     </div>
 
-                    <div className={styles.stripeBadge}>
-                        <TbShieldLock />
-                        <span>
-                            Payments are securely processed by <strong>Stripe</strong>. Your card details are never stored on our servers.
-                        </span>
+                    {/* SOURCE LEGEND */}
+                    <div className={styles.sourceLegend}>
+                        <span className={styles.sourceLegendTitle}>Data source:</span>
+                        <div className={styles.sourceItem}>
+                            <span className={`${styles.sourceDot} ${styles.dbDot}`} /> Your database — plan name, status, renewal date, usage counts
+                        </div>
+                        <div className={styles.sourceItem}>
+                            <span className={`${styles.sourceDot} ${styles.lemonDot}`} /> Lemon Squeezy portal — payment method, invoices, cancellation
+                        </div>
                     </div>
                 </div>
-
-                {/* INVOICE HISTORY */}
-                <div className={styles.card}>
-                    <div className={styles.cardTitle}>
-                        <TbFileInvoice /> Invoice History
-                        <span className={`${styles.badge} ${styles.green}`}>Auto-generated by Stripe</span>
-                    </div>
-
-                    {sub.nextInvoice && (
-                        <div className={styles.nextInvoice}>
-                            <div>
-                                <div className={styles.nextInvLabel}><TbClock /> Upcoming invoice</div>
-                                <div className={styles.nextInvDate}>{sub.nextInvoice.date}</div>
-                            </div>
-                            <div className={styles.nextInvAmount}>
-                                {sub.nextInvoice.amount} <span>/ {sub.nextInvoice.plan} plan</span>
-                            </div>
-                        </div>
-                    )}
-
-                    <table className={styles.invoiceTable}>
-                        <thead>
-                            <tr>
-                                <th>Invoice</th>
-                                <th>Date</th>
-                                <th>Plan</th>
-                                <th>Amount</th>
-                                <th>Status</th>
-                                <th>Download</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {sub.invoices.map((inv) => (
-                                <tr key={inv.id}>
-                                    <td className={styles.invId}>{inv.id}</td>
-                                    <td>{inv.date}</td>
-                                    <td>{inv.plan}</td>
-                                    <td className={styles.invAmount}>{inv.amount}</td>
-                                    <td>
-                                        <span className={`${styles.invStatus} ${styles[inv.status]}`}>
-                                            {inv.status === 'free' ? 'Free' : 'Paid'}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <button className={styles.invDl} type="button">
-                                            <TbDownload /> PDF
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                    {!isSubscribed && (
-                        <div className={styles.invoiceFootnote}>
-                            Invoices from paid plans will appear here automatically from Stripe.
-                        </div>
-                    )}
-                </div>
-
-                {/* DANGER ZONE */}
-                {isSubscribed ? (
-                    <div className={styles.dangerZoneCol}>
-                        <div className={styles.dangerTitle}><TbAlertTriangle /> Danger zone</div>
-                        <div className={styles.dangerDesc}>
-                            Cancelling your {sub.planName} plan will downgrade your account to the Free plan at the end of your
-                            current billing period ({sub.renewal}). Your locators and locations will not be deleted, but you&apos;ll
-                            lose access to {sub.planName} features including branding removal and analytics.
-                        </div>
-                        <div className={styles.dangerActions}>
-                            <button
-                                className={styles.btnDangerOutline}
-                                type="button"
-                                onClick={() => openModal('downgrade', plans[0])}
-                            >
-                                <TbArrowDown /> Downgrade to Free
-                            </button>
-                            <button className={styles.btnDangerOutline} type="button" onClick={() => openModal('cancel')}>
-                                <TbX /> Cancel subscription
-                            </button>
-                        </div>
-                    </div>
-                ) : (
-                    <div className={styles.dangerZone}>
-                        <div className={styles.dangerInfo}>
-                            <div className={styles.dangerTitle}><TbAlertTriangle /> Cancel subscription</div>
-                            <div className={styles.dangerDesc}>
-                                You&apos;re on the Free plan, so there&apos;s nothing to cancel. If you upgrade later, you can cancel
-                                anytime and keep your data.
-                            </div>
-                        </div>
-                        <button className={styles.btnDanger} type="button" disabled>Cancel plan</button>
-                    </div>
-                )}
 
             </div>
 
-            {/* ───────── MODALS ───────── */}
-
-            {/* UPGRADE MODAL */}
-            {modal?.type === 'upgrade' && modal.plan && (
+            {/* ───────── LEMON SQUEEZY REDIRECT MODAL ───────── */}
+            {modal?.plan && (
                 <div className={styles.modalOverlay} onClick={overlayClose}>
                     <div className={styles.modal}>
                         <div className={styles.modalHeader}>
@@ -441,181 +360,28 @@ export default function BillingPageClient() {
                             <button className={styles.modalClose} type="button" onClick={closeModal}><TbX /></button>
                         </div>
                         <div className={styles.modalBody}>
-                            <div className={styles.modalPlanSummary}>
-                                <div>
-                                    <div className={styles.modalPlanName}>{modal.plan.name} Plan</div>
-                                    <div className={styles.modalPlanSub}>Billed monthly · Cancel anytime</div>
+                            <div className={styles.modalLemonRedirect}>
+                                <div className={styles.lemonRedirectIcon}><TbLemon2 /></div>
+                                <div className={styles.lemonRedirectTitle}>You&apos;ll be redirected to Lemon Squeezy</div>
+                                <div className={styles.lemonRedirectDesc}>
+                                    Lemon Squeezy securely handles your payment and any applicable tax. You&apos;ll be brought back to Storefindy once your subscription is active.
                                 </div>
-                                <div className={styles.modalPlanPrice}>
-                                    {modal.plan.price} <span>{modal.plan.period}</span>
+                                <div className={styles.lemonRedirectPlan}>
+                                    <div>
+                                        <div className={styles.lemonRedirectPlanName}>{modal.plan.name} Plan</div>
+                                        <div className={styles.lemonRedirectPlanSub}>Billed monthly · Cancel anytime</div>
+                                    </div>
+                                    <div className={styles.lemonRedirectPlanPrice}>
+                                        {modal.plan.price} <span>{modal.plan.period}</span>
+                                    </div>
                                 </div>
-                            </div>
-
-                            {sub.card ? (
-                                <>
-                                    <div className={styles.savedCardNote}>
-                                        <TbCreditCard /> Your saved card <strong>{sub.card.brand} •••• {sub.card.last4}</strong> will be charged {modal.plan.price} on upgrade.
-                                    </div>
-                                    <label className={styles.stripeFormLabel}>Update card (optional)</label>
-                                    <div className={styles.stripeField}>
-                                        <TbCreditCard />
-                                        <span className={styles.stripeFieldText}>Use saved card {sub.card.brand} •••• {sub.card.last4}</span>
-                                    </div>
-                                    <div className={styles.stripeSecure}>
-                                        <TbLock />
-                                        <span>Secured by <strong>Stripe</strong> · 256-bit SSL</span>
-                                    </div>
-                                    <button className={styles.btnStripe} type="button" onClick={closeModal}>
-                                        <TbRocket /> Upgrade to {modal.plan.name} — {modal.plan.price}/mo
-                                    </button>
-                                    <div className={styles.modalFooter}>
-                                        Prorated charge applies for the current billing period.<br />
-                                        Cancel anytime from billing settings.
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <label className={styles.stripeFormLabel}>Card number</label>
-                                    <div className={styles.stripeField}>
-                                        <TbCreditCard />
-                                        <span className={styles.stripeFieldText}>1234 5678 9012 3456</span>
-                                        <span className={styles.stripeFieldBrand}>Visa</span>
-                                    </div>
-                                    <div className={styles.stripeRow}>
-                                        <div>
-                                            <label className={styles.stripeFormLabel}>Expiry date</label>
-                                            <input className={styles.stripeInput} type="text" placeholder="MM / YY" maxLength={7} />
-                                        </div>
-                                        <div>
-                                            <label className={styles.stripeFormLabel}>CVC</label>
-                                            <input className={styles.stripeInput} type="text" placeholder="123" maxLength={4} />
-                                        </div>
-                                    </div>
-                                    <label className={styles.stripeFormLabel}>Name on card</label>
-                                    <input className={`${styles.stripeInput} ${styles.nameInput}`} type="text" placeholder="Full name" />
-                                    <div className={styles.stripeSecure}>
-                                        <TbLock />
-                                        <span>Secured by <strong>Stripe</strong> — 256-bit SSL encryption</span>
-                                    </div>
-                                    <button className={styles.btnStripe} type="button" onClick={closeModal}>
-                                        <TbShieldCheck />
-                                        <span>Pay {modal.plan.price} {modal.plan.period}</span>
-                                    </button>
-                                    <div className={styles.modalFooter}>
-                                        By subscribing you agree to our Terms of Service.<br />
-                                        You can cancel anytime from your billing settings.
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* DOWNGRADE MODAL */}
-            {modal?.type === 'downgrade' && modal.plan && (
-                <div className={styles.modalOverlay} onClick={overlayClose}>
-                    <div className={styles.modal}>
-                        <div className={styles.modalHeader}>
-                            <span className={styles.modalTitle}>Downgrade to {modal.plan.name}</span>
-                            <button className={styles.modalClose} type="button" onClick={closeModal}><TbX /></button>
-                        </div>
-                        <div className={styles.modalBody}>
-                            <div className={styles.modalWarn}>
-                                <div className={styles.modalWarnTitle}>
-                                    <TbAlertTriangle /> You will lose these {sub.planName} features
-                                </div>
-                                <div className={styles.modalWarnDesc}>
-                                    Effective at end of billing period — {sub.renewal}.
-                                </div>
-                            </div>
-                            <div className={styles.losesList}>
-                                {(sub.downgradeLoses || []).map((loss, i) => (
-                                    <div className={styles.losesItem} key={i}><TbCircleX /> {loss}</div>
-                                ))}
-                            </div>
-                            <div className={styles.modalBtns}>
-                                <button className={styles.btnKeep} type="button" onClick={closeModal}>Keep {sub.planName} plan</button>
-                                <button className={styles.btnConfirmDanger} type="button" onClick={closeModal}>Downgrade to {modal.plan.name}</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* CANCEL MODAL */}
-            {modal?.type === 'cancel' && (
-                <div className={styles.modalOverlay} onClick={overlayClose}>
-                    <div className={styles.modal}>
-                        <div className={styles.modalHeader}>
-                            <span className={styles.modalTitle}>Cancel subscription</span>
-                            <button className={styles.modalClose} type="button" onClick={closeModal}><TbX /></button>
-                        </div>
-                        <div className={styles.modalBody}>
-                            <div className={styles.modalWarn}>
-                                <div className={styles.modalWarnTitle}>
-                                    <TbAlertTriangle /> Are you sure you want to cancel?
-                                </div>
-                                <div className={styles.modalWarnDesc}>
-                                    Your {sub.planName} plan will remain active until {sub.renewal}.
-                                </div>
-                            </div>
-                            <div className={styles.cancelDetail}>
-                                <strong>What happens when you cancel:</strong><br />
-                                • {sub.planName} features remain active until {sub.renewal}<br />
-                                • On {sub.renewal}, you&apos;ll be moved to the Free plan<br />
-                                • Your data (locators &amp; locations) will not be deleted<br />
-                                • You can re-subscribe anytime
-                            </div>
-                            <div className={styles.modalBtns}>
-                                <button className={styles.btnKeep} type="button" onClick={closeModal}>
-                                    <TbCrown /> Keep {sub.planName}
+                                <button className={styles.btnGoLemon} type="button" onClick={goToLemonPortal}>
+                                    <TbExternalLink /> Continue to Lemon Squeezy Checkout
                                 </button>
-                                <button className={styles.btnConfirmDanger} type="button" onClick={closeModal}>Yes, cancel subscription</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* UPDATE CARD MODAL */}
-            {modal?.type === 'card' && sub.card && (
-                <div className={styles.modalOverlay} onClick={overlayClose}>
-                    <div className={styles.modal}>
-                        <div className={styles.modalHeader}>
-                            <span className={styles.modalTitle}>Update payment method</span>
-                            <button className={styles.modalClose} type="button" onClick={closeModal}><TbX /></button>
-                        </div>
-                        <div className={styles.modalBody}>
-                            <div className={styles.currentCardRow}>
-                                <span className={styles.cardBrand}><span>{sub.card.brand}</span></span>
-                                <span className={styles.currentCardNum}>{sub.card.brand} •••• {sub.card.last4}</span>
-                                <span className={styles.currentCardLabel}>Current card</span>
-                            </div>
-                            <label className={styles.stripeFormLabel}>New card number</label>
-                            <div className={styles.stripeField}>
-                                <TbCreditCard />
-                                <span className={styles.stripeFieldText}>Enter new card number</span>
-                            </div>
-                            <div className={styles.stripeRow}>
-                                <div>
-                                    <label className={styles.stripeFormLabel}>Expiry</label>
-                                    <input className={styles.stripeInput} type="text" placeholder="MM / YY" maxLength={7} />
-                                </div>
-                                <div>
-                                    <label className={styles.stripeFormLabel}>CVC</label>
-                                    <input className={styles.stripeInput} type="text" placeholder="123" maxLength={4} />
+                                <div className={styles.modalCancelLink} onClick={closeModal}>
+                                    Cancel — stay on {sub.planName.toLowerCase()} plan
                                 </div>
                             </div>
-                            <label className={styles.stripeFormLabel}>Name on card</label>
-                            <input className={`${styles.stripeInput} ${styles.nameInput}`} type="text" placeholder="Full name" />
-                            <div className={styles.stripeSecure}>
-                                <TbLock />
-                                <span>Secured by <strong>Stripe</strong></span>
-                            </div>
-                            <button className={styles.btnStripe} type="button" onClick={closeModal}>
-                                <TbCreditCard /> Update payment method
-                            </button>
                         </div>
                     </div>
                 </div>

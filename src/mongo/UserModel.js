@@ -8,12 +8,17 @@ const userSchema = new mongoose.Schema({
   created_at: { type: String, required: false },
   last_login_at: { type: String, required: false },
 
-  // stripe.com payment
-  stripe_customer_id: { type: String, required: false, default: '' }, // ← links to Stripe
-  subscription_id: { type: String, required: false, default: '' },    // ← links to subscription
-  plan: { type: String, required: false, default: 'free' }, // free, pro, business
-  status: { type: String, required: false, default: '' }, // active, cancelled, past_due,
-  renewal_date: { type: String, required: false, default: '' }, // ← from Stripe webhook
+  // lemonsqueezy.com payment
+  ls_customer_id: { type: String, required: false, default: '' },       // LemonSqueezy customer ID (e.g. "1234567")
+  ls_subscription_id: { type: String, required: false, default: '' },   // LemonSqueezy subscription ID (e.g. "sub_abc123")
+  ls_order_id: { type: String, required: false, default: '' },          // LemonSqueezy order ID — first purchase
+  ls_product_id: { type: String, required: false, default: '' },        // LemonSqueezy product ID
+  ls_variant_id: { type: String, required: false, default: '' },        // LemonSqueezy variant ID — maps to plan tier
+  plan: { type: String, required: false, default: 'free' },             // free | pro | business
+  status: { type: String, required: false, default: 'active' },         // active | cancelled | past_due | paused | expired
+  renewal_date: { type: String, required: false, default: '' },         // from LemonSqueezy webhook
+  trial_ends_at: { type: String, required: false, default: '' },        // if you offer a free trial
+
 });
 
 let UserModel;
