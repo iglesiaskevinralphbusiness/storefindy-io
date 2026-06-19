@@ -112,7 +112,7 @@ export async function getLocators() {
     await dbConnect();
     
     const locators = await LocatorModel.find({ user_id: session.user.id }).lean();
-    const inactiveIds = await getLocatorInactiveIds();
+    const inactiveIds = await getLocatorInactiveIds(session.user.id);
 
     const updatedLocators = locators.map(locator => ({
         ...locator,
@@ -123,24 +123,18 @@ export async function getLocators() {
     return serializeForClient(updatedLocators);
 }
 
-export async function getLocatorInactiveIds(){
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-        redirect('/sign-in');
-    }
-
+export async function getLocatorInactiveIds(user_id){
     await dbConnect();
 
-    const user = await UserModel.findOne({ _id: session.user.id }).lean();
+    const user = await UserModel.findOne({ _id: user_id }).lean();
     if(!user) {
-        redirect('/sign-in');
+        return [];
     }
-
 
     const plan = plans.find(p => p.id === user.plan) || plan[0];
     const skip = plan.max_locator;
 
-    const locators = (await LocatorModel.find({ user_id: session.user.id })
+    const locators = (await LocatorModel.find({ user_id })
         .sort({ createdAt: 1 }) // oldest -> newest
         .skip(skip)
         .select('_id')
@@ -164,7 +158,14 @@ export async function getLocatorById(locator_id) {
     await dbConnect();
     
     const locator = await LocatorModel.findOne({ _id: locator_id, user_id: session.user.id }).lean();
-    return serializeForClient(locator);
+    if(!locator) {
+        return null;
+    }
+    const inactiveIds = await getLocatorInactiveIds(session.user.id);
+    return serializeForClient({
+        ...locator,
+        status: inactiveIds.includes(String(locator._id)) ? 'inactive' : 'active',
+    });
 }
 
 export async function getAvailableCountriesBasedOnLocations(locator_id) {

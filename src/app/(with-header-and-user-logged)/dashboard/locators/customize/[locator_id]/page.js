@@ -5,12 +5,10 @@ import CustomizeWrapper from '@/components/Dashboard/CustomizeWrapper';
 export default async function LocatorsCustomizePage({ params, searchParams }) {
     const { locator_id } = await params;
     const { preview } = await searchParams;
-    console.log(preview);
     const locator = await getLocatorById(locator_id);
     if(!locator) {
         return notFound();
     }
-
     const countries = await getAvailableCountriesBasedOnLocations(locator_id);
     const available_countries = countries.length > 0 ? countries : [locator.default_country];
 

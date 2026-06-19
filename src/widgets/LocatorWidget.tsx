@@ -8,6 +8,7 @@ type LocatorWidgetProps = {
 
 type LocatorData = {
 	_id: string;
+	status?: 'active' | 'inactive';
 	filters?: any[];
 	search_radius?: number;
 	default_zoom_level?: number;
@@ -26,6 +27,7 @@ type LocatorData = {
 
 export default function LocatorWidget({ locator }: LocatorWidgetProps) {
 	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState(false);
 	const [data, setData] = useState<LocatorData | null>(null);
 	const [available_countries, setAvailableCountries] = useState<string[]>([]);
 	const [settings, setSettings] = useState<LocatorData['settings']>({});
@@ -37,12 +39,18 @@ export default function LocatorWidget({ locator }: LocatorWidgetProps) {
 		fetch(`/api/get-locator/${locator}`)
 			.then((response) => response.json())
 			.then((data) => {
+
 				// The API responds with `{ status, locator, countries }`. Every
 				// display setting and feature flag lives on `data.locator`, so we
 				// read them off that document — not the raw response. Reading them
 				// off `data` left every `features.*` flag undefined, which hid the
 				// search form, filters, radius, store list, and directions.
 				const locator = data.locator;
+				if(!locator) {
+					setError(true);
+					setLoading(false);
+					return;
+				}
 				const { settings } = locator;
 				setData(locator);
 				setSettings(generateSettingsDefault(settings));
@@ -51,15 +59,34 @@ export default function LocatorWidget({ locator }: LocatorWidgetProps) {
 				setLoading(false);
 			})
 			.catch((error) => {
+				setError(true);
+				setLoading(false);
 				console.error('Error fetching locator:', error);
 			});
 	}, [locator]);
 
+	const Inactive = () => {
+		return <div className="inactive">
+			<div className="inactive-content">
+				<h2>Oops! Failed to load the Store locator.</h2>
+				<p className="msg">The Store locator is either inactive or not found.</p>
+				<p className="inactive-powered-by">Powered by <a href="https://storefindy.com" target="_blank">Storefindy</a></p>
+			</div>
+		</div>;
+	};
+
+	if(error) return <Inactive />;
 	if (loading) return <div>Loading...</div>;
 	if (!data) return null;
 
+	console.log(data)
+
 	return <>
 		 <Locator
+			// active/Inactive
+			isInactive={error ? 'inactive' : data.status}
+			inactiveForm={<Inactive />}
+		 
 			// locator data
 			locator_id={data._id}
 			filters={data.filters}

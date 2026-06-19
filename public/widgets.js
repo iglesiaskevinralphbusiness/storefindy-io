@@ -36887,6 +36887,7 @@ var process=typeof process!=="undefined"?process:{env:{}};
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+    top: 40px;
     margin-top: 10px;
     padding: 12px;
     border: 1px solid #e7e9e9;
@@ -37717,6 +37718,9 @@ var process=typeof process!=="undefined"?process:{env:{}};
     }
   }
   function Locator({
+    // active/Inactive
+    isInactive = false,
+    inactiveForm = /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_jsx_runtime4.Fragment, {}),
     // Identity & map defaults
     locator_id,
     available_countries = [default_country],
@@ -37729,6 +37733,9 @@ var process=typeof process!=="undefined"?process:{env:{}};
     settings = {},
     features = {}
   }) {
+    if (isInactive === "inactive") {
+      return inactiveForm;
+    }
     const defaultRadius = search_radius ?? 10;
     const defaultZoom = default_zoom_level ?? 10;
     const countryView = COUNTRIES.find((c) => c.code === String(default_country || "").toLowerCase());
@@ -37887,6 +37894,7 @@ var process=typeof process!=="undefined"?process:{env:{}};
       return "large-app";
     };
     const getBorderStyle = (value) => {
+      if (value === "none") return "0";
       if (value === "rounded") return "10px";
       if (value === "pill") return "20px";
       if (value === "square") return "0";
@@ -38042,7 +38050,11 @@ var process=typeof process!=="undefined"?process:{env:{}};
             backgroundColor: settings.background,
             color: settings.text_color,
             fontFamily: settings.font_family,
-            fontSize: settings.font_size
+            fontSize: settings.font_size,
+            borderRadius: getBorderStyle(settings.border),
+            borderColor: settings.border_color,
+            borderStyle: settings.border === "none" || settings.border === "" || !settings.border ? "none" : "solid",
+            borderWidth: settings.border === "none" || settings.border === "" || !settings.border ? "0px" : "1px"
           },
           children: [
             /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "locator-sidebar", children: [
@@ -38215,8 +38227,11 @@ var process=typeof process!=="undefined"?process:{env:{}};
                       borderColor: settings.resultItem.border_color,
                       backgroundColor: settings.resultItem.background,
                       ...activeId === location2._id && {
-                        borderColor: settings.resultItem.active_border_color
-                      }
+                        borderColor: settings.resultItem.active_border_color,
+                        backgroundColor: settings.resultItem.active_background
+                      },
+                      borderRadius: getBorderStyle(settings.resultItem.border),
+                      borderStyle: settings.resultItem.border === "none" || settings.resultItem.border === "" || !settings.resultItem.border ? "none" : "solid"
                     },
                     children: renderLocationCard(location2, index)
                   },
@@ -38298,6 +38313,34 @@ ${formStyles}
 ${resultsStyles}
 ${mapStyles}
 ${userDefinedStyles}
+
+.inactive {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 700px;
+    background: #fff;
+    font-size: 16px;
+}
+.inactive-content {
+    width: 400px;
+    height: 300px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.inactive-content .msg{
+    padding: 20px;
+    border-radius: 6px;
+    color: rgb(153, 27, 27);
+    background-color: rgb(254, 242, 242);
+    font-size: 15px;
+}
+.inactive-content .inactive-powered-by {
+    padding-top: 20px;
+    border-top: 1px solid #e5e5e5;
+    font-size: 16px;
+    text-align: center;
+}
 `;
 
   // src/widgets/LocatorWidget.tsx
@@ -38311,6 +38354,8 @@ ${userDefinedStyles}
       text_color: settings.text_color,
       font_family: settings.font_family,
       font_size: settings.font_size,
+      border: settings.border,
+      border_color: settings.border_color,
       searchInput: {
         border: settings.searchInput.border,
         background: settings.searchInput.background,
@@ -38341,6 +38386,8 @@ ${userDefinedStyles}
       },
       resultItem: {
         active_border_color: settings.resultItem.active_border_color,
+        active_background: settings.resultItem.active_background,
+        border: settings.resultItem.border,
         border_color: settings.resultItem.border_color,
         background: settings.resultItem.background
       },
@@ -38389,6 +38436,7 @@ ${userDefinedStyles}
   var import_jsx_runtime5 = __toESM(require_jsx_runtime());
   function LocatorWidget({ locator }) {
     const [loading, setLoading] = (0, import_react17.useState)(true);
+    const [error, setError] = (0, import_react17.useState)(false);
     const [data, setData] = (0, import_react17.useState)(null);
     const [available_countries, setAvailableCountries] = (0, import_react17.useState)([]);
     const [settings, setSettings] = (0, import_react17.useState)({});
@@ -38397,21 +38445,42 @@ ${userDefinedStyles}
       if (!locator) return;
       fetch(`/api/get-locator/${locator}`).then((response) => response.json()).then((data2) => {
         const locator2 = data2.locator;
+        if (!locator2) {
+          setError(true);
+          setLoading(false);
+          return;
+        }
         const { settings: settings2 } = locator2;
         setData(locator2);
         setSettings(generateSettingsDefault(settings2));
         setFeatures(generateFeaturesDefault(locator2));
         setAvailableCountries(data2.countries);
         setLoading(false);
-      }).catch((error) => {
-        console.error("Error fetching locator:", error);
+      }).catch((error2) => {
+        setError(true);
+        setLoading(false);
+        console.error("Error fetching locator:", error2);
       });
     }, [locator]);
+    const Inactive = () => {
+      return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "inactive", children: /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "inactive-content", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("h2", { children: "Oops! Failed to load the Store locator." }),
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("p", { className: "msg", children: "The Store locator is either inactive or not found." }),
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("p", { className: "inactive-powered-by", children: [
+          "Powered by ",
+          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("a", { href: "https://storefindy.com", target: "_blank", children: "Storefindy" })
+        ] })
+      ] }) });
+    };
+    if (error) return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Inactive, {});
     if (loading) return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { children: "Loading..." });
     if (!data) return null;
+    console.log(data);
     return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_jsx_runtime5.Fragment, { children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
       Locator,
       {
+        isInactive: error ? "inactive" : data.status,
+        inactiveForm: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Inactive, {}),
         locator_id: data._id,
         filters: data.filters,
         available_countries,

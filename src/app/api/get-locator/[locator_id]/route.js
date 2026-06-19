@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { isValidObjectId } from 'mongoose';
 import { dbConnect } from '@/config/mongo.config';
-import { LocatorModel } from '@/mongo/LocatorModel';
-import { LocationModel } from '@/mongo/LocationsModel';
+import { UserModel, LocatorModel, LocationModel } from '@/mongo';
 import { serializeForClient } from '@/utils/helpers';
+import { plans } from '@/utils/constant/pricing';
 
 // This endpoint returns a locator's public configuration so the embeddable
 // store-locator widget can render. Like the search endpoint it is loaded from
@@ -34,16 +34,35 @@ export async function GET(request, { params }) {
 
     // Exclude the owning account from the public payload; the widget only needs
     // display settings, not who owns the locator.
-    const locator = await LocatorModel.findById(locatorId).select('-user_id').lean();
+    const locator = await LocatorModel.findById(locatorId).lean();
     if (!locator) {
         return json({ status: 'error', message: 'Locator not found.', locator: null }, 404);
     }
 
-    const countries = await LocationModel.distinct('country', { locator_id: locatorId })
+    const countries = await LocationModel.distinct('country', { locator_id: locatorId });
+    const user = await UserModel.findOne({ _id: locator.user_id }).lean();
+    if(!user) {
+        return json({ status: 'error', message: 'Owner of locator not found.', locator: null }, 404);
+    }
+
+    // // inactive
+    const plan = plans.find(p => p.id === user.plan) || plan[0];
+    const skip = plan.max_locator;
+    const inactiveIds = (await LocatorModel.find({ user_id: locator.user_id })
+        .sort({ createdAt: 1 }) // oldest -> newest
+        .skip(skip)
+        .select('_id')
+        .lean()
+    ).map(({ _id }) => _id.toString());
+  
 
     return json({
         status: 'success',
-        locator: serializeForClient(locator),
+        locator: serializeForClient({
+            ...locator,
+            user_id: 'hidden',
+            status: inactiveIds.includes(String(locator._id)) ? 'inactive' : 'active',
+        }),
         countries: serializeForClient(countries),
     });
 }

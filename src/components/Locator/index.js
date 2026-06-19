@@ -78,6 +78,9 @@ async function reverseGeocode(lat, lng) {
 }
 
 export default function Locator({
+    // active/Inactive
+    isInactive = false,
+    inactiveForm = <></>,
     // Identity & map defaults
     locator_id,
     available_countries = [default_country],
@@ -90,6 +93,12 @@ export default function Locator({
     settings = {},
     features = {},
 }) {
+
+    if(isInactive === 'inactive') {
+        return inactiveForm;
+    }
+
+
     // Configured defaults — the source of truth for the map's first load and for
     // every fresh search. (maximum_results_shown is enforced server-side.)
     const defaultRadius = search_radius ?? 10;
@@ -760,4 +769,32 @@ ${formStyles}
 ${resultsStyles}
 ${mapStyles}
 ${userDefinedStyles}
+
+.inactive {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 700px;
+    background: #fff;
+    font-size: 16px;
+}
+.inactive-content {
+    width: 400px;
+    height: 300px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.inactive-content .msg{
+    padding: 20px;
+    border-radius: 6px;
+    color: rgb(153, 27, 27);
+    background-color: rgb(254, 242, 242);
+    font-size: 15px;
+}
+.inactive-content .inactive-powered-by {
+    padding-top: 20px;
+    border-top: 1px solid #e5e5e5;
+    font-size: 16px;
+    text-align: center;
+}
 `;

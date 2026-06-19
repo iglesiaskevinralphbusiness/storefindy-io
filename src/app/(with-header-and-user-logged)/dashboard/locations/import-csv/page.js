@@ -41,6 +41,91 @@ const CODE_TO_LABEL = (() => {
     return map;
 })();
 
+// Capital / major city per country code, used to generate the localhost staging CSV.
+const CAPITALS = {
+    af: 'Kabul', ax: 'Mariehamn', al: 'Tirana', dz: 'Algiers', as: 'Pago Pago',
+    ad: 'Andorra la Vella', ao: 'Luanda', ai: 'The Valley', aq: 'McMurdo Station',
+    ag: "Saint John's", ar: 'Buenos Aires', am: 'Yerevan', aw: 'Oranjestad',
+    au: 'Canberra', at: 'Vienna', az: 'Baku', bs: 'Nassau', bh: 'Manama', bd: 'Dhaka',
+    bb: 'Bridgetown', by: 'Minsk', be: 'Brussels', bz: 'Belmopan', bj: 'Porto-Novo',
+    bm: 'Hamilton', bt: 'Thimphu', bo: 'La Paz', ba: 'Sarajevo', bw: 'Gaborone',
+    bv: 'Bouvet Island', br: 'Brasilia', io: 'Diego Garcia', vg: 'Road Town',
+    bn: 'Bandar Seri Begawan', bg: 'Sofia', bf: 'Ouagadougou', bi: 'Gitega',
+    kh: 'Phnom Penh', cm: 'Yaounde', ca: 'Ottawa', cv: 'Praia', bq: 'Kralendijk',
+    ky: 'George Town', cf: 'Bangui', td: "N'Djamena", cl: 'Santiago', cn: 'Beijing',
+    cx: 'Flying Fish Cove', cc: 'West Island', co: 'Bogota', km: 'Moroni',
+    cg: 'Brazzaville', cd: 'Kinshasa', ck: 'Avarua', cr: 'San Jose',
+    ci: 'Yamoussoukro', hr: 'Zagreb', cu: 'Havana', cw: 'Willemstad', cy: 'Nicosia',
+    cz: 'Prague', dk: 'Copenhagen', dj: 'Djibouti', dm: 'Roseau', do: 'Santo Domingo',
+    ec: 'Quito', eg: 'Cairo', sv: 'San Salvador', gq: 'Malabo', er: 'Asmara',
+    ee: 'Tallinn', sz: 'Mbabane', et: 'Addis Ababa', fk: 'Stanley', fo: 'Torshavn',
+    fj: 'Suva', fi: 'Helsinki', fr: 'Paris', gf: 'Cayenne', pf: 'Papeete',
+    tf: 'Port-aux-Francais', ga: 'Libreville', gm: 'Banjul', ge: 'Tbilisi',
+    de: 'Berlin', gh: 'Accra', gi: 'Gibraltar', gr: 'Athens', gl: 'Nuuk',
+    gd: "St. George's", gp: 'Basse-Terre', gu: 'Hagatna', gt: 'Guatemala City',
+    gg: 'St. Peter Port', gn: 'Conakry', gw: 'Bissau', gy: 'Georgetown',
+    ht: 'Port-au-Prince', hm: 'Atlas Cove', hn: 'Tegucigalpa', hk: 'Hong Kong',
+    hu: 'Budapest', is: 'Reykjavik', in: 'New Delhi', id: 'Jakarta', ir: 'Tehran',
+    iq: 'Baghdad', ie: 'Dublin', im: 'Douglas', il: 'Jerusalem', it: 'Rome',
+    jm: 'Kingston', jp: 'Tokyo', je: 'St. Helier', jo: 'Amman', kz: 'Astana',
+    ke: 'Nairobi', ki: 'South Tarawa', kw: 'Kuwait City', kg: 'Bishkek',
+    la: 'Vientiane', lv: 'Riga', lb: 'Beirut', ls: 'Maseru', lr: 'Monrovia',
+    ly: 'Tripoli', li: 'Vaduz', lt: 'Vilnius', lu: 'Luxembourg', mo: 'Macau',
+    mg: 'Antananarivo', mw: 'Lilongwe', my: 'Kuala Lumpur', mv: 'Male',
+    ml: 'Bamako', mt: 'Valletta', mh: 'Majuro', mq: 'Fort-de-France',
+    mr: 'Nouakchott', mu: 'Port Louis', yt: 'Mamoudzou', mx: 'Mexico City',
+    fm: 'Palikir', md: 'Chisinau', mc: 'Monaco', mn: 'Ulaanbaatar', me: 'Podgorica',
+    ms: 'Brades', ma: 'Rabat', mz: 'Maputo', mm: 'Naypyidaw', na: 'Windhoek',
+    nr: 'Yaren', np: 'Kathmandu', nl: 'Amsterdam', nc: 'Noumea', nz: 'Wellington',
+    ni: 'Managua', ne: 'Niamey', ng: 'Abuja', nu: 'Alofi', nf: 'Kingston',
+    kp: 'Pyongyang', mk: 'Skopje', mp: 'Saipan', no: 'Oslo', om: 'Muscat',
+    pk: 'Islamabad', pw: 'Ngerulmud', ps: 'Ramallah', pa: 'Panama City',
+    pg: 'Port Moresby', py: 'Asuncion', pe: 'Lima', ph: 'Manila', pn: 'Adamstown',
+    pl: 'Warsaw', pt: 'Lisbon', pr: 'San Juan', qa: 'Doha', re: 'Saint-Denis',
+    ro: 'Bucharest', ru: 'Moscow', rw: 'Kigali', ws: 'Apia', sm: 'San Marino',
+    st: 'Sao Tome', sa: 'Riyadh', sn: 'Dakar', rs: 'Belgrade', sc: 'Victoria',
+    sl: 'Freetown', sg: 'Singapore', sx: 'Philipsburg', sk: 'Bratislava',
+    si: 'Ljubljana', sb: 'Honiara', so: 'Mogadishu', za: 'Pretoria',
+    gs: 'King Edward Point', kr: 'Seoul', ss: 'Juba', es: 'Madrid', lk: 'Colombo',
+    bl: 'Gustavia', sh: 'Jamestown', kn: 'Basseterre', lc: 'Castries',
+    mf: 'Marigot', pm: 'Saint-Pierre', vc: 'Kingstown', sd: 'Khartoum',
+    sr: 'Paramaribo', sj: 'Longyearbyen', se: 'Stockholm', ch: 'Bern',
+    sy: 'Damascus', tw: 'Taipei', tj: 'Dushanbe', tz: 'Dodoma', th: 'Bangkok',
+    tl: 'Dili', tg: 'Lome', tk: 'Atafu', to: "Nuku'alofa", tt: 'Port of Spain',
+    tn: 'Tunis', tr: 'Ankara', tm: 'Ashgabat', tc: 'Cockburn Town', tv: 'Funafuti',
+    um: 'Wake Island', vi: 'Charlotte Amalie', ug: 'Kampala', ua: 'Kyiv',
+    ae: 'Abu Dhabi', gb: 'London', us: 'Washington', uy: 'Montevideo',
+    uz: 'Tashkent', vu: 'Port Vila', va: 'Vatican City', ve: 'Caracas',
+    vn: 'Hanoi', wf: 'Mata-Utu', eh: 'Laayoune', ye: 'Sanaa', zm: 'Lusaka',
+    zw: 'Harare',
+};
+
+// Build a staging CSV (used only on localhost) with two locations per capital city
+// for every country in our list. Each location is named "StoreFindy <City>".
+const STAGING_DATA = (() => {
+    const header = 'name,city,state,country,lat,lng,phone,email,website';
+    const round = (n) => Number(n.toFixed(4));
+    const lines = [header];
+    COUNTRIES.forEach((c, idx) => {
+        const city = CAPITALS[c.code] || c.label;
+        // Two branches per city, offset slightly so they sit at distinct coordinates.
+        const branches = [
+            { off: 0.012, n: 1 },
+            { off: -0.018, n: 2 },
+        ];
+        for (const b of branches) {
+            const name = `StoreFindy ${city}`;
+            const lat = round(c.lat + b.off);
+            const lng = round(c.lng + b.off);
+            const phone = `+1-555-${String(1000 + idx).slice(-4)}${b.n}`;
+            const email = `storefindy.${c.code}${b.n}@example.com`;
+            const website = `https://storefindy.example/${c.code}`;
+            lines.push(`${name},${city},${city},${c.label},${lat},${lng},${phone},${email},${website}`);
+        }
+    });
+    return lines.join('\n');
+})();
+
 // Resolve a raw CSV country value to a Storefindy country code.
 // Returns { code, matched }; unmatched values fall back to DEFAULT_COUNTRY.
 function resolveCountry(raw) {
@@ -270,8 +355,10 @@ function ImportWizard({ locators }) {
             'name,city,state,country,lat,lng,phone,email,website\n' +
             'SM Mall of Asia,Pasay City,Metro Manila,Philippines,14.5353,120.9822,+63 2 8556 0100,sm@sm.ph,https://sm.ph\n' +
             'Robinsons Galleria,Pasig City,Metro Manila,Philippines,14.5856,121.0567,+63 2 8633 9888,,https://robinsons.ph';
+        const stagingData = STAGING_DATA;
+
         const a = document.createElement('a');
-        a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(data);
+        a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(process.env.NEXT_PUBLIC_ROOT_URL === 'http://localhost:3000' ? stagingData : data);
         a.download = 'storefindy_template.csv';
         a.click();
     }
