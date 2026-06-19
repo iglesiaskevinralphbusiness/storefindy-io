@@ -3,5 +3,5 @@ import { LocatorModel } from "./LocatorModel";
 
 export {
   UserModel,
-  LocatorModel
+  LocatorModel,
 }

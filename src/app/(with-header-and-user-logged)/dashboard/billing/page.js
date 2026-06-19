@@ -1,9 +1,14 @@
+'use server';
 import styles from '../Dashboard.module.scss';
 import Sidebar from '@/components/Dashboard/Sidebar';
 import { RiArrowRightLine } from "react-icons/ri";
 import BillingPageClient from './billing-client';
+import { getBillingStatus } from '@/actions/billing';
 
-export default function BillingPage() {
+export default async function BillingPage() {
+    const billingStatus = await getBillingStatus();
+    console.log(billingStatus);
+
     return (
         <div className={styles.dashboard}>
             <Sidebar />
