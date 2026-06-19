@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { toast } from 'react-toastify';
 import styles from '../Dashboard.module.scss';
 import { plans } from '@/utils/constant/pricing';
 import {
@@ -78,6 +79,7 @@ export default function BillingPageClient() {
     // TODO: replace with the real subscription state from the database / Lemon Squeezy.
     const [subKey, setSubKey] = useState('free');
     const [modal, setModal] = useState(null); // { plan }
+    const [loading, setLoading] = useState(false); // 'portal' | 'checkout' | false
 
     const sub = SUBSCRIPTIONS[subKey];
     const isSubscribed = sub.status !== 'free';
@@ -89,9 +91,47 @@ export default function BillingPageClient() {
     const overlayClose = (e) => {
         if (e.target === e.currentTarget) closeModal();
     };
-    // Placeholder — in production this opens the Lemon Squeezy Customer Portal.
-    const goToLemonPortal = () => {
-        // window.location.href = portalUrl;
+
+    // Open the Lemon Squeezy hosted Customer Portal — payment method, invoices,
+    // plan changes and cancellation all live there. (GET /api/.../portal returns
+    // a short-lived signed URL for the current user's subscription.)
+    const goToLemonPortal = async () => {
+        if (loading) return;
+        setLoading('portal');
+        try {
+            const res = await fetch('/api/lemonsqueezy/portal');
+            const data = await res.json();
+            if (!res.ok || !data.url) {
+                throw new Error(data.message || 'Could not open the billing portal.');
+            }
+            window.location.href = data.url;
+        } catch (err) {
+            toast.error('Could not open the billing portal', { description: err.message });
+            setLoading(false);
+        }
+    };
+
+    // Start a Lemon Squeezy hosted checkout for a plan and redirect to it.
+    // `plan` is a row from the pricing constant; the API maps its name to a
+    // Lemon Squeezy variant id and returns the checkout URL.
+    const goToCheckout = async (plan) => {
+        if (loading) return;
+        setLoading('checkout');
+        try {
+            const res = await fetch('/api/lemonsqueezy/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ plan: plan.name.toLowerCase() }),
+            });
+            const data = await res.json();
+            if (!res.ok || !data.url) {
+                throw new Error(data.message || 'Could not start checkout.');
+            }
+            window.location.href = data.url;
+        } catch (err) {
+            toast.error('Could not start checkout', { description: err.message });
+            setLoading(false);
+        }
     };
 
     return (
@@ -252,8 +292,14 @@ export default function BillingPageClient() {
                         </div>
                     </div>
                     {isSubscribed ? (
-                        <button className={styles.btnLemonPortal} type="button" onClick={goToLemonPortal}>
-                            <TbExternalLink /> Manage on Lemon Squeezy
+                        <button
+                            className={styles.btnLemonPortal}
+                            type="button"
+                            onClick={goToLemonPortal}
+                            disabled={loading === 'portal'}
+                        >
+                            <TbExternalLink />
+                            {loading === 'portal' ? 'Opening…' : 'Manage on Lemon Squeezy'}
                         </button>
                     ) : (
                         <button
@@ -375,8 +421,14 @@ export default function BillingPageClient() {
                                         {modal.plan.price} <span>{modal.plan.period}</span>
                                     </div>
                                 </div>
-                                <button className={styles.btnGoLemon} type="button" onClick={goToLemonPortal}>
-                                    <TbExternalLink /> Continue to Lemon Squeezy Checkout
+                                <button
+                                    className={styles.btnGoLemon}
+                                    type="button"
+                                    onClick={() => goToCheckout(modal.plan)}
+                                    disabled={loading === 'checkout'}
+                                >
+                                    <TbExternalLink />
+                                    {loading === 'checkout' ? 'Redirecting…' : 'Continue to Lemon Squeezy Checkout'}
                                 </button>
                                 <div className={styles.modalCancelLink} onClick={closeModal}>
                                     Cancel — stay on {sub.planName.toLowerCase()} plan
