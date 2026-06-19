@@ -20,8 +20,8 @@ export async function getBillingStatus() {
     await dbConnect();
 
     const user = await UserModel.findOne({ _id: session.user.id }).lean();
-
     const locator = await LocatorModel.countDocuments({ user_id: session.user.id });
+    const location = await LocationModel.countDocuments({ locator_id: { $in: locator.map(l => l._id) } });
 
     if(user.plan === 'free') {
         return {
