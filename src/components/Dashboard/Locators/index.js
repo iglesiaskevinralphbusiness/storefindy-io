@@ -12,7 +12,7 @@ import { postDeleteLocator } from '@/actions/locator';
 import { toast } from 'react-toastify';
 import MapPreview from './MapPreview';
 
-export default function Locators({ data=[] }) {
+export default function LocatorList({ data=[] }) {
     const router = useRouter();
     const [isManageOpen, setIsManageOpen] = useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -36,7 +36,16 @@ export default function Locators({ data=[] }) {
                             <div className={styles.info}>
                                 <div className={styles.name}>
                                     <h3>{ locator.name }</h3>
-                                    <p className={styles.active}>Active</p>
+                                    {locator.status === 'active' ? (
+                                        <p className={styles.active}>Active</p>
+                                    ) : (
+                                        <p className={styles.inactive}>
+                                            Inactive
+                                            <span className={styles.tooltip}>
+                                                You&rsquo;ve reached your limit. To enable this locator, please subscribe to Pro or Business.
+                                            </span>
+                                        </p>
+                                    )}
                                 </div>
                                 <div className={styles.analytics}>
                                     <p><LuMapPin /> 12 locations</p>

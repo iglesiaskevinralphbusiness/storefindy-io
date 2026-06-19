@@ -80,6 +80,38 @@ ul.locators {
                 .inactive {
                     background: #F1EFE8;
                     color: #5F5E5A;
+                    position: relative;
+                    cursor: help;
+                    .tooltip {
+                        position: absolute;
+                        bottom: calc(100% + 8px);
+                        right: 0;
+                        width: 240px;
+                        padding: 8px 10px;
+                        border-radius: 8px;
+                        background: #2B2A28;
+                        color: #fff;
+                        font-size: 12px;
+                        line-height: 1.4;
+                        text-align: left;
+                        opacity: 0;
+                        visibility: hidden;
+                        transition: opacity 0.15s ease, visibility 0.15s ease;
+                        z-index: 10;
+                        pointer-events: none;
+                        &::after {
+                            content: '';
+                            position: absolute;
+                            top: 100%;
+                            right: 16px;
+                            border: 6px solid transparent;
+                            border-top-color: #2B2A28;
+                        }
+                    }
+                    &:hover .tooltip {
+                        opacity: 1;
+                        visibility: visible;
+                    }
                 }
             }
             .analytics {

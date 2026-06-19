@@ -3,10 +3,10 @@ import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { dbConnect } from '@/config/mongo.config';
-import { LocatorModel } from '@/mongo/LocatorModel';
-import { LocationModel } from '@/mongo/LocationsModel';
+import { UserModel, LocatorModel, LocationModel } from '@/mongo';
 import { serializeForClient } from '@/utils/helpers';
 import { isValidObjectId } from 'mongoose';
+import { plans } from '@/utils/constant/pricing';
 
 export async function postCreateLocator(filters, _prev, formData) {
     const session = await getServerSession(authOptions);
@@ -112,7 +112,42 @@ export async function getLocators() {
     await dbConnect();
     
     const locators = await LocatorModel.find({ user_id: session.user.id }).lean();
-    return serializeForClient(locators);
+    const inactiveIds = await getLocatorInactiveIds();
+
+    const updatedLocators = locators.map(locator => ({
+        ...locator,
+        status: inactiveIds.includes(String(locator._id)) ? "inactive" : "active"
+    }));
+
+
+    return serializeForClient(updatedLocators);
+}
+
+export async function getLocatorInactiveIds(){
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    await dbConnect();
+
+    const user = await UserModel.findOne({ _id: session.user.id }).lean();
+    if(!user) {
+        redirect('/sign-in');
+    }
+
+
+    const plan = plans.find(p => p.id === user.plan) || plan[0];
+    const skip = plan.max_locator;
+
+    const locators = (await LocatorModel.find({ user_id: session.user.id })
+        .sort({ createdAt: 1 }) // oldest -> newest
+        .skip(skip)
+        .select('_id')
+        .lean()
+    ).map(({ _id }) => _id.toString());
+
+    return locators;
 }
 
 export async function getLocatorById(locator_id) {
