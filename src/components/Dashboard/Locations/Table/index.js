@@ -170,10 +170,20 @@ export default function LocationsTable({ data=[], sort, order }) {
                                 </td>
                                 <td><span className={styles.locatorPill}>{l.locator}</span></td>
                                 <td>
-                                    <span className={`${styles.badge} ${l.published ? styles.published : styles.draft}`}>
+                                    { l.status === 'inactive' ? <span
+                                        className={`${styles.badge} ${styles.inactive}`}
+                                        onMouseEnter={(e) => showTooltip(e, "You've reached your limit. To enable this location, please subscribe to Pro or Business.")}
+                                        onMouseLeave={hideTooltip}
+                                    >
                                         <span className={styles.badgeDot}></span>
-                                        {l.published ? 'Published' : 'Draft'}
-                                    </span>
+                                        Inactive
+                                    </span> : <>
+                                        <span className={`${styles.badge} ${l.published ? styles.published : styles.draft}`}>
+                                            <span className={styles.badgeDot}></span>
+                                            {l.published ? 'Published' : 'Draft'}
+                                        </span>
+                                        </>
+                                    }
                                 </td>
                                 <td className={styles.views}>{l.views > 0 ? l.views.toLocaleString() : '—'}</td>
                                 <td className={styles.dateModified}>{l.updatedAt ? mongooseFormatTimeAgo(l.updatedAt) : '—'}</td>

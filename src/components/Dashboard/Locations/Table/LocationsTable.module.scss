@@ -161,6 +161,10 @@
         background: #f1efe8;
         color: #888;
     }
+    &.inactive {
+        background: #f1efe8;
+        color: #888;
+    }
 }
 
 .badgeDot {
@@ -234,10 +238,11 @@
     color: #fff;
     font-size: 11px;
     font-weight: 500;
-    line-height: 1;
+    line-height: 1.4;
     padding: 6px 8px;
     border-radius: 6px;
-    white-space: nowrap;
+    max-width: 240px;
+    text-align: center;
     pointer-events: none;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 

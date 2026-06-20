@@ -161,6 +161,7 @@ export async function getLocatorById(locator_id) {
     if(!locator) {
         return null;
     }
+    // inactive ids - set inactive locators that are beyond the plan's limit
     const inactiveIds = await getLocatorInactiveIds(session.user.id);
     return serializeForClient({
         ...locator,

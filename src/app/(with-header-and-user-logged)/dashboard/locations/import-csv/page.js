@@ -7,7 +7,6 @@ import ImportCSVPageClient from './import-csv-client';
 import LimitReached from '@/components/LimitReached';
 
 export default async function ImportCSVPage() {
-
     const billingStatus = await getBillingStatus();
     
     if(billingStatus.location_is_limit_reached){

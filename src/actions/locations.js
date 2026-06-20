@@ -4,11 +4,11 @@ import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { dbConnect } from '@/config/mongo.config';
-import { LocationModel } from '@/mongo/LocationsModel';
-import { LocatorModel } from '@/mongo/LocatorModel';
+import { LocationModel, LocatorModel, UserModel } from '@/mongo';
 import { sanitizeInput } from '@/utils/lib/input-sanitization';
 import { serializeForClient } from '@/utils/helpers';
 import { isValidObjectId } from 'mongoose';
+import { plans } from '@/utils/constant/pricing';
 
 // CSV imports don't collect business hours, so every imported location starts
 // with this default schedule (the model requires all seven days).
@@ -270,6 +270,28 @@ export async function postEditLocation(location_id, categories, hours, holidays,
     }
 }
 
+export async function getLocationsInactiveIds(user_id){
+    await dbConnect();
+    
+    const user = await UserModel.findOne({ _id: user_id }).lean();
+    if(!user) {
+        return [];
+    }
+
+    const plan = plans.find(p => p.id === user.plan) || plan[0];
+    const skip = plan.max_location;
+
+    const locations = (await LocationModel.find({ user_id })
+        .sort({ createdAt: 1 }) // oldest -> newest
+        .skip(skip)
+        .select('_id')
+        .lean()
+    ).map(({ _id }) => _id.toString());
+
+    return locations;
+
+}
+
 export async function getLocations(page=1, rows=10, sort='createdAt', order='asc', search='', locators='') {
 
     const session = await getServerSession(authOptions);
@@ -309,9 +331,8 @@ export async function getLocations(page=1, rows=10, sort='createdAt', order='asc
     // sort
     const sortField = sort || 'updatedAt';
     const sortOrder = order === 'desc' ? 1 : -1;
-    console.log(sortField, sortOrder);
     
-    const locations = await LocationModel.aggregate([
+    const locations = serializeForClient(await LocationModel.aggregate([
         { $match: match },
 
         // add locator name
@@ -364,6 +385,7 @@ export async function getLocations(page=1, rows=10, sort='createdAt', order='asc
 
         {
             $project: {
+                locator_id: 1,
                 _id: 1,
                 name: 1,
                 address: 1,
@@ -377,13 +399,22 @@ export async function getLocations(page=1, rows=10, sort='createdAt', order='asc
         { $sort: { [sortField]: sortOrder } },
         { $skip: (currentPage - 1) * currentRows },
         { $limit: currentRows }
-    ]);
+    ]));
+    
+
+
+    // inactive ids - set inactive locations that are beyond the plan's limit
+    const inactiveIds = await getLocationsInactiveIds(session.user.id);
+    const locationsWithStatus = locations.map(location => ({
+        ...location,
+        status: inactiveIds.includes(String(location._id)) ? "inactive" : "active"
+    }));
 
     return {
         rows: currentRows,
         page: currentPage,
         pages: totalPages === 0 ? 1 : totalPages,
-        items: serializeForClient(locations)
+        items: serializeForClient(locationsWithStatus)
     }
 }
 
