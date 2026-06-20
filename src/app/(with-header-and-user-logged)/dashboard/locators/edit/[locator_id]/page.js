@@ -1,4 +1,4 @@
-import LocatorsCreatePage from '../../create/page';
+import LocatorsCreatePage from '../../create/create-client';
 import { getLocatorById } from '@/actions/locator';
 import styles from '../../../Dashboard.module.scss';
 import Sidebar from '@/components/Dashboard/Sidebar';
@@ -10,6 +10,7 @@ import { LuArrowLeft } from 'react-icons/lu';
 export default async function LocatorsEditPage({ params }) {
     const { locator_id } = await params;
     const locator = await getLocatorById(locator_id);
+    
     if(!locator) {
         return <div className={styles.dashboard}>
             <Sidebar />

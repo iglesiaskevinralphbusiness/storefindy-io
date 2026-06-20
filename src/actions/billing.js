@@ -8,7 +8,7 @@ import { UserModel, LocatorModel, LocationModel } from '@/mongo';
 import { sanitizeInput } from '@/utils/lib/input-sanitization';
 import { serializeForClient } from '@/utils/helpers';
 import { isValidObjectId } from 'mongoose';
-
+import { plans } from '@/utils/constant/pricing';
 import { TbMap, TbMapPin, TbEye } from 'react-icons/tb';
 
 export async function getBillingStatus() {
@@ -21,8 +21,11 @@ export async function getBillingStatus() {
 
     const user = await UserModel.findOne({ _id: session.user.id }).lean();
     const locator = await LocatorModel.countDocuments({ user_id: session.user.id });
-    const location = await LocationModel.countDocuments({ locator_id: { $in: locator.map(l => l._id) } });
+    const location = await LocationModel.countDocuments({ user_id: session.user.id });
+    console.log(location);
 
+    const plan = plans.find(p => p.id === user.plan) || plans[0];
+    
     if(user.plan === 'free') {
         return {
             status: 'free',
@@ -31,6 +34,15 @@ export async function getBillingStatus() {
             planStarted: '-',
             planStartedLabel: 'Plan started',
             renewal: null,
+
+            locator_max: plan.max_locator,
+            locator_count: locator,
+            locator_is_limit_reached: locator >= plan.max_locator,
+
+            location_max: plan.max_location,
+            location_count: location,
+            location_is_limit_reached: location >= plan.max_location,
+
             usage: [
                 {
                     icon: <TbMap />,

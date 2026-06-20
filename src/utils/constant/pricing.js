@@ -6,6 +6,7 @@ export const plans = [
         period: '/ month',
         desc: 'Everything you need to get started — free forever.',
         max_locator: 1,
+        max_location: 25,
         features: [
             { ok: true, text: '1 Free locator' },
             { ok: true, text: 'Up to 25 locations' },
@@ -27,6 +28,7 @@ export const plans = [
         badge: 'Most popular',
         featured: true,
         max_locator: 3,
+        max_location: 500,
         features: [
             { ok: true, text: '3 locators' },
             { ok: true, text: 'Up to 500 locations' },
@@ -45,6 +47,7 @@ export const plans = [
         period: '/ month',
         desc: 'For multi-location brands that need full insights and scale.',
         max_locator: 7,
+        max_location: 0,
         features: [
             { ok: true, text: '7 locators' },
             { ok: true, text: 'Unlimited locations' },

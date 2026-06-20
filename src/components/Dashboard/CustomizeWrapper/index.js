@@ -9,8 +9,7 @@ import { functionSaveCustomizeLocator } from '@/actions/locator';
 import { toast } from 'react-toastify';
 import { FaDesktop, FaMobileScreenButton } from "react-icons/fa6";
 import { generateSettingsDefault, generateFeaturesDefault } from '@/utils/helpers';
-import Link from 'next/link';
-import Button from '@/components/Forms/Button';
+import LimitReached from '@/components/LimitReached';
 
 export default function CustomizeWrapper({ data, available_countries, onPreview }) {
     const { settings } = data;
@@ -35,10 +34,7 @@ export default function CustomizeWrapper({ data, available_countries, onPreview 
     };
 
     const Inactive = () => {
-        return <div className="empty">
-            <p>You've reached your limit.<br />To enable this locator, please subscribe to Pro or Business.</p>
-            <Link href="/dashboard/billing"><Button value="See Subscription" primary={true} /></Link>
-        </div>
+        return <LimitReached msg="You've reached your limit. To enable this locator, please subscribe to Pro or Business." />
     };
 
     return<div className={`${styles.dashboard} ${styles.customizeLocator}`}>

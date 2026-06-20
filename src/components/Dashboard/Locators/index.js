@@ -32,7 +32,7 @@ export default function LocatorList({ data=[] }) {
                 {
                     data.map((locator, index) => {
                         return <li className={styles.locator} key={'locator' + index}>
-                            <MapPreview />
+                            <MapPreview index={index} />
                             <div className={styles.info}>
                                 <div className={styles.name}>
                                     <h3>{ locator.name }</h3>

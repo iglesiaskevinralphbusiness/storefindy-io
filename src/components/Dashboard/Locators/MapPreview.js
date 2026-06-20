@@ -18,8 +18,8 @@ function randomBetween(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function buildLayout() {
-    const palette = PALETTES[randomBetween(0, PALETTES.length - 1)];
+function buildLayout(index = 0) {
+    const palette = PALETTES[index % PALETTES.length];
     const pinCount = randomBetween(2, 4);
     const pins = Array.from({ length: pinCount }).map((_, i) => ({
         top: randomBetween(20, 72),
@@ -29,16 +29,16 @@ function buildLayout() {
     return { palette, pins };
 }
 
-export default function MapPreview() {
-    // Render nothing decorative until mounted so the server and client markup
-    // match — randomness only happens on the client after hydration.
+export default function MapPreview({ index = 0 }) {
+    // Color is fixed by index; pin positions are still randomized on the client
+    // after hydration so the server and client markup match.
     const [layout, setLayout] = useState(null);
 
     useEffect(() => {
-        setLayout(buildLayout());
-    }, []);
+        setLayout(buildLayout(index));
+    }, [index]);
 
-    const bg = layout?.palette.mapBg ?? 'linear-gradient(135deg, #dce8f5 0%, #c8dff0 100%)';
+    const bg = layout?.palette.mapBg ?? PALETTES[index % PALETTES.length].mapBg;
 
     return (
         <div className={styles.map} style={{ background: bg }}>

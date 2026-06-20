@@ -147,7 +147,7 @@ export default function LocationsTable({ data=[], sort, order }) {
                                         <LuMapPinOff />
                                         <p>No locations found. Start by creating a new location.</p>
                                         <Button
-                                            value="Create Location"
+                                            value="Add Location"
                                             icon={<LuPlus />}
                                             onClick={() => router.push('/dashboard/locations/add-location')}
                                         />
