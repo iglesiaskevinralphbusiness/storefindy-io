@@ -25,6 +25,14 @@ export async function getBillingStatus() {
 
     const plan = plans.find(p => p.id === user.plan) || plans[0];
 
+    const locator_used = locator > plan.max_locator ? plan.max_locator : locator;
+    const locator_inactive = locator - plan.max_locator;
+    const locator_percent = (locator_used / plan.max_locator) * 100;
+
+    const location_used = location > plan.max_location ? plan.max_location : location;
+    const location_inactive = location - plan.max_location;
+    const location_percent = (location_used / plan.max_location) * 100;
+
     return {
         id: user.plan,
         status: user.plan === 'free' ? 'free' : 'active',
@@ -46,21 +54,22 @@ export async function getBillingStatus() {
             {
                 icon: <TbMap />,
                 label: 'Locators',
-                used: locator > 1 ? 1 : locator,
+                used: locator_used,
                 limit: plan.max_locator,
-                inactive: locator - plan.max_locator,
-                percent: 100,
-                fill: 'warn',
-                hint: 'Limit reached. Upgrade to create more.'
+                inactive: locator_inactive,
+                percent: locator_percent,
+                fill: locator_percent >= 100 ? 'warn' : '',
+                hint: locator_percent >= 100 ? `Limit reached${locator_inactive > 0 ? ` and ${locator_inactive} inactive` : ''}. Upgrade to ${locator_inactive > 0 ? `enable them` : 'create more'}.` : `${plan.max_locator - locator_used} locators remaining.`
             },
             {
                 icon: <TbMapPin />,
                 label: 'Locations',
-                used: 12,
-                limit: '25',
-                percent: 48,
-                fill: '',
-                hint: '13 locations remaining.'
+                used: location_used,
+                limit: plan.max_location,
+                inactive: location_inactive,
+                percent: location_percent,
+                fill: location_percent >= 100 ? 'warn' : '',
+                hint: location_percent >= 100 ? `Limit reached${location_inactive > 0 ? ` and ${location_inactive} locations inactive` : ''}. Upgrade to ${location_inactive > 0 ? `enable them` : 'create more'}.` : `${plan.max_location - location_used} locations remaining.`
             },
             {
                 icon: <TbEye />,
