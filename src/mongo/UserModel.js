@@ -15,6 +15,7 @@ const userSchema = new mongoose.Schema({
   ls_variant_id: { type: String, required: false, default: '' },        // LemonSqueezy variant ID — maps to plan tier
   plan: { type: String, required: false, default: 'free' },             // free | pro | business
   status: { type: String, required: false, default: 'active' },         // active | cancelled | past_due | paused | expired
+  plan_started: { type: String, required: false, default: '' },         // subscription created_at — empty on the free plan
   renewal_date: { type: String, required: false, default: '' },         // from LemonSqueezy webhook
   trial_ends_at: { type: String, required: false, default: '' },        // if you offer a free trial
 

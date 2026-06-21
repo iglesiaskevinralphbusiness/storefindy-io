@@ -18,7 +18,7 @@ export default async function BillingPage() {
                     <p>Dashboard <RiArrowRightLine /> Account <RiArrowRightLine /> Billing</p>
                 </div>
                 <div className={styles.body}>
-                    <BillingPageClient />
+                    <BillingPageClient data={billingStatus} />
                 </div>
             </div>
         </div>

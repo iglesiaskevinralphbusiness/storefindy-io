@@ -114,6 +114,7 @@ export function mapSubscription(resource) {
         plan: planFromVariantId(a.variant_id),
         status: normalizeStatus(a.status),
         status_raw: a.status || '',
+        plan_started: a.created_at || '',
         renewal_date: a.renews_at || '',
         ends_at: a.ends_at || '',
         trial_ends_at: a.trial_ends_at || '',

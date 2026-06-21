@@ -19,6 +19,7 @@ export async function GET() {
         plan: user.plan || 'free',
         status: user.status || 'active',
         billing_email: user.email,
+        plan_started: user.plan === 'free' ? '' : user.plan_started || '',
         renewal_date: user.renewal_date || '',
         trial_ends_at: user.trial_ends_at || '',
         ls_customer_id: user.ls_customer_id || '',
@@ -37,6 +38,7 @@ export async function GET() {
                 const live = mapSubscription(resource);
                 subscription.plan = live.plan;
                 subscription.status = live.status;
+                subscription.plan_started = live.plan === 'free' ? '' : live.plan_started;
                 subscription.renewal_date = live.renewal_date;
                 subscription.trial_ends_at = live.trial_ends_at;
                 subscription.card_brand = live.card_brand;

@@ -28,24 +28,6 @@ import {
     TbExternalLink,
 } from 'react-icons/tb';
 
-/*
- * Phase 1 — Lemon Squeezy-portal-driven billing.
- *
- * The page is split by data source:
- *   • Your database       → plan name, status, renewal date, usage counts
- *   • Lemon Squeezy portal → payment method, invoices, plan changes, cancellation
- *
- * So there are no inline card forms / invoice tables here — anything that touches
- * money is handed off to Lemon Squeezy via the portal button + redirect modal.
- * Lemon Squeezy is a Merchant of Record, so it also handles tax/VAT and receipts.
- *
- * SUBSCRIPTIONS is hardcoded demo data. When the database / Lemon Squeezy is wired
- * up, replace it (and the initial `useState`) with the real customer record; the
- * whole page is driven off the `sub` object, so the UI follows automatically.
- *
- * The dev toggle in the header flips between "Free" and "Subscribed" while
- * building — delete it (and the `devToggle` block) once real data is in place.
- */
 const SUBSCRIPTIONS = {
     free: {
         status: 'free',
@@ -75,13 +57,12 @@ const SUBSCRIPTIONS = {
     },
 };
 
-export default function BillingPageClient() {
+export default function BillingPageClient({ data }) {
     // TODO: replace with the real subscription state from the database / Lemon Squeezy.
-    const [subKey, setSubKey] = useState('free');
     const [modal, setModal] = useState(null); // { plan }
     const [loading, setLoading] = useState(false); // 'portal' | 'checkout' | false
 
-    const sub = SUBSCRIPTIONS[subKey];
+    const sub = data;
     const isSubscribed = sub.status !== 'free';
     const currentIndex = plans.findIndex((p) => p.name === sub.planName);
     const currentPlan = plans[currentIndex] || plans[0];
@@ -138,27 +119,6 @@ export default function BillingPageClient() {
         <div className={styles.billing}>
             <div className={styles.billingContent}>
 
-                {/* TOP ACTIONS — DEV-ONLY toggle until the database is wired up */}
-                <div className={styles.billingHeader}>
-                    <div className={styles.devToggle}>
-                        <span>Dev state:</span>
-                        <button
-                            type="button"
-                            className={subKey === 'free' ? styles.active : ''}
-                            onClick={() => setSubKey('free')}
-                        >
-                            Free
-                        </button>
-                        <button
-                            type="button"
-                            className={subKey === 'pro' ? styles.active : ''}
-                            onClick={() => setSubKey('pro')}
-                        >
-                            Subscribed
-                        </button>
-                    </div>
-                </div>
-
                 {/* CURRENT PLAN BANNER */}
                 {isSubscribed ? (
                     <div className={styles.proBanner}>
@@ -203,7 +163,7 @@ export default function BillingPageClient() {
                     <div className={styles.card}>
                         <div className={styles.cardTitle}>
                             <TbChartBar /> Current Usage
-                            <span className={`${styles.badge} ${styles.fromDb}`}>From your DB</span>
+                            <span className={`${styles.badge} ${styles.fromDb}`}>Your Plan</span>
                         </div>
                         {sub.usage.map((item) => (
                             <div className={styles.usageItem} key={item.label}>
@@ -228,7 +188,6 @@ export default function BillingPageClient() {
                     <div className={styles.card}>
                         <div className={styles.cardTitle}>
                             <TbReceipt /> Plan Information
-                            <span className={`${styles.badge} ${styles.fromDb}`}>From your DB</span>
                         </div>
                         <div className={styles.billingRow}>
                             <span className={styles.billingKey}><TbCrown /> Current plan</span>

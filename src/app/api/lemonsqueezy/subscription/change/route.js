@@ -57,6 +57,7 @@ export async function POST(request) {
             user.status = live.status;
             user.ls_variant_id = live.ls_variant_id;
             user.ls_product_id = live.ls_product_id || user.ls_product_id;
+            user.plan_started = live.plan === 'free' ? '' : live.plan_started || user.plan_started;
             if (live.renewal_date) user.renewal_date = live.renewal_date;
             await user.save();
         }

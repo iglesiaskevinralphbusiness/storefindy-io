@@ -70,6 +70,10 @@ export async function POST(request) {
             // tier; otherwise reflect the plan the variant maps to.
             user.plan = live.status === 'expired' ? 'free' : live.plan;
 
+            // "Subscribed since" — clear it on the free plan, otherwise track the
+            // subscription's created_at (keeping any existing value if absent).
+            user.plan_started = user.plan === 'free' ? '' : live.plan_started || user.plan_started;
+
             await user.save();
         } else if (eventName === 'order_created') {
             // First purchase — capture the order/customer ids if not already set.
