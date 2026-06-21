@@ -199,6 +199,67 @@ export function applySubscriptionToUser(user, live) {
     return user;
 }
 
+// Choose the newest subscription by created_at, so a fresh checkout wins over an
+// older expired one when an email has more than one. Shared by the sync route
+// and the on-read reconcile below.
+export function pickLatestSubscription(subs) {
+    if (!Array.isArray(subs) || subs.length === 0) return null;
+    return subs
+        .slice()
+        .sort((a, b) => {
+            const da = a?.attributes?.created_at || '';
+            const db = b?.attributes?.created_at || '';
+            return db.localeCompare(da);
+        })[0];
+}
+
+// How long a reconcile result is trusted before we hit Lemon Squeezy again.
+const RECONCILE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+// Self-healing fallback for the webhook: pull the user's current subscription
+// from Lemon Squeezy and mirror it onto the UserModel, then persist. Throttled
+// by `last_synced_at` so ordinary page loads don't hammer the LS API — pass
+// { force: true } to bypass the throttle (e.g. right after a checkout).
+//
+// This is what lets the plan stay correct even when the user lands on the
+// billing page WITHOUT the ?checkout=success param or a webhook was missed.
+// Never throws: a Lemon Squeezy hiccup must not break the page — we just try
+// again in the next window. Returns true when a network sync actually ran.
+export async function reconcileUserSubscription(user, { force = false } = {}) {
+    if (!user || !isConfigured()) return false;
+
+    if (!force && user.last_synced_at) {
+        const last = Date.parse(user.last_synced_at);
+        if (!Number.isNaN(last) && Date.now() - last < RECONCILE_TTL_MS) {
+            return false;
+        }
+    }
+
+    try {
+        // Prefer the subscription id we already have; otherwise look it up by the
+        // billing email and take the most recently created one.
+        let resource = null;
+        if (user.ls_subscription_id) {
+            resource = await getSubscription(user.ls_subscription_id);
+        }
+        if (!resource && user.email) {
+            const subs = await listSubscriptions({ email: user.email });
+            resource = pickLatestSubscription(subs);
+        }
+
+        if (resource) {
+            applySubscriptionToUser(user, mapSubscription(resource));
+        }
+        // Stamp the attempt either way so genuinely-free users aren't re-checked
+        // on every visit; a missing subscription just leaves the plan untouched.
+        user.last_synced_at = new Date().toISOString();
+        await user.save();
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 // Cancel at period end (Lemon Squeezy keeps it active until `ends_at`).
 export async function cancelSubscription(subscriptionId) {
     const data = await lsFetch(`/subscriptions/${subscriptionId}`, { method: 'DELETE' });

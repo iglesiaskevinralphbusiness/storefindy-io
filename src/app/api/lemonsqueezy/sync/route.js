@@ -5,6 +5,7 @@ import {
     listSubscriptions,
     mapSubscription,
     applySubscriptionToUser,
+    pickLatestSubscription,
     isConfigured,
 } from '@/lib/lemonsqueezy';
 
@@ -41,7 +42,7 @@ export async function POST() {
 
         if (!resource) {
             const subs = await listSubscriptions({ email: user.email });
-            resource = pickLatest(subs);
+            resource = pickLatestSubscription(subs);
         }
 
         if (!resource) {
@@ -70,17 +71,4 @@ export async function POST() {
             { status: error.status || 500 }
         );
     }
-}
-
-// Choose the newest subscription by created_at, so a fresh checkout wins over an
-// older expired one if the email has more than one.
-function pickLatest(subs) {
-    if (!Array.isArray(subs) || subs.length === 0) return null;
-    return subs
-        .slice()
-        .sort((a, b) => {
-            const da = a?.attributes?.created_at || '';
-            const db = b?.attributes?.created_at || '';
-            return db.localeCompare(da);
-        })[0];
 }

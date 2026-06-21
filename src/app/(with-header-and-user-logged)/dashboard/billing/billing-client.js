@@ -139,6 +139,31 @@ export default function BillingPageClient({ data }) {
         }
     };
 
+    // Manually reconcile the account with Lemon Squeezy. Same endpoint the
+    // post-checkout effect uses; force-syncs (no throttle) so the user always
+    // gets a fresh pull. On success we refresh the server data to re-render.
+    const syncNow = async () => {
+        if (syncing) return;
+        setSyncing(true);
+        try {
+            const res = await fetch('/api/lemonsqueezy/sync', { method: 'POST' });
+            const result = await res.json().catch(() => ({}));
+
+            if (res.ok && result.status === 'success') {
+                toast.success('Account synced', { description: 'Your plan is up to date with Lemon Squeezy.' });
+                router.refresh();
+            } else if (result.status === 'pending') {
+                toast.info('Nothing to sync', { description: 'No subscription found on Lemon Squeezy yet.' });
+            } else {
+                throw new Error(result.message || 'Could not sync your account.');
+            }
+        } catch (err) {
+            toast.error('Could not sync your account', { description: err.message });
+        } finally {
+            setSyncing(false);
+        }
+    };
+
     // Start a Lemon Squeezy hosted checkout for a plan and redirect to it.
     // `plan` is a row from the pricing constant; the API maps its name to a
     // Lemon Squeezy variant id and returns the checkout URL.
@@ -162,13 +187,18 @@ export default function BillingPageClient({ data }) {
         }
     };
 
+    const formatDate = (date) => {
+        if (date === '-') return '-';
+        return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+
     return (
         <div className={styles.billing}>
             <div className={styles.billingContent}>
 
                 {syncing && (
                     <div className={styles.syncNotice}>
-                        <TbRefresh /> Activating your subscription…
+                        <TbRefresh /> Syncing with Lemon Squeezy…
                     </div>
                 )}
 
@@ -250,12 +280,12 @@ export default function BillingPageClient({ data }) {
                         </div>
                         <div className={styles.billingRow}>
                             <span className={styles.billingKey}><TbCalendar /> {sub.planStartedLabel}</span>
-                            <span className={styles.billingVal}>{sub.planStarted}</span>
+                            <span className={styles.billingVal}>{ formatDate(sub.planStarted) }</span>
                         </div>
                         <div className={styles.billingRow}>
                             <span className={styles.billingKey}><TbCalendarEvent /> Next renewal</span>
                             {sub.renewal ? (
-                                <span className={`${styles.billingVal} ${styles.renewal}`}>{sub.renewal}</span>
+                                <span className={`${styles.billingVal} ${styles.renewal}`}>{ formatDate(sub.renewal) }</span>
                             ) : (
                                 <span className={`${styles.billingVal} ${styles.muted}`}>N/A — free plan</span>
                             )}
@@ -269,6 +299,19 @@ export default function BillingPageClient({ data }) {
                         <div className={styles.billingRow}>
                             <span className={styles.billingKey}><TbMail /> Billing email</span>
                             <span className={`${styles.billingVal} ${styles.muted}`}>{sub.billingEmail}</span>
+                        </div>
+
+                        <div className={styles.billingRow}>
+                            <button
+                                type="button"
+                                className={styles.manageBtn}
+                                style={{ marginLeft: 'auto' }}
+                                onClick={syncNow}
+                                disabled={syncing}
+                                title="Refresh your plan from Lemon Squeezy"
+                            >
+                                <TbRefresh /> {syncing ? 'Syncing…' : 'Sync'}
+                            </button>
                         </div>
                     </div>
 

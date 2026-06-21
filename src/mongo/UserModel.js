@@ -18,6 +18,7 @@ const userSchema = new mongoose.Schema({
   plan_started: { type: String, required: false, default: '' },         // subscription created_at — empty on the free plan
   renewal_date: { type: String, required: false, default: '' },         // from LemonSqueezy webhook
   trial_ends_at: { type: String, required: false, default: '' },        // if you offer a free trial
+  last_synced_at: { type: String, required: false, default: '' },       // ISO time of last reconcile with LemonSqueezy (throttles sync-on-read)
 
 });
 
