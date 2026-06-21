@@ -65,3 +65,7 @@ export async function POST(request) {
         );
     }
 }
+
+export async function GET() {
+    return json({ status: 'success', message: 'Checkout route is working.' });
+}

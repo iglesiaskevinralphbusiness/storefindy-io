@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { dbConnect } from '@/config/mongo.config';
 import { UserModel } from '@/mongo';
-import { verifyWebhookSignature, mapSubscription } from '@/lib/lemonsqueezy';
+import { verifyWebhookSignature, mapSubscription, applySubscriptionToUser } from '@/lib/lemonsqueezy';
 
 // Webhooks need the raw body for HMAC verification + Node's crypto, so pin this
 // route to the Node.js runtime and disable any caching.
@@ -31,6 +31,7 @@ export async function POST(request) {
     const eventName = event?.meta?.event_name || '';
     const customUserId = event?.meta?.custom_data?.user_id || '';
     const resource = event?.data || {};
+    const resourceType = resource.type || '';
     const attributes = resource.attributes || {};
 
     await dbConnect();
@@ -54,26 +55,15 @@ export async function POST(request) {
     }
 
     try {
-        if (eventName.startsWith('subscription_')) {
-            const live = mapSubscription(resource);
-
-            user.ls_subscription_id = live.ls_subscription_id || user.ls_subscription_id;
-            user.ls_customer_id = live.ls_customer_id || user.ls_customer_id;
-            user.ls_order_id = live.ls_order_id || user.ls_order_id;
-            user.ls_product_id = live.ls_product_id || user.ls_product_id;
-            user.ls_variant_id = live.ls_variant_id || user.ls_variant_id;
-            user.status = live.status;
-            user.renewal_date = live.renewal_date || user.renewal_date;
-            user.trial_ends_at = live.trial_ends_at || '';
-
-            // Once the subscription has actually ended, drop back to the free
-            // tier; otherwise reflect the plan the variant maps to.
-            user.plan = live.status === 'expired' ? 'free' : live.plan;
-
-            // "Subscribed since" — clear it on the free plan, otherwise track the
-            // subscription's created_at (keeping any existing value if absent).
-            user.plan_started = user.plan === 'free' ? '' : live.plan_started || user.plan_started;
-
+        // Only subscription LIFECYCLE events carry a `subscriptions` resource
+        // (with the variant_id / status / renews_at we mirror). Payment events
+        // — subscription_payment_success / _failed / _recovered — share the
+        // `subscription_` prefix but carry a `subscription-invoices` resource
+        // that has NO variant_id, so mapping it would reset the plan to free.
+        // Guard on the resource type so those events are acknowledged but never
+        // overwrite the plan.
+        if (eventName.startsWith('subscription_') && resourceType === 'subscriptions') {
+            applySubscriptionToUser(user, mapSubscription(resource));
             await user.save();
         } else if (eventName === 'order_created') {
             // First purchase — capture the order/customer ids if not already set.

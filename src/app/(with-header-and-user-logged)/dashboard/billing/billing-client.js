@@ -1,5 +1,6 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'react-toastify';
 import styles from '../Dashboard.module.scss';
 import { plans } from '@/utils/constant/pricing';
@@ -61,6 +62,52 @@ export default function BillingPageClient({ data }) {
     // TODO: replace with the real subscription state from the database / Lemon Squeezy.
     const [modal, setModal] = useState(null); // { plan }
     const [loading, setLoading] = useState(false); // 'portal' | 'checkout' | false
+    const [syncing, setSyncing] = useState(false);
+
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    // After returning from a Lemon Squeezy checkout (?checkout=success), pull the
+    // subscription from Lemon Squeezy and persist it. This is the fallback for
+    // the webhook so the plan updates even when LS can't reach our server (e.g.
+    // staging behind a private host). On success we refresh the server data so
+    // the page re-renders with the new plan, then strip the query param.
+    useEffect(() => {
+        if (searchParams.get('checkout') !== 'success') return;
+
+        let cancelled = false;
+        setSyncing(true);
+        (async () => {
+            try {
+                const res = await fetch('/api/lemonsqueezy/sync', { method: 'POST' });
+                const result = await res.json().catch(() => ({}));
+                if (cancelled) return;
+
+                if (res.ok && result.status === 'success') {
+                    toast.success('Subscription activated', { description: 'Your plan is now up to date.' });
+                    router.replace('/dashboard/billing');
+                    router.refresh();
+                } else if (result.status === 'pending') {
+                    toast.info('Finalizing your subscription', {
+                        description: 'It may take a moment to appear — refresh shortly.',
+                    });
+                } else {
+                    throw new Error(result.message || 'Could not sync your subscription.');
+                }
+            } catch (err) {
+                if (!cancelled) {
+                    toast.error('Could not sync your subscription', { description: err.message });
+                }
+            } finally {
+                if (!cancelled) setSyncing(false);
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams]);
 
     const sub = data;
     const isSubscribed = sub.status !== 'free';
@@ -118,6 +165,12 @@ export default function BillingPageClient({ data }) {
     return (
         <div className={styles.billing}>
             <div className={styles.billingContent}>
+
+                {syncing && (
+                    <div className={styles.syncNotice}>
+                        <TbRefresh /> Activating your subscription…
+                    </div>
+                )}
 
                 {/* CURRENT PLAN BANNER */}
                 {isSubscribed ? (

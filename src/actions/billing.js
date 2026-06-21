@@ -35,12 +35,12 @@ export async function getBillingStatus() {
 
     return {
         id: user.plan,
-        status: user.plan === 'free' ? 'free' : 'active',
+        status: user.plan === 'free' ? 'free' : (user.status || 'active'),
         planName: (user.plan).charAt(0).toUpperCase() + (user.plan).slice(1),
         billingEmail: user.email,
         planStarted: user.plan_started ? user.plan_started : '-',
         planStartedLabel: user.plan === 'free' ? 'Plan started' : 'Subscribed since',
-        renewal: user.plan_renewal ? user.plan_renewal : '-',
+        renewal: user.renewal_date ? user.renewal_date : '-',
 
         locator_max: plan.max_locator,
         locator_count: locator,

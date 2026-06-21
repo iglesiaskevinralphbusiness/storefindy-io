@@ -163,6 +163,42 @@ export async function getSubscription(subscriptionId) {
     return data?.data || null;
 }
 
+// List this store's subscriptions, optionally filtered by the customer email.
+// Used by the sync fallback to find a freshly-created subscription when we have
+// no subscription id on file yet (e.g. the webhook hasn't reached us).
+export async function listSubscriptions({ email } = {}) {
+    const params = new URLSearchParams();
+    params.set('filter[store_id]', String(process.env.LEMONSQUEEZY_STORE_ID));
+    if (email) params.set('filter[user_email]', email);
+
+    const data = await lsFetch(`/subscriptions?${params.toString()}`);
+    return data?.data || [];
+}
+
+// Apply a mapped subscription (see mapSubscription) onto a UserModel document.
+// Shared by the webhook and the sync fallback so both write identical fields.
+// Does NOT save — the caller decides when to persist.
+export function applySubscriptionToUser(user, live) {
+    user.ls_subscription_id = live.ls_subscription_id || user.ls_subscription_id;
+    user.ls_customer_id = live.ls_customer_id || user.ls_customer_id;
+    user.ls_order_id = live.ls_order_id || user.ls_order_id;
+    user.ls_product_id = live.ls_product_id || user.ls_product_id;
+    user.ls_variant_id = live.ls_variant_id || user.ls_variant_id;
+    user.status = live.status;
+    user.renewal_date = live.renewal_date || user.renewal_date;
+    user.trial_ends_at = live.trial_ends_at || '';
+
+    // Once the subscription has actually ended, drop back to the free tier;
+    // otherwise reflect the plan the variant maps to.
+    user.plan = live.status === 'expired' ? 'free' : live.plan;
+
+    // "Subscribed since" — clear it on the free plan, otherwise track the
+    // subscription's created_at (keeping any existing value if absent).
+    user.plan_started = user.plan === 'free' ? '' : live.plan_started || user.plan_started;
+
+    return user;
+}
+
 // Cancel at period end (Lemon Squeezy keeps it active until `ends_at`).
 export async function cancelSubscription(subscriptionId) {
     const data = await lsFetch(`/subscriptions/${subscriptionId}`, { method: 'DELETE' });
