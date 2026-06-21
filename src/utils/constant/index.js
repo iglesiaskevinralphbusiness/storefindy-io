@@ -24,6 +24,34 @@ export const LOCALES = [
 
 export { COUNTRIES } from './countries';
 
+export const TIMEZONES = [
+	{ code: 'Pacific/Midway', label: '(GMT-11:00) Midway Island, Samoa' },
+	{ code: 'Pacific/Honolulu', label: '(GMT-10:00) Hawaii' },
+	{ code: 'America/Anchorage', label: '(GMT-09:00) Alaska' },
+	{ code: 'America/Los_Angeles', label: '(GMT-08:00) Pacific Time (US & Canada)' },
+	{ code: 'America/Denver', label: '(GMT-07:00) Mountain Time (US & Canada)' },
+	{ code: 'America/Chicago', label: '(GMT-06:00) Central Time (US & Canada)' },
+	{ code: 'America/New_York', label: '(GMT-05:00) Eastern Time (US & Canada)' },
+	{ code: 'America/Halifax', label: '(GMT-04:00) Atlantic Time (Canada)' },
+	{ code: 'America/Sao_Paulo', label: '(GMT-03:00) Brasilia, Buenos Aires' },
+	{ code: 'Atlantic/Azores', label: '(GMT-01:00) Azores' },
+	{ code: 'Etc/UTC', label: '(GMT+00:00) UTC' },
+	{ code: 'Europe/London', label: '(GMT+00:00) London, Dublin, Lisbon' },
+	{ code: 'Europe/Paris', label: '(GMT+01:00) Paris, Berlin, Madrid, Rome' },
+	{ code: 'Europe/Athens', label: '(GMT+02:00) Athens, Cairo, Johannesburg' },
+	{ code: 'Europe/Moscow', label: '(GMT+03:00) Moscow, Istanbul, Nairobi' },
+	{ code: 'Asia/Dubai', label: '(GMT+04:00) Dubai, Abu Dhabi' },
+	{ code: 'Asia/Karachi', label: '(GMT+05:00) Karachi, Tashkent' },
+	{ code: 'Asia/Kolkata', label: '(GMT+05:30) Mumbai, New Delhi, Kolkata' },
+	{ code: 'Asia/Dhaka', label: '(GMT+06:00) Dhaka, Almaty' },
+	{ code: 'Asia/Bangkok', label: '(GMT+07:00) Bangkok, Jakarta, Hanoi' },
+	{ code: 'Asia/Shanghai', label: '(GMT+08:00) Beijing, Singapore, Hong Kong' },
+	{ code: 'Asia/Manila', label: '(GMT+08:00) Manila, Kuala Lumpur, Perth' },
+	{ code: 'Asia/Tokyo', label: '(GMT+09:00) Tokyo, Seoul, Osaka' },
+	{ code: 'Australia/Sydney', label: '(GMT+10:00) Sydney, Melbourne, Brisbane' },
+	{ code: 'Pacific/Auckland', label: '(GMT+12:00) Auckland, Wellington, Fiji' },
+];
+
 export const ZOOM_LEVELS = [
 	{ code: '15', label: 'City level (zoom 15)' },
 	{ code: '10', label: 'State level (zoom 10)' },

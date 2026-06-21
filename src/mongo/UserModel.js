@@ -7,6 +7,14 @@ const userSchema = new mongoose.Schema({
   created_at: { type: String, required: false },
   last_login_at: { type: String, required: false },
 
+  // editable profile fields
+  first_name: { type: String, required: false, default: '' },    // given name
+  last_name: { type: String, required: false, default: '' },     // family name
+  display_name: { type: String, required: false, default: '' },  // public display name
+  company: { type: String, required: false, default: '' },       // business or store name
+  country: { type: String, required: false, default: '' },       // ISO country code (e.g. "us")
+  timezone: { type: String, required: false, default: '' },      // IANA timezone (e.g. "America/New_York")
+
   // lemonsqueezy.com payment
   ls_customer_id: { type: String, required: false, default: '' },       // LemonSqueezy customer ID (e.g. "1234567")
   ls_subscription_id: { type: String, required: false, default: '' },   // LemonSqueezy subscription ID (e.g. "sub_abc123")
