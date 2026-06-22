@@ -382,7 +382,7 @@ export default function Locator({
         <>
             <div className="title">
                 <h2>
-                    <span>{location.name}</span>
+                    <span>{index + 1}. {location.name}</span>
                 </h2>
                 {typeof location.distance === 'number' && (
                     <p>{location.distance.toFixed(1)} mi</p>
