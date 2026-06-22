@@ -458,59 +458,80 @@ export default function SidebarCustomize({ settings, setSettings, features, setF
                                 isOpen={openSections.pin}
                                 onToggle={() => toggleSection('pin')}
                             >
-                                <ColorField
-                                    label="Pin Color"
-                                    value={settings.pin.color}
-                                    onChange={(v) => updateGroup('pin', 'color', v)}
-                                />
-                                <SelectField
-                                    label="Size"
-                                    value={settings.pin.size}
-                                    onChange={(v) => updateGroup('pin', 'size', v)}
-                                    options={[{code: 'small', label: 'Small'}, {code: 'medium', label: 'Medium'}, {code: 'large', label: 'Large'}]}
-                                />
-                                <ColorField
-                                    label="Text Color"
-                                    value={settings.pin.text_color}
-                                    onChange={(v) => updateGroup('pin', 'text_color', v)}
-                                />
-                                <NumberField
-                                    label="Text Size"
-                                    value={settings.pin.text_size}
-                                    onChange={(v) => updateGroup('pin', 'text_size', v)}
-                                    suffix="px"
-                                />
-                                <div className={styles.field}>
-                                    <label>Custom Image</label>
-                                    {settings.pin.image ? (
-                                        <div className={styles.imagePreview}>
-                                            <img src={settings.pin.image} alt="Pin preview" />
-                                            <button
-                                                type="button"
-                                                className={styles.removeImage}
-                                                onClick={() => updateGroup('pin', 'image', null)}
-                                                aria-label="Remove image"
-                                            >
-                                                <LuX />
-                                            </button>
+                                <div className={styles.mapPinContainer}>
+                                   <div className={styles.fieldMap}>
+                                        <input
+                                            id="standard-pin"
+                                            type="radio"
+                                        />
+                                        <label htmlFor="standard-pin">Standard Pin</label>
+                                   </div>
+                                   <div className={styles.fieldContainer}>
+                                        <ColorField
+                                            label="Pin Color"
+                                            value={settings.pin.color}
+                                            onChange={(v) => updateGroup('pin', 'color', v)}
+                                        />
+                                        <SelectField
+                                            label="Size"
+                                            value={settings.pin.size}
+                                            onChange={(v) => updateGroup('pin', 'size', v)}
+                                            options={[{code: 'small', label: 'Small'}, {code: 'medium', label: 'Medium'}, {code: 'large', label: 'Large'}]}
+                                        />
+                                        <ColorField
+                                            label="Text Color"
+                                            value={settings.pin.text_color}
+                                            onChange={(v) => updateGroup('pin', 'text_color', v)}
+                                        />
+                                        <NumberField
+                                            label="Text Size"
+                                            value={settings.pin.text_size}
+                                            onChange={(v) => updateGroup('pin', 'text_size', v)}
+                                            suffix="px"
+                                        />
+                                    </div>
+                                    <div className={styles.fieldMap}>
+                                        <input
+                                            id="custom-pin"
+                                            type="radio"
+                                        />
+                                        <label htmlFor="custom-pin">Custom Pin</label>
+                                   </div>
+                                   <div className={styles.fieldContainer}>
+                                        
+                                   <div className={styles.field}>
+                                        <label>Custom Image</label>
+                                            {settings.pin.image ? (
+                                                <div className={styles.imagePreview}>
+                                                    <img src={settings.pin.image} alt="Pin preview" />
+                                                    <button
+                                                        type="button"
+                                                        className={styles.removeImage}
+                                                        onClick={() => updateGroup('pin', 'image', null)}
+                                                        aria-label="Remove image"
+                                                    >
+                                                        <LuX />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    className={styles.uploadButton}
+                                                    onClick={() => fileInputRef.current?.click()}
+                                                >
+                                                    <LuUpload />
+                                                    Upload Image
+                                                </button>
+                                            )}
+                                            <input
+                                                ref={fileInputRef}
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleImageUpload}
+                                                hidden
+                                            />
                                         </div>
-                                    ) : (
-                                        <button
-                                            type="button"
-                                            className={styles.uploadButton}
-                                            onClick={() => fileInputRef.current?.click()}
-                                        >
-                                            <LuUpload />
-                                            Upload Image
-                                        </button>
-                                    )}
-                                    <input
-                                        ref={fileInputRef}
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleImageUpload}
-                                        hidden
-                                    />
+                                   </div>
                                 </div>
                             </Section>
                         </div>

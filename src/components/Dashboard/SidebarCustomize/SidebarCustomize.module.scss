@@ -279,3 +279,18 @@
         }
     }
 }
+
+.mapPinContainer {
+    .fieldMap {
+        padding: 0 16px;
+        label {
+            padding-left: 8px;
+        }
+    }
+    .fieldContainer {
+        padding-top: 14px;
+        margin-left: 20px;
+        margin-bottom: 14px;
+        border-left: 3px solid #f1eded;
+    }
+}
