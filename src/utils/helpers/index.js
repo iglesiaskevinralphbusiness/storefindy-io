@@ -75,6 +75,7 @@ export function generateSettingsDefault(settings) {
             icon: settings.viewLocation.icon,
         },
         pin: {
+            type: settings.pin.type,
             color: settings.pin.color,
             size: settings.pin.size,
             text_color: settings.pin.text_color,

@@ -78,7 +78,7 @@ const GET_DIRECTIONS_VIEW_LOCATION_BUTTON_ICONS = [
     { code: 'circle-chevron-right', label: 'Circle Right' },
 ];
 
-export default function SidebarCustomize({ settings, setSettings, features, setFeatures, handleSave, isSaveDisabled }) {
+export default function SidebarCustomize({ user_plan, settings, setSettings, features, setFeatures, handleSave, isSaveDisabled }) {
     const router = useRouter();
     const fileInputRef = useRef(null);
 
@@ -463,6 +463,8 @@ export default function SidebarCustomize({ settings, setSettings, features, setF
                                         <input
                                             id="standard-pin"
                                             type="radio"
+                                            checked={settings.pin.type === 'standard'}
+                                            onChange={(v) => updateGroup('pin', 'type', 'standard')}
                                         />
                                         <label htmlFor="standard-pin">Standard Pin</label>
                                    </div>
@@ -494,8 +496,11 @@ export default function SidebarCustomize({ settings, setSettings, features, setF
                                         <input
                                             id="custom-pin"
                                             type="radio"
+                                            checked={settings.pin.type === 'custom'}
+                                            onChange={(v) => updateGroup('pin', 'type', 'custom')}
+                                            disabled={user_plan === 'free'}
                                         />
-                                        <label htmlFor="custom-pin">Custom Pin</label>
+                                        <label htmlFor="custom-pin" className={user_plan === 'free' ? styles.labelCustomPinDisabled : ''}>Custom Pin {user_plan === 'free' ? <span>(Pro or Business plan only)</span> : ''}</label>
                                    </div>
                                    <div className={styles.fieldContainer}>
                                         
@@ -518,6 +523,7 @@ export default function SidebarCustomize({ settings, setSettings, features, setF
                                                     type="button"
                                                     className={styles.uploadButton}
                                                     onClick={() => fileInputRef.current?.click()}
+                                                    disabled={user_plan === 'free'}
                                                 >
                                                     <LuUpload />
                                                     Upload Image

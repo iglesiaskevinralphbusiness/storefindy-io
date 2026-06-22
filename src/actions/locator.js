@@ -161,10 +161,18 @@ export async function getLocatorById(locator_id) {
     if(!locator) {
         return null;
     }
+
+    // user of the locator
+    const user = await UserModel.findOne({ _id: locator.user_id }).lean();
+    if(!user) {
+        return null;
+    }
+
     // inactive ids - set inactive locators that are beyond the plan's limit
     const inactiveIds = await getLocatorInactiveIds(session.user.id);
     return serializeForClient({
         ...locator,
+        user_plan: user.plan,
         status: inactiveIds.includes(String(locator._id)) ? 'inactive' : 'active',
     });
 }

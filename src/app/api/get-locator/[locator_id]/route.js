@@ -60,6 +60,7 @@ export async function GET(request, { params }) {
         status: 'success',
         locator: serializeForClient({
             ...locator,
+            user_plan: user.plan,
             user_id: 'hidden',
             status: inactiveIds.includes(String(locator._id)) ? 'inactive' : 'active',
         }),

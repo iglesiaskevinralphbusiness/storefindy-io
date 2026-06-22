@@ -92,11 +92,12 @@ const locatorSchema = new mongoose.Schema({
             icon: { type: String, default: '' },
         },
         pin: {
+            type: { type: String, default: 'standard' }, // standard, custom
             color: { type: String, default: '#000' },
-            size: { type: String, default: 'small' },
+            size: { type: String, default: 'medium' },
             text_color: { type: String, default: '#ffffff' },
             text_size: { type: Number, default: 12 },
-            image: { type: String, default: null },
+            image: { type: String, default: '' },
         },
     },
 

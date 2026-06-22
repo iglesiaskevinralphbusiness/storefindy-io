@@ -13,6 +13,7 @@ import LimitReached from '@/components/LimitReached';
 
 export default function CustomizeWrapper({ data, available_countries, onPreview }) {
     const { settings } = data;
+    console.log(data);
 
     const [viewMode, setViewMode] = useState('desktop');
 
@@ -41,6 +42,7 @@ export default function CustomizeWrapper({ data, available_countries, onPreview 
         {
             !onPreview && (
                 <SidebarCustomize
+                    user_plan={data.user_plan}
                     settings={settingsData}
                     setSettings={setSettingsData}
                     features={featuresData}
