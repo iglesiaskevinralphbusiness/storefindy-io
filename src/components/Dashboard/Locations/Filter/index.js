@@ -3,7 +3,7 @@ import styles from './LocationFilter.module.scss';
 import Input from '@/components/Forms/Input';
 import SelectMulti from '@/components/Forms/SelectMulti';
 import { useEffect, useState } from 'react';
-import { LuSearch, LuX } from "react-icons/lu";
+import { LuSearch, LuX, LuPlus } from "react-icons/lu";
 import Button from '@/components/Forms/Button';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
@@ -86,6 +86,12 @@ const Filter = ({ locators}) => {
                 value="Find"
                 icon={<LuSearch />}
                 primary={true}
+            />
+            <Button
+                type="button"
+                value="Add Location"
+                icon={<LuPlus />}
+                onClick={() => router.push('/dashboard/locations/add-location')}
             />
         </div>
     </form>

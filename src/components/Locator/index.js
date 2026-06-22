@@ -713,6 +713,8 @@ export default function Locator({
                             pinSize={settings.pin.size}
                             pinTextColor={settings.pin.text_color}
                             pinTextSize={settings.pin.text_size}
+                            pinType={settings.pin.type}
+                            pinImage={settings.pin.image}
                             activeId={activeId}
                             focusedZoom={features.focused_zoom}
                             onMove={handleMapMove}

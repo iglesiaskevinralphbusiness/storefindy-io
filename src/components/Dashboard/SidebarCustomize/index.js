@@ -23,6 +23,10 @@ import styles from './SidebarCustomize.module.scss';
 import Button from '@/components/Forms/Button';
 import Checkbox from '@/components/Forms/Checkbox';
 import Modal from '@/components/Modal';
+import { toast } from 'react-toastify';
+
+const ALLOWED_IMAGE_TYPES = ['image/png', 'image/svg+xml', 'image/gif', 'image/jpeg'];
+const MAX_IMAGE_SIZE = 500 * 1024; // 500KB
 
 const HEIGHT_OPTIONS = [
     { code: 'small', label: 'Small 500px' },
@@ -119,8 +123,28 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
     const handleImageUpload = (e) => {
         const file = e.target.files?.[0];
         if (file) {
-            updateGroup('pin', 'image', URL.createObjectURL(file));
+            // Only allow PNG, SVG, GIF, and JPEG images.
+            if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+                toast.error('Invalid file type. Only PNG, SVG, GIF, and JPEG are allowed.');
+                e.target.value = '';
+                return;
+            }
+            // Limit the file size to a maximum of 500KB.
+            if (file.size > MAX_IMAGE_SIZE) {
+                toast.error('Image is too large. Maximum allowed size is 500KB.');
+                e.target.value = '';
+                return;
+            }
+            // Convert the image to a base64 data URL so it can be persisted
+            // directly in the settings.pin.image string field.
+            const reader = new FileReader();
+            reader.onload = () => {
+                updateGroup('pin', 'image', reader.result);
+            };
+            reader.readAsDataURL(file);
         }
+        // Reset the input so selecting the same file again still fires onChange.
+        e.target.value = '';
     };
 
     const handleClickBack = () => {
@@ -458,6 +482,14 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                                 isOpen={openSections.pin}
                                 onToggle={() => toggleSection('pin')}
                             >
+
+                                <SelectField
+                                    label="Size"
+                                    value={settings.pin.size}
+                                    onChange={(v) => updateGroup('pin', 'size', v)}
+                                    options={[{code: 'small', label: 'Small'}, {code: 'medium', label: 'Medium'}, {code: 'large', label: 'Large'}]}
+                                />
+
                                 <div className={styles.mapPinContainer}>
                                    <div className={styles.fieldMap}>
                                         <input
@@ -473,12 +505,6 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                                             label="Pin Color"
                                             value={settings.pin.color}
                                             onChange={(v) => updateGroup('pin', 'color', v)}
-                                        />
-                                        <SelectField
-                                            label="Size"
-                                            value={settings.pin.size}
-                                            onChange={(v) => updateGroup('pin', 'size', v)}
-                                            options={[{code: 'small', label: 'Small'}, {code: 'medium', label: 'Medium'}, {code: 'large', label: 'Large'}]}
                                         />
                                         <ColorField
                                             label="Text Color"
@@ -506,13 +532,15 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                                         
                                    <div className={styles.field}>
                                         <label>Custom Image</label>
+                                        <p className={styles.labelCustomPinImage}>Recommended: Upload a PNG or SVG · size 32×32px · Transparent background · Max 500KB</p>
+                                        <p className={styles.labelCustomPinImage}>To disabled the pin number, go to customize settings (gear icon on top left besides back button)</p>
                                             {settings.pin.image ? (
                                                 <div className={styles.imagePreview}>
                                                     <img src={settings.pin.image} alt="Pin preview" />
                                                     <button
                                                         type="button"
                                                         className={styles.removeImage}
-                                                        onClick={() => updateGroup('pin', 'image', null)}
+                                                        onClick={() => updateGroup('pin', 'image', '')}
                                                         aria-label="Remove image"
                                                     >
                                                         <LuX />
@@ -532,7 +560,7 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                                             <input
                                                 ref={fileInputRef}
                                                 type="file"
-                                                accept="image/*"
+                                                accept="image/png,image/svg+xml,image/gif,image/jpeg"
                                                 onChange={handleImageUpload}
                                                 hidden
                                             />
