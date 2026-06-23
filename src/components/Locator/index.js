@@ -10,7 +10,7 @@ import { RiFilterFill } from "react-icons/ri";
 import { IoFilterCircleOutline } from "react-icons/io5";
 import { MdOutlineMyLocation } from "react-icons/md";
 import { FiLink } from "react-icons/fi";
-import { LuFilter, LuPhone, LuClock, LuListFilter, LuMap, LuMapPin, LuMapPinned, LuArrowRight, LuArrowLeft, LuChevronLeft, LuChevronRight, LuCircleChevronLeft, LuCircleChevronRight, LuX } from "react-icons/lu";
+import { LuFilter, LuPhone, LuClock, LuListFilter, LuMap, LuList, LuMapPin, LuMapPinned, LuArrowRight, LuArrowLeft, LuChevronLeft, LuChevronRight, LuCircleChevronLeft, LuCircleChevronRight, LuX } from "react-icons/lu";
 import { formStyles, resultsStyles, mapStyles, userDefinedStyles } from './styles';
 import Link from 'next/link';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
@@ -159,6 +159,7 @@ export default function Locator({
     const [activeId, setActiveId] = useState(null);
     const [showFilters, setShowFilters] = useState(false);
     const [openHours, setOpenHours] = useState({});
+    const [showListMap, setShowListMap] = useState('list');
 
     // Result <li> nodes, keyed by location id, so the active one can be scrolled
     // to the top of the list when a map pin (or the item itself) is selected.
@@ -500,7 +501,7 @@ export default function Locator({
     );
 
     return (
-        <>
+        <div className="locator-container">
             <style>{locatorStyles}</style>
             
             <div
@@ -656,6 +657,23 @@ export default function Locator({
                         </form>
                     )}
 
+                    <div className="mobile-tabs">
+                        <div
+                            className={'mobile-tab-item' + (showListMap === 'list' ? ' active' : '')}
+                            onClick={() => setShowListMap('list')}
+                        >
+                            <LuList />
+                            <span>List View</span>
+                        </div>
+                        <div
+                            className={'mobile-tab-item' + (showListMap === 'map' ? ' active' : '')}
+                            onClick={() => setShowListMap('map')}
+                        >
+                            <LuMap />
+                            <span>Map View</span>
+                        </div>
+                    </div>
+
                     <div className="results">
                         {status === 'loading' && (
                             <p className="results-count"><LuMapPin /> Searching…</p>
@@ -673,7 +691,10 @@ export default function Locator({
                         )}
 
                         {features.show_store_list && (
-                            <ul className="results-list" ref={listRef}>
+                            <ul
+                                className={'results-list' + (showListMap === 'list' ? ' mobile-tab-content-active' : ' mobile-tab-content-inactive')}
+                                ref={listRef}
+                            >
                                 {locations.map((location, index) => (
                                     <li
                                         key={location._id}
@@ -699,7 +720,7 @@ export default function Locator({
                         )}
                     </div>
                 </div>
-                <div className="locator-map">
+                <div className={'locator-map' + (showListMap === 'map' ? ' mobile-tab-content-active' : ' mobile-tab-content-inactive')}>
                     <Suspense fallback={<div className="map-loading">Loading map…</div>}>
                         <LocatorMap
                             locations={locations}
@@ -727,13 +748,18 @@ export default function Locator({
                     )}
                 </div>
             </div>
-        </>
+        </div>
     );
 }
 
 
 export const locatorStyles = `
+.locator-container {
+    container-type: inline-size;
+    container-name: container;
+}
 .locator {
+    position: relative;
     display: flex;
     flex-direction: row;
     flex: 1;
@@ -767,11 +793,23 @@ export const locatorStyles = `
     text-decoration: none;
     color: inherit;
 }
+@container (max-width: 767px) {
+    .locator {
+        display: block;
+        padding: 12px;
+        height: auto !important;
+    }
+    .locator-sidebar {
+        max-width: none;
+        min-height: 600px;
+        width: auto;
+        padding: 0;
+    }
+}
 ${formStyles}
 ${resultsStyles}
 ${mapStyles}
 ${userDefinedStyles}
-
 .inactive {
     display: flex;
     align-items: center;
