@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import styles from './Locators.module.scss';
+import styles from './LocatorList.module.scss';
 import { LuMapPin, LuEye, LuTrash2, LuPalette, LuPlus, LuCodeXml, LuChevronLeft } from "react-icons/lu";
 import { PiGear } from "react-icons/pi";
 import Button from '@/components/Forms/Button';
@@ -48,7 +48,7 @@ export default function LocatorList({ data=[] }) {
                                     )}
                                 </div>
                                 <div className={styles.analytics}>
-                                    <p><LuMapPin /> 12 locations</p>
+                                    <p><LuMapPin /> { locator.total_locations } locations</p>
                                     <p><LuEye /> { locator.views } views</p>
                                 </div>
                                 <div className={styles.actions}>

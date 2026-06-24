@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { LuMapPin } from "react-icons/lu";
-import styles from './Locators.module.scss';
+import styles from './LocatorList.module.scss';
 
 // Light-only palettes adapted from the customize reference UI.
 // Every entry uses a distinct hue family so two previews never share a color.

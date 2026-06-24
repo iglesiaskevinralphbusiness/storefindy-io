@@ -111,7 +111,37 @@ export async function getLocators() {
 
     await dbConnect();
     
-    const locators = await LocatorModel.find({ user_id: session.user.id }).lean();
+    // const locators = await LocatorModel.find({ user_id: session.user.id }).lean();
+    const locators = await LocatorModel.aggregate([
+        {
+          $match: {
+            user_id: session.user.id,
+          },
+        },
+        {
+            $addFields: {
+                locatorId: { $toString: '$_id' },
+            }
+        },
+        {
+          $lookup: {
+            from: 'locationmodels', // collection name
+            localField: 'locatorId',
+            foreignField: 'locator_id',
+            as: 'locations',
+          },
+        },
+        {
+          $addFields: {
+            total_locations: { $size: '$locations' },
+          },
+        },
+        {
+          $project: {
+            locations: 0, // remove the joined array
+          },
+        },
+      ]);
     const inactiveIds = await getLocatorInactiveIds(session.user.id);
 
     const updatedLocators = locators.map(locator => ({
