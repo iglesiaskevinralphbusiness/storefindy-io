@@ -657,9 +657,19 @@ export default function Locator({
                         </form>
                     )}
 
-                    <div className="mobile-tabs">
+                    <div
+                        className="mobile-tabs"
+                        style={{
+                            backgroundColor: settings.mobileView.background,
+                            color: settings.mobileView.text_color,
+                        }}
+                    >
                         <div
                             className={'mobile-tab-item' + (showListMap === 'list' ? ' active' : '')}
+                            style={showListMap === 'list' ?{
+                                borderColor: settings.mobileView.active_border_color,
+                                backgroundColor: settings.mobileView.active_background,
+                            } : {}}
                             onClick={() => setShowListMap('list')}
                         >
                             <LuList />
@@ -667,6 +677,10 @@ export default function Locator({
                         </div>
                         <div
                             className={'mobile-tab-item' + (showListMap === 'map' ? ' active' : '')}
+                            style={showListMap === 'map' ?{
+                                borderColor: settings.mobileView.active_border_color,
+                                backgroundColor: settings.mobileView.active_background,
+                            } : {}}
                             onClick={() => setShowListMap('map')}
                         >
                             <LuMap />

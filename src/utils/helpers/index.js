@@ -82,6 +82,12 @@ export function generateSettingsDefault(settings) {
             text_size: settings.pin.text_size,
             image: settings.pin.image,
         },
+        mobileView: {
+            background: settings.mobileView.background,
+            text_color: settings.mobileView.text_color,
+            active_border_color: settings.mobileView.active_border_color,
+            active_background: settings.mobileView.active_background,
+        }
     }
 }
 

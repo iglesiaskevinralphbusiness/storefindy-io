@@ -84,6 +84,9 @@ export const formStyles = `
     max-width: 265px;
     flext: 1;
 }
+.locator-sidebar .country-control select {
+    width: 100%;
+}
 .locator-sidebar .other-inputs .radius-control {
     max-width: 147px;
     flex: 1;
@@ -102,6 +105,7 @@ export const formStyles = `
     gap: 5px;
     text-align: center;
     padding: 13px 0;
+    cursor: pointer;
 }
 .mobile-tabs .mobile-tab-item.active {
     border-bottom: 1px solid #000;
@@ -419,9 +423,12 @@ export const mapStyles = `
     font-size: 100%;
     margin: 0;
 }
+.filters-checked {
+    margin-bottom: 8px;
+}
 .filters-checked span {
     background-color: #e7e9e9;
-    font-size: 75%;
+    font-size: 80%;
     margin-right: 5px;
     padding: 3px 7px;
     border-radius: 7px;

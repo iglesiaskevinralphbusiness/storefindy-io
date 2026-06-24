@@ -99,6 +99,12 @@ const locatorSchema = new mongoose.Schema({
             text_size: { type: Number, default: 12 },
             image: { type: String, default: '' },
         },
+        mobileView: {
+            background: { type: String, default: '#ffffff' },
+            text_color: { type: String, default: '#000000' },
+            active_border_color: { type: String, default: '#000000' },
+            active_background: { type: String, default: '#ffffff' },
+        }
     },
 
 }, { timestamps: true },);

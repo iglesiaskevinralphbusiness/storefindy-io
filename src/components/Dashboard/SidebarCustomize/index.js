@@ -102,6 +102,7 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
         resultItem: false,
         getDirections: false,
         viewLocation: false,
+        mobileView: false,
     });
 
     const toggleSection = (key) => {
@@ -567,6 +568,34 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                                         </div>
                                    </div>
                                 </div>
+                            </Section>
+                            <Section
+                                icon={<LuMapPin />}
+                                title="Mobile Tabs View"
+                                isOpen={openSections.mobileView}
+                                onToggle={() => toggleSection('mobileView')}
+                            >
+                                <p className={styles.sectionDescription}>Mobile Tabs are only visible on mobile devices</p>
+                                <ColorField
+                                    label="Background"
+                                    value={settings.mobileView.background}
+                                    onChange={(v) => updateGroup('mobileView', 'background', v)}
+                                />
+                                <ColorField
+                                    label="Text Color"
+                                    value={settings.mobileView.text_color}
+                                    onChange={(v) => updateGroup('mobileView', 'text_color', v)}
+                                />
+                                <ColorField
+                                    label="Active Border Color"
+                                    value={settings.mobileView.active_border_color}
+                                    onChange={(v) => updateGroup('mobileView', 'active_border_color', v)}
+                                />
+                                <ColorField
+                                    label="Active Background"
+                                    value={settings.mobileView.active_background}
+                                    onChange={(v) => updateGroup('mobileView', 'active_background', v)}
+                                />
                             </Section>
                         </div>
                         <div className={styles.settings}>
