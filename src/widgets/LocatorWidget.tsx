@@ -8,6 +8,7 @@ type LocatorWidgetProps = {
 
 type LocatorData = {
 	_id: string;
+	user_plan?: 'free' | 'pro' | 'business';
 	status?: 'active' | 'inactive';
 	filters?: any[];
 	search_radius?: number;
@@ -86,6 +87,7 @@ export default function LocatorWidget({ locator }: LocatorWidgetProps) {
 			// active/Inactive
 			isInactive={error ? 'inactive' : data.status}
 			inactiveForm={<Inactive />}
+			user_plan={data.user_plan}
 		 
 			// locator data
 			locator_id={data._id}

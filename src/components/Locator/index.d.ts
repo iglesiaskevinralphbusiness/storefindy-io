@@ -3,6 +3,7 @@ import type { ComponentType, ReactNode } from 'react';
 export type LocatorProps = {
 	isInactive?: boolean | 'active' | 'inactive';
 	inactiveForm?: ReactNode;
+	user_plan?: 'free' | 'pro' | 'business';
 	locator_id?: string;
 	available_countries?: string[];
 	search_radius?: number;

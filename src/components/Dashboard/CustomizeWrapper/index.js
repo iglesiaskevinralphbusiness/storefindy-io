@@ -74,6 +74,7 @@ export default function CustomizeWrapper({ data, available_countries, onPreview 
                     // active/Inactive
                     isInactive={data.status}
                     inactiveForm={<Inactive />}
+                    user_plan={data.user_plan}
 
                     // locator data
                     locator_id={data._id}
@@ -81,7 +82,7 @@ export default function CustomizeWrapper({ data, available_countries, onPreview 
                     available_countries={available_countries}
 
                     // default settings
-                    search_radius={data.search_radius}
+                    form_style={data.form_style}
                     default_zoom_level={data.default_zoom_level}
                     detect_location={data.detect_location}
                     default_country={data.default_country}

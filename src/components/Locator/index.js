@@ -83,6 +83,7 @@ export default function Locator({
     // Identity & map defaults
     locator_id,
     available_countries = [default_country],
+    user_plan = 'free',
     search_radius = 10,
     default_zoom_level = 10,
     detect_location = true,
@@ -348,6 +349,7 @@ export default function Locator({
     }
 
     const getFormStyle = () => {
+        if(user_plan !== 'business') return '';
         if(features.form_style === 'style-2') return 'form-style-2';
         if(features.form_style === 'style-3') return 'form-style-3';
         return '';
