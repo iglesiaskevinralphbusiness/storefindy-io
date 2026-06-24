@@ -528,7 +528,7 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                                             onChange={(v) => updateGroup('pin', 'type', 'custom')}
                                             disabled={user_plan === 'free'}
                                         />
-                                        <label htmlFor="custom-pin" className={user_plan === 'free' ? styles.labelCustomPinDisabled : ''}>Custom Pin {user_plan === 'free' ? <span>(Pro or Business plan only)</span> : ''}</label>
+                                        <label htmlFor="custom-pin" className={user_plan === 'free' ? styles.labelCustomPinDisabled : ''}>Custom Pin {user_plan === 'free' ? <span>(Only available on Pro or Business plan)</span> : ''}</label>
                                    </div>
                                    <div className={styles.fieldContainer}>
                                         
@@ -609,6 +609,8 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                                     { code: 'style-2', label: 'Style 2' },
                                     { code: 'style-3', label: 'Style 3' },
                                 ]}
+                                note={user_plan !== 'business' ? 'Only available on Business plan' : ''}
+                                disabled={user_plan !== 'business'}
                             />
                             <Checkbox
                                 label="Search bar"
@@ -743,11 +745,12 @@ function ColorField({ label, value, onChange }) {
     );
 }
 
-function SelectField({ label, value, onChange, options }) {
+function SelectField({ label, value, onChange, options, disabled=false, note='' }) {
     return (
-        <div className={styles.field}>
+        <div className={`${styles.field} ${disabled ? styles.disabled : ''}`}>
             <label>{label}</label>
-            <select value={value} onChange={(e) => onChange(e.target.value)}>
+            { note ? <p className={styles.sectionDescription}>{note}</p> : '' }
+            <select value={value} onChange={(e) => { disabled ? null : onChange(e.target.value)}} disabled={disabled}>
                 {options.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
             </select>
         </div>
