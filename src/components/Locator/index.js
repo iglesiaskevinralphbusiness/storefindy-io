@@ -8,10 +8,9 @@ import { TbMapPinSearch } from "react-icons/tb";
 import { TbShoppingBagSearch } from "react-icons/tb";
 import { RiFilterFill } from "react-icons/ri";
 import { IoFilterCircleOutline } from "react-icons/io5";
-import { MdOutlineMyLocation } from "react-icons/md";
 import { FiLink } from "react-icons/fi";
 import { LuFilter, LuPhone, LuClock, LuListFilter, LuMap, LuList, LuMapPin, LuMapPinned, LuArrowRight, LuArrowLeft, LuChevronLeft, LuChevronRight, LuCircleChevronLeft, LuCircleChevronRight, LuX } from "react-icons/lu";
-import { formStyles, resultsStyles, mapStyles, userDefinedStyles } from './styles';
+import { formStyles, resultsStyles, mapStyles, userDefinedStyles, formStyle2Styles } from './styles';
 import Link from 'next/link';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { COUNTRIES } from '@/utils/constant/countries';
@@ -348,6 +347,12 @@ export default function Locator({
         return '0';
     }
 
+    const getFormStyle = () => {
+        if(features.form_style === 'style-2') return 'form-style-2';
+        if(features.form_style === 'style-3') return 'form-style-3';
+        return '';
+    }
+
     const getButtonIcon = (icon) => {
         // search button
         if(icon === 'magnifying-glass') return <HiMiniMagnifyingGlass />;
@@ -505,7 +510,12 @@ export default function Locator({
             <style>{locatorStyles}</style>
             
             <div
-                className={`locator ${getAppHeight()} ${countryOptions.length > 1 && features.show_radius ? 'form2columns' : ''}`}
+                className={
+                    `locator ${getAppHeight()}
+                    ${countryOptions.length > 1 && features.show_radius ? 'form2columns' : ''}
+                    ${getFormStyle()}
+                    `
+                }
                 style={
                     {
                         backgroundColor: settings.background,
@@ -519,7 +529,12 @@ export default function Locator({
                     }
                 }
             >
-                <div className="locator-sidebar">
+                <div
+                    className="locator-sidebar"
+                    style={{
+                        backgroundColor: settings.background,
+                    }}
+                >
                     {features.show_search_bar && (
                         <form onSubmit={onSubmit}>
                             <div className="inputs">
@@ -824,6 +839,7 @@ ${formStyles}
 ${resultsStyles}
 ${mapStyles}
 ${userDefinedStyles}
+${formStyle2Styles}
 .inactive {
     display: flex;
     align-items: center;

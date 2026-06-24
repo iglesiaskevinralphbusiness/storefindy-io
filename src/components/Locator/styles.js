@@ -532,7 +532,36 @@ export const mapStyles = `
 }
 `;
 
-
+export const formStyle2Styles = `
+.form-style-2.locator {
+    flex-direction: row-reverse;
+}
+.form-style-3 .locator-sidebar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 999;
+    margin: 30px;
+    max-height: calc(100% - 60px);
+    max-width: 400px;
+}
+.form-style-3.large-app.form2columns .results ul.results-list {
+    height: auto;
+    max-height: 520px;
+}
+.form-style-3.medium-app.form2columns .results ul.results-list {
+    height: auto;
+    height: 415px;
+}
+.form-style-3.small-app.form2columns .results ul.results-list {
+    height: auto;
+    max-height: 255px;
+}
+.form-style-3 .leaflet-left {
+    left: unset;
+    right: 10px;
+}
+`;
 
 export const userDefinedStyles = `
 .small-app {

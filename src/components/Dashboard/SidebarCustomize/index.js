@@ -600,7 +600,7 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                             </Section>
                         </div>
                         <div className={styles.settings}>
-                            {/* <SelectField
+                            <SelectField
                                 label="Form Style"
                                 value={features.form_style}
                                 onChange={(v) => updateFeatures('form_style', v)}
@@ -609,7 +609,7 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                                     { code: 'style-2', label: 'Style 2' },
                                     { code: 'style-3', label: 'Style 3' },
                                 ]}
-                            /> */}
+                            />
                             <Checkbox
                                 label="Search bar"
                                 name="show_search_box"
