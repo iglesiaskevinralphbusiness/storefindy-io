@@ -16,7 +16,8 @@ import { LuChevronLeft,
     LuFilter,
     LuRows3,
     LuNavigation,
-    LuMapPinned
+    LuMapPinned,
+    LuAlignEndHorizontal
 } from "react-icons/lu";
 import { MdFilterList } from "react-icons/md";
 import styles from './SidebarCustomize.module.scss';
@@ -570,7 +571,7 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                                 </div>
                             </Section>
                             <Section
-                                icon={<LuMapPin />}
+                                icon={<LuAlignEndHorizontal />}
                                 title="Mobile Tabs View"
                                 isOpen={openSections.mobileView}
                                 onToggle={() => toggleSection('mobileView')}
