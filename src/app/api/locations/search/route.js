@@ -3,7 +3,10 @@ import { isValidObjectId } from 'mongoose';
 import { dbConnect } from '@/config/mongo.config';
 import { LocationModel } from '@/mongo/LocationsModel';
 import { LocatorModel } from '@/mongo/LocatorModel';
+import { UserModel } from '@/mongo/UserModel';
 import { serializeForClient } from '@/utils/helpers';
+import { plans } from '@/utils/constant/pricing';
+import { getLocationsInactiveIds } from '@/actions/locations';
 
 // This endpoint powers the public store-locator widget, which is embedded on
 // third-party sites, so every response carries permissive CORS headers and the
@@ -143,12 +146,34 @@ export async function GET(request) {
     }
     results = results.slice(0, limit);
 
+    // remove results that are found in the inactive ids starts here
+    const user_id = locator.user_id;
+    const user = await UserModel.findOne({ _id: user_id }).lean();
+    if(!user) {
+        return [];
+    }
+    const plan = plans.find(p => p.id === user.plan) || plan[0];
+    const skip = plan.max_location;
+
+    if(plan.id === 'business') {
+        return [];
+    }
+
+    const inactiveIds = (await LocationModel.find({ user_id })
+        .sort({ createdAt: 1 }) // oldest -> newest
+        .skip(skip)
+        .select('_id')
+        .lean()
+    ).map(({ _id }) => _id.toString());
+
+    const activeResults = results.filter(result => !inactiveIds.includes(String(result._id)));
+
     return json({
         status: 'success',
         center,
         label,
         radius,
         count: results.length,
-        locations: serializeForClient(results),
+        locations: serializeForClient(activeResults),
     });
 }

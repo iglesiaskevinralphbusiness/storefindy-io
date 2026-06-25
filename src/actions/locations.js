@@ -281,8 +281,6 @@ export async function getLocationsInactiveIds(user_id){
     const plan = plans.find(p => p.id === user.plan) || plan[0];
     const skip = plan.max_location;
 
-    console.log(plan.id);
-
     if(plan.id === 'business') {
         return [];
     }
