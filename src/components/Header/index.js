@@ -15,7 +15,7 @@ export default function Header() {
             <div className={styles.headerContainer}>
                 <div className={styles.headerLeft}>
                     <Link href="/">
-                        Storefindy.io
+                        Storefindy.com
                     </Link>
                 </div>
                 <nav className={styles.headerRight}>

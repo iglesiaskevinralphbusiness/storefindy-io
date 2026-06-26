@@ -34,7 +34,7 @@ export const plans = [
         features: [
             { ok: true, text: '3 locators' },
             { ok: true, text: 'Up to 500 locations' },
-            { ok: true, text: 'Full customization' },
+            { ok: true, text: 'Semi customization' },
             { ok: true, text: 'CSV import' },
             { ok: true, text: 'Embed on any website' },
             { ok: true, text: 'Basic analytics' },

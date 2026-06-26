@@ -13,7 +13,6 @@ import LimitReached from '@/components/LimitReached';
 
 export default function CustomizeWrapper({ data, available_countries, onPreview }) {
     const { settings } = data;
-    console.log(data);
 
     const [viewMode, setViewMode] = useState('desktop');
 

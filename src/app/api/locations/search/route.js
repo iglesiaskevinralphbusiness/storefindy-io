@@ -122,7 +122,7 @@ export async function GET(request) {
             });
         }
         center = { lat: geo.lat, lng: geo.lng };
-        label = geo.label;
+        label = geo.label; // note will use this in analytics for locatormodel > searches field
     }
 
     // Base query: only this locator's published locations, optionally narrowed
@@ -150,16 +150,12 @@ export async function GET(request) {
     const user_id = locator.user_id;
     const user = await UserModel.findOne({ _id: user_id }).lean();
     if(!user) {
-        return [];
+        return json({ status: 'error', message: 'Locator owner not found.', locations: [] }, 404);
     }
     const plan = plans.find(p => p.id === user.plan) || plan[0];
     const skip = plan.max_location;
 
-    if(plan.id === 'business') {
-        return [];
-    }
-
-    const inactiveIds = (await LocationModel.find({ user_id })
+    const inactiveIds = plan.id === 'business' ? [] :(await LocationModel.find({ user_id })
         .sort({ createdAt: 1 }) // oldest -> newest
         .skip(skip)
         .select('_id')
