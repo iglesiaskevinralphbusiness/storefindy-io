@@ -70,6 +70,7 @@ export default function CustomizeWrapper({ data, available_countries, onPreview 
             <div className={styles.body} style={{ padding: '0' }}>
                 <div className={`${styles.locatorWrapper} ${viewMode === 'desktop' ? styles.desktop : styles.mobile}`}>
                 <Locator
+                    isDemo={true}
                     // active/Inactive
                     isInactive={data.status}
                     inactiveForm={<Inactive />}

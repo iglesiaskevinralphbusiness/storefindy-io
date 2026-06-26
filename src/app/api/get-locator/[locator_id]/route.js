@@ -25,6 +25,10 @@ export async function OPTIONS() {
 
 export async function GET(request, { params }) {
     const { locator_id: locatorId } = await params;
+    const { device } = userAgent(request);
+    let type = "desktop";
+    if (device.type === "mobile") { type = "mobile"; }
+    else if (device.type === "tablet") { type = "tablet";}
 
     if (!locatorId || !isValidObjectId(locatorId)) {
         return json({ status: 'error', message: 'A valid locator is required.', locator: null }, 400);
@@ -39,6 +43,40 @@ export async function GET(request, { params }) {
         return json({ status: 'error', message: 'Locator not found.', locator: null }, 404);
     }
 
+    // update analytics views count / this api only works for widget so demo is not recorded
+    const today = new Date().toISOString().split("T")[0];
+    const viewsResult = await LocatorModel.updateOne(
+        {
+            _id: locatorId,
+            "views.date_id": today,
+        },
+        {
+            $inc: {
+                [`views.$.${type}_count`]: 1,
+                "views.$.view_count": 1,
+            },
+        }
+    );
+    if (viewsResult.modifiedCount === 0) {
+        await LocatorModel.updateOne(
+            { _id: locatorId },
+            {
+                $push: {
+                    views: {
+                        date_id: today,
+                        view_count: 1,
+                        mobile_count: type === "mobile" ? 1 : 0,
+                        tablet_count: type === "tablet" ? 1 : 0,
+                        desktop_count: type === "desktop" ? 1 : 0,
+                    },
+                },
+            }
+        );
+    }
+    console.log('viewsResult-----------------', viewsResult);
+
+
+    // countries / user
     const countries = await LocationModel.distinct('country', { locator_id: locatorId });
     const user = await UserModel.findOne({ _id: locator.user_id }).lean();
     if(!user) {

@@ -66,6 +66,7 @@ export async function OPTIONS() {
 export async function GET(request) {
     const { searchParams } = new URL(request.url);
 
+    const isDemo = searchParams.get('is_demo') === 'true' || searchParams.get('is_demo') === true ? true : false; // for demo purposes we will not use the analytics
     const locatorId = searchParams.get('locator_id') || '';
     const query = (searchParams.get('q') || '').trim();
     const latParam = searchParams.get('lat');
@@ -110,6 +111,9 @@ export async function GET(request) {
             return json({ status: 'error', message: 'Invalid coordinates.', locations: [] }, 400);
         }
         center = { lat, lng };
+        if(!isDemo) {
+            console.log('hasCoords-----------------', query);
+        }
     } else if (query) {
         const geo = await geocode(query, countryParam || locator.default_country);
         if (!geo) {
@@ -122,7 +126,10 @@ export async function GET(request) {
             });
         }
         center = { lat: geo.lat, lng: geo.lng };
-        label = geo.label; // note will use this in analytics for locatormodel > searches field
+        label = geo.label; // note will use this geo_label in analytics for locatormodel > searches field
+        if(!isDemo) {
+            console.log('geo-----------------', geo.label);
+        }
     }
 
     // Base query: only this locator's published locations, optionally narrowed

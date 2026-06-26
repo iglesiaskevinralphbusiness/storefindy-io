@@ -3,14 +3,14 @@ import mongoose from 'mongoose';
 const viewsSchema = new mongoose.Schema({
     date_id: { type: String, required: true },
     view_count: { type: Number, required: true },
-    mobile_count: { type: Number, required: true },
-    tablet_count: { type: Number, required: true },
-    desktop_count: { type: Number, required: true },
+    mobile_count: { type: Number, default: 0 },
+    tablet_count: { type: Number, default: 0 },
+    desktop_count: { type: Number, default: 0 },
 }, { _id: false, timestamps: true })
 
 const searchesSchema = new mongoose.Schema({
-    query: { type: String, required: true },
     geo_label: { type: String, required: true },
+    query: { type: String, required: true },
     lat: { type: Number, required: true },
     lng: { type: Number, required: true },
 }, { _id: false, timestamps: true });

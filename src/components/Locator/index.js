@@ -77,6 +77,7 @@ async function reverseGeocode(lat, lng) {
 }
 
 export default function Locator({
+    isDemo = false,
     // active/Inactive
     isInactive = false,
     inactiveForm = <></>,
@@ -207,7 +208,7 @@ export default function Locator({
 
         setStatus('loading');
         try {
-            const res = await fetch(`${API_BASE}/api/locations/search?${sp.toString()}`);
+            const res = await fetch(`${API_BASE}/api/locations/search?${sp.toString()}&is_demo=${isDemo}`);
             const data = await res.json();
             const items = data.locations || [];
             setLocations(items);
