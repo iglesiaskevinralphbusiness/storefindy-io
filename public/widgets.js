@@ -38679,7 +38679,7 @@ ${formStyle2Styles}
     const [features, setFeatures] = (0, import_react17.useState)({});
     (0, import_react17.useEffect)(() => {
       if (!locator) return;
-      fetch(`${"http://localhost:3000"}/api/get-locator/${locator}`).then((response) => response.json()).then((data2) => {
+      fetch(`https://www.storefindy.com/api/get-locator/${locator}`).then((response) => response.json()).then((data2) => {
         const locator2 = data2.locator;
         if (!locator2) {
           setError(true);
