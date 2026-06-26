@@ -37,7 +37,8 @@ export default function LocatorWidget({ locator }: LocatorWidgetProps) {
 	useEffect(() => {
 		if (!locator) return;
 
-		fetch(`https://www.storefindy.com/api/get-locator/${locator}`)
+		// fetch(`https://www.storefindy.com/api/get-locator/${locator}`)
+		fetch(`${process.env.NEXT_PUBLIC_ROOT_URL}/api/get-locator/${locator}`)
 			.then((response) => response.json())
 			.then((data) => {
 

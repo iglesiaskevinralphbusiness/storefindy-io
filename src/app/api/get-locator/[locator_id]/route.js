@@ -4,6 +4,7 @@ import { dbConnect } from '@/config/mongo.config';
 import { UserModel, LocatorModel, LocationModel } from '@/mongo';
 import { serializeForClient } from '@/utils/helpers';
 import { plans } from '@/utils/constant/pricing';
+import { userAgent } from "next/server";
 
 // This endpoint returns a locator's public configuration so the embeddable
 // store-locator widget can render. Like the search endpoint it is loaded from
