@@ -208,7 +208,13 @@ export default function Locator({
 
         setStatus('loading');
         try {
-            const res = await fetch(`${API_BASE}/api/locations/search?${sp.toString()}&is_demo=${isDemo}`);
+            let isRecordQuery = false;
+            const method = p.method || '';
+            if(method === 'form-submit' || method === 'search-suggest' || method === 'country-change') {
+                isRecordQuery = true;
+            }
+            
+            const res = await fetch(`${API_BASE}/api/locations/search?${sp.toString()}&is_demo=false&is_record_query=${isRecordQuery}`);
             const data = await res.json();
             const items = data.locations || [];
             setLocations(items);
@@ -248,7 +254,7 @@ export default function Locator({
                     const code = geo?.countryCode;
                     if (code && availableCodes.includes(code)) country = code;
                 }
-                runSearch({ lat: latitude, lng: longitude, ...(country ? { country } : {}) });
+                runSearch({ method: 'geolocation', lat: latitude, lng: longitude, ...(country ? { country } : {}) });
             };
 
             // kCLErrorLocationUnknown (POSITION_UNAVAILABLE, code 2) is usually
@@ -281,7 +287,7 @@ export default function Locator({
         e.preventDefault();
         if (!params.q.trim()) return;
         setZoom(defaultZoom);
-        runSearch({ lat: null, lng: null });
+        runSearch({ lat: null, lng: null, method: 'form-submit' });
     };
 
     // Auto-search after the user pans/zooms the map (debounced). Coordinates take
@@ -304,7 +310,7 @@ export default function Locator({
                 override.q = '';
             }
             // Don't recenter: the map is already where the user dragged it.
-            runSearch(override, { recenter: false });
+            runSearch(override, { recenter: false, method: 'map-move' });
         }, 600);
     };
 
@@ -313,11 +319,11 @@ export default function Locator({
             ? params.filters.filter((f) => f !== value)
             : [...params.filters, value];
         // Re-run with the existing center (coords if we have them, else the query).
-        runSearch({ filters: next });
+        runSearch({ filters: next, method: 'filter-toggle' });
     };
 
     const onRadiusChange = (e) => {
-        runSearch({ radius: Number(e.target.value) });
+        runSearch({ radius: Number(e.target.value), method: 'radius-change' });
     };
 
     // Changing the country only affects how a text query is geocoded. If the
@@ -328,7 +334,7 @@ export default function Locator({
         const country = e.target.value;
         if (params.q.trim()) {
             setZoom(defaultZoom);
-            runSearch({ country, lat: null, lng: null });
+            runSearch({ country, lat: null, lng: null, method: 'country-change' });
         } else {
             setParams((p) => ({ ...p, country }));
         }
@@ -558,6 +564,7 @@ export default function Locator({
                                             ...(s.countryCode && availableCodes.includes(s.countryCode)
                                                 ? { country: s.countryCode }
                                                 : {}),
+                                            method: 'search-suggest',
                                         });
                                     }}
                                     inputStyle={{

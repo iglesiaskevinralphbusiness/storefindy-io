@@ -6,21 +6,22 @@ const viewsSchema = new mongoose.Schema({
     mobile_count: { type: Number, default: 0 },
     tablet_count: { type: Number, default: 0 },
     desktop_count: { type: Number, default: 0 },
+    searches: {
+        type: [
+            {
+                geo_label: { type: String, required: true },
+                count: { type: Number, required: true },
+            }
+        ],
+        default: []
+    }
 }, { _id: false, timestamps: true })
-
-const searchesSchema = new mongoose.Schema({
-    geo_label: { type: String, required: true },
-    query: { type: String, required: true },
-    lat: { type: Number, required: true },
-    lng: { type: Number, required: true },
-}, { _id: false, timestamps: true });
 
 const locatorSchema = new mongoose.Schema({
     user_id: { type: String, required: true, index: true },
 
     // ANALYTICS
     views: { type: [viewsSchema], default: [] }, // [ { date_id: '2026-06-25', view_count: 32, mobile_count: 10, tablet_count: 10, desktop_count: 12 } ]
-    searches: { type: [searchesSchema], default: [] },
     
     // SETTINGS
     // basic information

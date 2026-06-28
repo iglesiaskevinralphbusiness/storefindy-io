@@ -66,7 +66,11 @@ export async function OPTIONS() {
 export async function GET(request) {
     const { searchParams } = new URL(request.url);
 
+    // analytics parameters
     const isDemo = searchParams.get('is_demo') === 'true' || searchParams.get('is_demo') === true ? true : false; // for demo purposes we will not use the analytics
+    const isRecordQuery = isDemo ? false : searchParams.get('is_record_query') === 'true' || searchParams.get('is_record_query') === true ? true : false;
+
+    // search parameters
     const locatorId = searchParams.get('locator_id') || '';
     const query = (searchParams.get('q') || '').trim();
     const latParam = searchParams.get('lat');
@@ -104,6 +108,8 @@ export async function GET(request) {
     let label = '';
     const hasCoords = latParam !== null && latParam !== '' && lngParam !== null && lngParam !== '';
 
+    let searches_geo_label = '';
+
     if (hasCoords) {
         const lat = parseFloat(latParam);
         const lng = parseFloat(lngParam);
@@ -111,8 +117,8 @@ export async function GET(request) {
             return json({ status: 'error', message: 'Invalid coordinates.', locations: [] }, 400);
         }
         center = { lat, lng };
-        if(!isDemo) {
-            console.log('hasCoords-----------------', query);
+        if(isRecordQuery) {
+            searches_geo_label = query;
         }
     } else if (query) {
         const geo = await geocode(query, countryParam || locator.default_country);
@@ -127,8 +133,8 @@ export async function GET(request) {
         }
         center = { lat: geo.lat, lng: geo.lng };
         label = geo.label; // note will use this geo_label in analytics for locatormodel > searches field
-        if(!isDemo) {
-            console.log('geo-----------------', geo.label);
+        if(isRecordQuery) {
+            searches_geo_label = geo.label;
         }
     }
 
@@ -170,6 +176,60 @@ export async function GET(request) {
     ).map(({ _id }) => _id.toString());
 
     const activeResults = results.filter(result => !inactiveIds.includes(String(result._id)));
+
+
+    // record query to analytics
+    if(searches_geo_label !== ''){
+        const today = new Date().toISOString().split("T")[0];
+
+        const isViewExist = await LocatorModel.findOne({
+            _id: locatorId,
+            "views.date_id": today,
+        });
+        if(isViewExist){
+
+            const isExists = await LocatorModel.findOne({
+                _id: locatorId,
+                "views.date_id": today,
+                "views.searches.geo_label": searches_geo_label,
+            });
+
+            if(!isExists) {
+                await LocatorModel.updateOne(
+                    {
+                        _id: locatorId,
+                        "views.date_id": today,
+                    },
+                    {
+                        $push: {
+                            "views.$.searches": {
+                                geo_label: searches_geo_label,
+                                count: 1
+                            }
+                        }
+                    }
+                );
+            } else {
+                await LocatorModel.updateOne(
+                    {
+                        _id: locatorId,
+                    },
+                    {
+                        $inc: {
+                            "views.$[view].searches.$[search].count": 1,
+                        },
+                    },
+                    {
+                        arrayFilters: [
+                            { "view.date_id": today },
+                            { "search.geo_label": searches_geo_label },
+                        ],
+                    }
+                );
+            }
+        }
+
+    }
 
     return json({
         status: 'success',
