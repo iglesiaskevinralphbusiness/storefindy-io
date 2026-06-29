@@ -211,10 +211,12 @@ export default function Locator({
             let isRecordQuery = false;
             const method = p.method || '';
             if(method === 'form-submit' || method === 'search-suggest' || method === 'country-change') {
-                isRecordQuery = true;
+                if(user_plan === 'business') {
+                    isRecordQuery = true;
+                }
             }
             
-            const res = await fetch(`${API_BASE}/api/locations/search?${sp.toString()}&is_demo=false&is_record_query=${isRecordQuery}`);
+            const res = await fetch(`${API_BASE}/api/locations/search?${sp.toString()}&is_demo=${isDemo}&is_record_query=${isRecordQuery}`);
             const data = await res.json();
             const items = data.locations || [];
             setLocations(items);

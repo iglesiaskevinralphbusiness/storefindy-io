@@ -39,7 +39,12 @@ function distanceInMiles(lat1, lng1, lat2, lng2) {
 // the free OpenStreetMap Nominatim service (same provider used elsewhere in the
 // app). `country` biases results when the locator is scoped to one country.
 async function geocode(query, country) {
-    const params = new URLSearchParams({ q: query, format: 'json', limit: '1' });
+    const params = new URLSearchParams({
+        q: query,
+        format: 'json',
+        limit: '1',
+        addressdetails: '1', // request structured address parts (city/state/country)
+    });
     if (country) params.set('countrycodes', country);
     try {
         const res = await fetch(
@@ -49,10 +54,46 @@ async function geocode(query, country) {
         if (!res.ok) return null;
         const data = await res.json();
         if (!Array.isArray(data) || data.length === 0) return null;
+        const addr = data[0].address || {};
         return {
             lat: parseFloat(data[0].lat),
             lng: parseFloat(data[0].lon),
             label: data[0].display_name || '',
+            // city falls back through town/village/municipality;
+            // province falls back through state/region
+            city_province:
+                addr.city || addr.town || addr.village ||
+                addr.municipality || addr.state || addr.region || '',
+            country: addr.country || '',
+        };
+    } catch {
+        return null;
+    }
+}
+
+// Reverse geocode raw coordinates (used by map-drag searches) into an address
+// so analytics can record city/province and country.
+async function reverseGeocode(lat, lng) {
+    const params = new URLSearchParams({
+        lat: String(lat),
+        lon: String(lng),
+        format: 'json',
+        addressdetails: '1',
+    });
+    try {
+        const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?${params.toString()}`,
+            { headers: { 'User-Agent': 'StoreFindy-Locator/1.0' } }
+        );
+        if (!res.ok) return null;
+        const data = await res.json();
+        const addr = data.address || {};
+        return {
+            label: data.display_name || '',
+            city_province:
+                addr.city || addr.town || addr.village ||
+                addr.municipality || addr.state || addr.region || '',
+            country: addr.country || '',
         };
     } catch {
         return null;
@@ -108,7 +149,10 @@ export async function GET(request) {
     let label = '';
     const hasCoords = latParam !== null && latParam !== '' && lngParam !== null && lngParam !== '';
 
+    let searches_exact_search = '';
     let searches_geo_label = '';
+    let searches_city_provice = '';
+    let searches_country = '';
 
     if (hasCoords) {
         const lat = parseFloat(latParam);
@@ -118,7 +162,10 @@ export async function GET(request) {
         }
         center = { lat, lng };
         if(isRecordQuery) {
-            searches_geo_label = query;
+            const rev = await reverseGeocode(lat, lng);
+            searches_exact_search = rev?.label || '';
+            searches_city_provice = rev?.city_province || '';
+            searches_country = rev?.country || '';
         }
     } else if (query) {
         const geo = await geocode(query, countryParam || locator.default_country);
@@ -134,9 +181,13 @@ export async function GET(request) {
         center = { lat: geo.lat, lng: geo.lng };
         label = geo.label; // note will use this geo_label in analytics for locatormodel > searches field
         if(isRecordQuery) {
-            searches_geo_label = geo.label;
+            searches_exact_search = geo.label;
+            searches_city_provice = geo.city_province;
+            searches_country = geo.country;
         }
     }
+
+    searches_geo_label = searches_city_provice && searches_country ? `${searches_city_provice}, ${searches_country}` : '';
 
     // Base query: only this locator's published locations, optionally narrowed
     // to the selected filter labels.
@@ -204,6 +255,9 @@ export async function GET(request) {
                         $push: {
                             "views.$.searches": {
                                 geo_label: searches_geo_label,
+                                exact_search: searches_exact_search,
+                                city_province: searches_city_provice,
+                                country: searches_country,
                                 count: 1
                             }
                         }
