@@ -4,7 +4,7 @@ import styles from '../Dashboard.module.scss';
 import Sidebar from '@/components/Dashboard/Sidebar';
 import { RiArrowRightLine } from "react-icons/ri";
 import { getAnalyticsData } from '@/actions/locator';
-import {
+import {    
     TbEye,
     TbSearch,
     TbNavigation,
@@ -26,21 +26,13 @@ import {
     TbDownload,
     TbCrown,
 } from 'react-icons/tb';
+import Button from '@/components/Forms/Button';
 
 const STATS = [
     { label: 'Widget Views', value: '24,831', trend: '+18% vs last period', up: true, icon: <TbEye /> },
     { label: 'Total Searches', value: '8,204', trend: '+12% vs last period', up: true, icon: <TbSearch /> },
     { label: 'Direction Clicks', value: '3,417', trend: '+9% vs last period', up: true, icon: <TbNavigation /> },
     { label: 'Avg Click-through', value: '41.6%', trend: '-2% vs last period', up: false, icon: <TbClick /> },
-];
-
-const VIEWS_DATA = [620, 780, 920, 1100, 840, 1250, 1380];
-const VIEWS_LABELS = ['Jun 1', 'Jun 5', 'Jun 10', 'Jun 15', 'Jun 20', 'Jun 25', 'Jun 30'];
-
-const DEVICES = [
-    { name: 'Mobile', pct: 62, bg: '#fffbe6', fill: '#ffe54c', color: '#BA7517', icon: <TbDeviceMobile /> },
-    { name: 'Desktop', pct: 31, bg: '#EBF4FF', fill: '#185FA5', color: '#185FA5', icon: <TbDeviceLaptop /> },
-    { name: 'Tablet', pct: 7, bg: '#EAF3DE', fill: '#639922', color: '#3B6D11', icon: <TbDeviceTablet /> },
 ];
 
 const HEAT_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -57,16 +49,6 @@ const HEAT_DATA = [
 const heatColor = (v) =>
     v < 5 ? '#f5f5f3' : v < 15 ? '#fff3cc' : v < 30 ? '#ffe54c' : v < 45 ? '#f5c800' : v < 55 ? '#BA7517' : '#854F0B';
 const HEAT_SWATCHES = ['#f5f5f3', '#fff3cc', '#ffe54c', '#f5c800', '#BA7517', '#854F0B'];
-
-const TOP_CITIES = [
-    { name: 'Makati City', pct: 100, count: '1,842' },
-    { name: 'Quezon City', pct: 82, count: '1,512' },
-    { name: 'Cebu City', pct: 71, count: '1,304' },
-    { name: 'Pasig City', pct: 58, count: '1,066' },
-    { name: 'Davao City', pct: 44, count: '812' },
-    { name: 'Taguig City', pct: 38, count: '698' },
-    { name: 'Mandaluyong', pct: 29, count: '534' },
-];
 
 const TOP_QUERIES = [
     { term: 'BGC', count: 342 },
@@ -114,7 +96,7 @@ const TOP_LOCATIONS = [
     { name: 'Mercury Drug Makati', pct: 16, count: '764' },
 ];
 
-function buildLineChart() {
+function buildLineChart(VIEWS_DATA) {
     const W = 320;
     const H = 110;
     const P = 10;
@@ -130,14 +112,45 @@ function buildLineChart() {
     return { W, H, pts, line, area };
 }
 
-export default async function AnalyticsPage() {
+export default async function AnalyticsPage({ searchParams }) {
 
+    const params = await searchParams;
+    const range = params?.range ?? '30';
+    const locator = params?.locator ?? 'all';
 
-    const analyticsData = await getAnalyticsData();
+    const analyticsData = await getAnalyticsData({ range, locator });
     console.log(analyticsData);
+    if(!analyticsData) {
+        return <div>No dont have access to this page for your plan.</div>;
+    }
+    
+    // Views over time
+    const VIEWS_DATA = analyticsData.views_over_time.views_data;
+    const VIEWS_LABELS = analyticsData.views_over_time.views_labels;
+
+    // Device Breakdown
+    const DEVICES = analyticsData.device_breakdown;
+
+    // Search Activity Heatmap
+
+    // Top Searched Cities
+    const TOP_7_CITIES = analyticsData.top_7_cities;
 
 
-    const { W, H, pts, line, area } = buildLineChart();
+
+    // Helper functions
+    const getDeviceIcon = (name) => {
+        switch (name) {
+            case 'Mobile':
+                return <TbDeviceMobile />;
+            case 'Desktop':
+                return <TbDeviceLaptop />;
+            case 'Tablet':
+                return <TbDeviceTablet />;
+        }
+    }
+
+    const { W, H, pts, line, area } = buildLineChart(VIEWS_DATA, VIEWS_LABELS);
     const peakMax = Math.max(...PEAK_DATA);
 
     return <>
@@ -153,26 +166,21 @@ export default async function AnalyticsPage() {
 
                         {/* TOOLBAR */}
                         <div className={styles.toolbar}>
-                            <div className={styles.toolbarTitle}>
-                                Analytics
-                                <span className={styles.bizPill}><TbCrown /> Business</span>
-                            </div>
-                            <div className={styles.toolbarActions}>
-                                <select className={styles.select} defaultValue="all">
+                            <form className={styles.toolbarActions} method="get">
+                                <select className={styles.select} name="locator" defaultValue={locator}>
                                     <option value="all">All Locators</option>
                                     <option value="main">Main Store Locator</option>
                                     <option value="branch">Branch Finder</option>
                                     <option value="popup">Pop-up Stores</option>
                                 </select>
-                                <select className={styles.select} defaultValue="30">
+                                <select className={styles.select} name="range" defaultValue={range}>
                                     <option value="7">Last 7 days</option>
                                     <option value="30">Last 30 days</option>
                                     <option value="90">Last 90 days</option>
                                     <option value="365">Last 12 months</option>
                                 </select>
-                                <button type="button" className={styles.btnGhost}><TbCalendar /> Custom range</button>
-                                <button type="button" className={styles.btnPrimary}><TbDownload /> Export CSV</button>
-                            </div>
+                                <Button type="submit" value="Apply" />
+                            </form>
                         </div>
 
                         {/* STAT CARDS */}
@@ -213,7 +221,7 @@ export default async function AnalyticsPage() {
                                 </div>
                                 {DEVICES.map((d) => (
                                     <div key={d.name} className={styles.deviceRow}>
-                                        <div className={styles.deviceIcon} style={{ background: d.bg, color: d.color }}>{d.icon}</div>
+                                        <div className={styles.deviceIcon} style={{ background: d.bg, color: d.color }}>{getDeviceIcon(d.name)}</div>
                                         <div className={styles.deviceInfo}>
                                             <div className={styles.deviceName}>{d.name}</div>
                                             <div className={styles.deviceBar}>
@@ -268,7 +276,7 @@ export default async function AnalyticsPage() {
                                     <span className={`${styles.badge} ${styles.blue}`}>Pro + Business</span>
                                 </div>
                                 <div className={styles.topList}>
-                                    {TOP_CITIES.map((c, i) => (
+                                    {TOP_7_CITIES.map((c, i) => (
                                         <div key={c.name} className={styles.topItem}>
                                             <span className={styles.topRank}>{i + 1}</span>
                                             <span className={styles.topName}>{c.name}</span>

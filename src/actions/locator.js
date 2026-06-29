@@ -110,13 +110,13 @@ export async function getLocators() {
     }
 
     await dbConnect();
-    
+
     // const locators = await LocatorModel.find({ user_id: session.user.id }).lean();
     const locators = await LocatorModel.aggregate([
         {
-          $match: {
-            user_id: session.user.id,
-          },
+            $match: {
+                user_id: session.user.id,
+            },
         },
         {
             $addFields: {
@@ -124,24 +124,24 @@ export async function getLocators() {
             }
         },
         {
-          $lookup: {
-            from: 'locationmodels', // collection name
-            localField: 'locatorId',
-            foreignField: 'locator_id',
-            as: 'locations',
-          },
+            $lookup: {
+                from: 'locationmodels', // collection name
+                localField: 'locatorId',
+                foreignField: 'locator_id',
+                as: 'locations',
+            },
         },
         {
-          $addFields: {
-            total_locations: { $size: '$locations' },
-          },
+            $addFields: {
+                total_locations: { $size: '$locations' },
+            },
         },
         {
-          $project: {
-            locations: 0, // remove the joined array
-          },
+            $project: {
+                locations: 0, // remove the joined array
+            },
         },
-      ]);
+    ]);
     const inactiveIds = await getLocatorInactiveIds(session.user.id);
 
     const updatedLocators = locators.map(locator => ({
@@ -153,11 +153,11 @@ export async function getLocators() {
     return serializeForClient(updatedLocators);
 }
 
-export async function getLocatorInactiveIds(user_id){
+export async function getLocatorInactiveIds(user_id) {
     await dbConnect();
 
     const user = await UserModel.findOne({ _id: user_id }).lean();
-    if(!user) {
+    if (!user) {
         return [];
     }
 
@@ -186,15 +186,15 @@ export async function getLocatorById(locator_id) {
     }
 
     await dbConnect();
-    
+
     const locator = await LocatorModel.findOne({ _id: locator_id, user_id: session.user.id }).lean();
-    if(!locator) {
+    if (!locator) {
         return null;
     }
 
     // user of the locator
     const user = await UserModel.findOne({ _id: locator.user_id }).lean();
-    if(!user) {
+    if (!user) {
         return null;
     }
 
@@ -219,7 +219,7 @@ export async function getAvailableCountriesBasedOnLocations(locator_id) {
     }
 
     await dbConnect();
-    
+
     const countries = await LocationModel.distinct('country', { locator_id })
     return serializeForClient(countries);
 }
@@ -231,7 +231,7 @@ export async function postDeleteLocator(locator_id) {
     }
 
     await dbConnect();
-    
+
     await LocatorModel.findByIdAndDelete(locator_id);
     await LocationModel.deleteMany({ locator_id });
     return { status: "success", message: 'Locator deleted successfully' };
@@ -264,7 +264,7 @@ export async function functionSaveCustomizeLocator(locator_id, settings, feature
     return { status: "success", message: 'Locator settings and features updated successfully' };
 }
 
-export async function getAnalyticsData() {
+export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {}) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
         redirect('/sign-in');
@@ -274,11 +274,299 @@ export async function getAnalyticsData() {
 
     // user plan
     const user = await UserModel.findOne({ _id: session.user.id }).lean();
-    if(!user) {
+    if (!user) {
         return null;
     }
     const plan = plans.find(p => p.id === user.plan) || plan[0];
 
-    return plan;
+    if (plan.id === 'free') {
+        return null;
+    }
+
+
+    // Query
+    const query = {}
+    if (locatorId !== 'all') {
+        query._id = new mongoose.Types.ObjectId(locatorId);
+    }
+
+
+
+    // view data
+    const [views_over_time] = await LocatorModel.aggregate([
+        {
+            $match: query
+        },
+        {
+            $unwind: "$views",
+        },
+        {
+            $sort: {
+                "views.date_id": 1,
+            },
+        },
+        {
+            $group: {
+                _id: null,
+                views_labels: {
+                    $push: {
+                        $dateToString: {
+                            format: "%b %d",
+                            date: {
+                                $dateFromString: {
+                                    dateString: "$views.date_id",
+                                },
+                            },
+                            timezone: "UTC",
+                        },
+                    },
+                },
+                views_data: {
+                    $push: "$views.view_count",
+                },
+            },
+        },
+        {
+            $project: {
+                _id: 0,
+                views_labels: 1,
+                views_data: 1,
+            },
+        },
+    ]);
+
+    // Device Breakdown
+    const [devices] = await LocatorModel.aggregate([
+        {
+            $match: query
+        },
+        {
+            $unwind: {
+                path: "$views",
+                preserveNullAndEmptyArrays: true,
+            },
+        },
+        {
+            $group: {
+                _id: null,
+                mobile: {
+                    $sum: {
+                        $ifNull: ["$views.mobile_count", 0],
+                    },
+                },
+                desktop: {
+                    $sum: {
+                        $ifNull: ["$views.desktop_count", 0],
+                    },
+                },
+                tablet: {
+                    $sum: {
+                        $ifNull: ["$views.tablet_count", 0],
+                    },
+                },
+            },
+        },
+        {
+            $project: {
+                _id: 0,
+                total: {
+                    $add: ["$mobile", "$desktop", "$tablet"],
+                },
+                mobile: 1,
+                desktop: 1,
+                tablet: 1,
+            },
+        },
+        {
+            $project: {
+                devices: [
+                    {
+                        name: "Mobile",
+                        pct: {
+                            $cond: [
+                                { $eq: ["$total", 0] },
+                                0,
+                                {
+                                    $round: [
+                                        {
+                                            $multiply: [
+                                                { $divide: ["$mobile", "$total"] },
+                                                100,
+                                            ],
+                                        },
+                                        0,
+                                    ],
+                                },
+                            ],
+                        },
+                        bg: "#fffbe6",
+                        fill: "#ffe54c",
+                        color: "#BA7517",
+                    },
+                    {
+                        name: "Desktop",
+                        pct: {
+                            $cond: [
+                                { $eq: ["$total", 0] },
+                                0,
+                                {
+                                    $round: [
+                                        {
+                                            $multiply: [
+                                                { $divide: ["$desktop", "$total"] },
+                                                100,
+                                            ],
+                                        },
+                                        0,
+                                    ],
+                                },
+                            ],
+                        },
+                        bg: "#EBF4FF",
+                        fill: "#185FA5",
+                        color: "#185FA5",
+                    },
+                    {
+                        name: "Tablet",
+                        pct: {
+                            $cond: [
+                                { $eq: ["$total", 0] },
+                                0,
+                                {
+                                    $round: [
+                                        {
+                                            $multiply: [
+                                                { $divide: ["$tablet", "$total"] },
+                                                100,
+                                            ],
+                                        },
+                                        0,
+                                    ],
+                                },
+                            ],
+                        },
+                        bg: "#EAF3DE",
+                        fill: "#639922",
+                        color: "#3B6D11",
+                    },
+                ],
+            },
+        },
+    ]);
+
+    // Top Searched Cities
+    const top7Searches = await LocatorModel.aggregate([
+        {
+            $match: query
+        },
+        {
+            $unwind: "$views",
+        },
+        {
+            $unwind: "$views.searches",
+        },
+        {
+            $group: {
+                _id: {
+                    geo_label: "$views.searches.geo_label",
+                    exact_search: "$views.searches.exact_search",
+                },
+                count: {
+                    $sum: "$views.searches.count",
+                },
+            },
+        },
+        {
+            $sort: {
+                count: -1,
+            },
+        },
+        {
+            $limit: 7,
+        },
+        {
+            $group: {
+                _id: null,
+                maxCount: {
+                    $first: "$count",
+                },
+                searches: {
+                    $push: {
+                        name: "$_id.geo_label",
+                        exact_search: "$_id.exact_search",
+                        count: "$count",
+                    },
+                },
+            },
+        },
+        {
+            $unwind: "$searches",
+        },
+        {
+            $project: {
+                _id: 0,
+                name: "$searches.name",
+                exact_search: "$searches.exact_search",
+                count: {
+                    $toString: "$searches.count",
+                },
+                pct: {
+                    $cond: [
+                        { $eq: ["$maxCount", 0] },
+                        0,
+                        {
+                            $round: [
+                                {
+                                    $multiply: [
+                                        {
+                                            $divide: ["$searches.count", "$maxCount"],
+                                        },
+                                        100,
+                                    ],
+                                },
+                                0,
+                            ],
+                        },
+                    ],
+                },
+            },
+        },
+        {
+            $sort: {
+                pct: -1,
+            },
+        },
+    ]);
+
+    return {
+        views_over_time: views_over_time ?? {
+            views_labels: [],
+            views_data: [],
+        },
+        device_breakdown: devices?.devices ?? [
+            {
+                name: "Mobile",
+                pct: 0,
+                bg: "#fffbe6",
+                fill: "#ffe54c",
+                color: "#BA7517",
+            },
+            {
+                name: "Desktop",
+                pct: 0,
+                bg: "#EBF4FF",
+                fill: "#185FA5",
+                color: "#185FA5",
+            },
+            {
+                name: "Tablet",
+                pct: 0,
+                bg: "#EAF3DE",
+                fill: "#639922",
+                color: "#3B6D11",
+            },
+        ],
+        top_7_cities: top7Searches ?? [],
+    };
 
 }
