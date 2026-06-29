@@ -263,3 +263,22 @@ export async function functionSaveCustomizeLocator(locator_id, settings, feature
     // return the updated locator
     return { status: "success", message: 'Locator settings and features updated successfully' };
 }
+
+export async function getAnalyticsData() {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    await dbConnect();
+
+    // user plan
+    const user = await UserModel.findOne({ _id: session.user.id }).lean();
+    if(!user) {
+        return null;
+    }
+    const plan = plans.find(p => p.id === user.plan) || plan[0];
+
+    return plan;
+
+}

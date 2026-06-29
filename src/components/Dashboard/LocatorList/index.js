@@ -49,7 +49,7 @@ export default function LocatorList({ data=[] }) {
                                 </div>
                                 <div className={styles.analytics}>
                                     <p><LuMapPin /> { locator.total_locations } locations</p>
-                                    <p><LuEye /> { locator.views } views</p>
+                                    <p><LuEye /> 0 views</p>
                                 </div>
                                 <div className={styles.actions}>
                                     <div className={styles.history}>

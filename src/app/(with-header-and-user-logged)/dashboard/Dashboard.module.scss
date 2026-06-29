@@ -2601,7 +2601,505 @@
 }
 
 .analytics {
-    
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+
+    /* TOOLBAR */
+    .toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .toolbarTitle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        color: #1a1a1a;
+    }
+    .bizPill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 500;
+        background: #171717;
+        color: #ffe54c;
+        padding: 3px 9px;
+        border-radius: 20px;
+        svg {
+            font-size: 12px;
+        }
+    }
+    .toolbarActions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    .select {
+        font-size: 12px;
+        padding: 7px 10px;
+        border-radius: 8px;
+        border: 1px solid #e4e4e4;
+        background: #fff;
+        color: #555;
+        outline: none;
+        cursor: pointer;
+        &:focus {
+            border-color: #185FA5;
+        }
+    }
+    .btnGhost {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        padding: 7px 12px;
+        border-radius: 8px;
+        border: 1px solid #e4e4e4;
+        background: #fff;
+        color: #555;
+        cursor: pointer;
+        &:hover {
+            background: #f5f5f3;
+        }
+        svg {
+            font-size: 14px;
+        }
+    }
+    .btnPrimary {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        font-weight: 500;
+        padding: 7px 13px;
+        border-radius: 8px;
+        border: none;
+        background: #171717;
+        color: #ffe54c;
+        cursor: pointer;
+        &:hover {
+            background: #2a2a2a;
+        }
+        svg {
+            font-size: 14px;
+        }
+    }
+
+    /* STAT CARDS */
+    .statsGrid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+    }
+    .statCard {
+        background: #fff;
+        border: 1px solid #e5e5e3;
+        border-radius: 10px;
+        padding: 14px 16px;
+    }
+    .statLabel {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        color: #888;
+        margin-bottom: 6px;
+        svg {
+            font-size: 14px;
+        }
+    }
+    .statValue {
+        font-size: 24px;
+        font-weight: 600;
+        color: #1a1a1a;
+        line-height: 1;
+        margin-bottom: 5px;
+    }
+    .statTrend {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 11px;
+        svg {
+            font-size: 13px;
+        }
+        &.up {
+            color: #3B6D11;
+        }
+        &.down {
+            color: #A32D2D;
+        }
+    }
+
+    /* TWO COL */
+    .twoCol {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+
+    /* CARD */
+    .card {
+        background: #fff;
+        border: 1px solid #e5e5e3;
+        border-radius: 10px;
+        padding: 16px;
+    }
+    .cardTitle {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #f0f0ee;
+        svg {
+            font-size: 16px;
+            color: #185FA5;
+            flex-shrink: 0;
+        }
+    }
+    .badge {
+        margin-left: auto;
+        font-size: 10px;
+        font-weight: 500;
+        padding: 2px 8px;
+        border-radius: 10px;
+        white-space: nowrap;
+        &.pro {
+            background: #171717;
+            color: #ffe54c;
+        }
+        &.blue {
+            background: #dbeeff;
+            color: #185FA5;
+        }
+        &.green {
+            background: #EAF3DE;
+            color: #3B6D11;
+        }
+    }
+    .cardSub {
+        font-size: 11px;
+        color: #888;
+        margin: -6px 0 10px;
+    }
+
+    /* LINE CHART */
+    .lineChart {
+        width: 100%;
+        height: 120px;
+        display: block;
+    }
+    .lineLabels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 10px;
+        color: #aaa;
+        margin-top: 4px;
+    }
+
+    /* DEVICE BREAKDOWN */
+    .deviceRow {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+    .deviceIcon {
+        width: 30px;
+        height: 30px;
+        border-radius: 7px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        svg {
+            font-size: 16px;
+        }
+    }
+    .deviceInfo {
+        flex: 1;
+        min-width: 0;
+    }
+    .deviceName {
+        font-size: 12px;
+        font-weight: 500;
+        color: #1a1a1a;
+        margin-bottom: 4px;
+    }
+    .deviceBar {
+        height: 6px;
+        background: #f0f0ee;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+    .deviceFill {
+        height: 100%;
+        border-radius: 3px;
+    }
+    .devicePct {
+        font-size: 12px;
+        font-weight: 600;
+        color: #1a1a1a;
+        width: 36px;
+        text-align: right;
+        flex-shrink: 0;
+    }
+
+    /* HEATMAP */
+    .heatLegend {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        span {
+            font-size: 11px;
+            color: #888;
+        }
+    }
+    .heatScale {
+        display: flex;
+        gap: 3px;
+    }
+    .heatSwatch {
+        width: 14px;
+        height: 14px;
+        border-radius: 3px;
+    }
+    .heatGrid {
+        display: grid;
+        grid-template-columns: 40px repeat(12, 1fr);
+        gap: 3px;
+    }
+    .heatHourLabel {
+        font-size: 10px;
+        color: #aaa;
+        text-align: center;
+        padding-bottom: 2px;
+    }
+    .heatDayLabel {
+        font-size: 11px;
+        color: #888;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding-right: 6px;
+    }
+    .heatCell {
+        height: 18px;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+
+    /* TOP LIST */
+    .topList {
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+    }
+    .topItem {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .topRank {
+        font-size: 11px;
+        color: #aaa;
+        width: 14px;
+        flex-shrink: 0;
+    }
+    .topName {
+        font-size: 12px;
+        color: #1a1a1a;
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .topBarWrap {
+        flex: 1;
+        height: 6px;
+        background: #f0f0ee;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+    .topBarFill {
+        height: 100%;
+        border-radius: 3px;
+        background: #ffe54c;
+    }
+    .topCount {
+        font-size: 12px;
+        font-weight: 600;
+        color: #1a1a1a;
+        width: 42px;
+        text-align: right;
+        flex-shrink: 0;
+    }
+
+    /* QUERY TAGS */
+    .queryTags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    .queryTag {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11px;
+        color: #555;
+        background: #fafaf8;
+        border: 1px solid #e5e5e3;
+        border-radius: 20px;
+        padding: 4px 10px;
+    }
+    .queryCount {
+        font-size: 10px;
+        font-weight: 600;
+        background: #ffe54c;
+        color: #171717;
+        padding: 1px 6px;
+        border-radius: 10px;
+    }
+
+    /* GEO MAP */
+    .geoMap {
+        position: relative;
+        height: 150px;
+        background: linear-gradient(135deg, #dce8f5, #c8dff0);
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 8px;
+    }
+    .geoGrid {
+        position: absolute;
+        background: #fff;
+        opacity: 0.5;
+        border-radius: 2px;
+    }
+    .geoPin {
+        position: absolute;
+        border-radius: 50%;
+        opacity: 0.85;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 600;
+        color: #fff;
+        cursor: pointer;
+        transform: translate(-50%, -50%);
+    }
+    .geoHint {
+        font-size: 11px;
+        color: #aaa;
+    }
+
+    /* PEAK HOURS BAR CHART */
+    .barChart {
+        display: flex;
+        align-items: flex-end;
+        gap: 2px;
+        height: 100px;
+    }
+    .barCol {
+        flex: 1;
+        border-radius: 3px 3px 0 0;
+        min-height: 2px;
+    }
+    .barLabels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 10px;
+        color: #aaa;
+        margin-top: 6px;
+    }
+
+    /* CTR TABLE */
+    .ctrHead {
+        display: flex;
+        gap: 8px;
+        padding: 4px 0 8px;
+        border-bottom: 1px solid #f0f0ee;
+        margin-bottom: 4px;
+        span {
+            font-size: 10px;
+            color: #aaa;
+        }
+        .ctrHeadStore {
+            flex: 1;
+        }
+        .ctrHeadViews {
+            width: 50px;
+            text-align: right;
+        }
+        .ctrHeadRate {
+            width: 40px;
+            text-align: right;
+        }
+    }
+    .ctrRow {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 0;
+        border-bottom: 1px solid #f5f5f3;
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+    .ctrName {
+        font-size: 12px;
+        color: #1a1a1a;
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .ctrViews {
+        font-size: 11px;
+        color: #888;
+        width: 50px;
+        text-align: right;
+    }
+    .ctrRate {
+        font-size: 12px;
+        font-weight: 600;
+        width: 40px;
+        text-align: right;
+        &.hi {
+            color: #3B6D11;
+        }
+        &.md {
+            color: #BA7517;
+        }
+        &.lo {
+            color: #A32D2D;
+        }
+    }
+
+    @media (max-width: 900px) {
+        .statsGrid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .twoCol {
+            grid-template-columns: 1fr;
+        }
+    }
 }
 
 /* REPORT BUG */
