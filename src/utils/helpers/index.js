@@ -109,3 +109,13 @@ export function generateFeaturesDefault(data) {
         show_store_hours: data.show_store_hours,
     }
 }
+
+export function getCurrentHourCode() {
+    const now = new Date();
+    const hour = now.getHours(); // 0-23
+
+    const suffix = hour < 12 ? "a" : "p";
+    const displayHour = hour % 12 || 12; // Convert 0 -> 12
+
+    return `${displayHour}${suffix}`;
+}

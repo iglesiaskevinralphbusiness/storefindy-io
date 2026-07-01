@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { isValidObjectId } from 'mongoose';
 import { dbConnect } from '@/config/mongo.config';
 import { UserModel, LocatorModel, LocationModel } from '@/mongo';
-import { serializeForClient } from '@/utils/helpers';
+import { serializeForClient, getCurrentHourCode } from '@/utils/helpers';
 import { plans } from '@/utils/constant/pricing';
 import { userAgent } from "next/server";
 
@@ -46,6 +46,8 @@ export async function GET(request, { params }) {
 
     // update analytics views count / this api only works for widget so demo is not recorded
     const today = new Date().toISOString().split("T")[0];
+    const hourCode = getCurrentHourCode();
+
     const viewsResult = await LocatorModel.updateOne(
         {
             _id: locatorId,
@@ -55,9 +57,11 @@ export async function GET(request, { params }) {
             $inc: {
                 [`views.$.${type}_count`]: 1,
                 "views.$.view_count": 1,
+                [`views.$.${hourCode}`]: 1,
             },
         }
     );
+
     if (viewsResult.modifiedCount === 0) {
         await LocatorModel.updateOne(
             { _id: locatorId },
@@ -69,12 +73,12 @@ export async function GET(request, { params }) {
                         mobile_count: type === "mobile" ? 1 : 0,
                         tablet_count: type === "tablet" ? 1 : 0,
                         desktop_count: type === "desktop" ? 1 : 0,
+                        [hourCode]: 1,
                     },
                 },
             }
         );
     }
-    console.log('viewsResult-----------------', viewsResult);
 
 
     // countries / user

@@ -27,7 +27,26 @@ const viewsSchema = new mongoose.Schema({
             }
         ],
         default: []
-    }
+    },
+    "12a": { type: Number, required: false, default: 0 },
+    "1a": { type: Number, required: false, default: 0 },
+    "2a": { type: Number, required: false, default: 0 },
+    "3a": { type: Number, required: false, default: 0 },
+    "4a": { type: Number, required: false, default: 0 },
+    "5a": { type: Number, required: false, default: 0 },
+    "6a": { type: Number, required: false, default: 0 },
+    "7a": { type: Number, required: false, default: 0 },
+    "8a": { type: Number, required: false, default: 0 },
+    "9a": { type: Number, required: false, default: 0 },
+    "10a": { type: Number, required: false, default: 0 },
+    "11a": { type: Number, required: false, default: 0 },
+    "12p": { type: Number, required: false, default: 0 },
+    "2p": { type: Number, required: false, default: 0 },
+    "4p": { type: Number, required: false, default: 0 },
+    "6p": { type: Number, required: false, default: 0 },
+    "8p": { type: Number, required: false, default: 0 },
+    "10p": { type: Number, required: false, default: 0 },
+    "11p": { type: Number, required: false, default: 0 },
 }, { _id: false, timestamps: true })
 
 const locatorSchema = new mongoose.Schema({
