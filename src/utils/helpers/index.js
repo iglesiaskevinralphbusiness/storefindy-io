@@ -110,9 +110,21 @@ export function generateFeaturesDefault(data) {
     }
 }
 
-export function getCurrentHourCode() {
+// `tzOffsetMinutes` is the visitor's `Date.getTimezoneOffset()` (from the
+// browser), where local = UTC - offset. When provided we derive the hour in
+// the visitor's timezone instead of the server's, so analytics buckets reflect
+// the user's PC time. Falls back to server local time when it is missing.
+export function getCurrentHourCode(tzOffsetMinutes = null) {
     const now = new Date();
-    const hour = now.getHours(); // 0-23
+
+    let hour; // 0-23
+    if (tzOffsetMinutes !== null && Number.isFinite(tzOffsetMinutes)) {
+        const utcMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
+        const localMinutes = (((utcMinutes - tzOffsetMinutes) % 1440) + 1440) % 1440;
+        hour = Math.floor(localMinutes / 60);
+    } else {
+        hour = now.getHours();
+    }
 
     const suffix = hour < 12 ? "a" : "p";
     const displayHour = hour % 12 || 12; // Convert 0 -> 12

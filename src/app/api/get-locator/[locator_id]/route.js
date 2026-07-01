@@ -45,8 +45,12 @@ export async function GET(request, { params }) {
     }
 
     // update analytics views count / this api only works for widget so demo is not recorded
+    // The widget passes the visitor's browser timezone offset so the hour bucket
+    // reflects the user's PC time, not the server's timezone.
     const today = new Date().toISOString().split("T")[0];
-    const hourCode = getCurrentHourCode();
+    const rawOffset = request.nextUrl.searchParams.get("tz_offset");
+    const tzOffsetMinutes = rawOffset !== null && rawOffset !== "" ? Number(rawOffset) : null;
+    const hourCode = getCurrentHourCode(tzOffsetMinutes);
 
     const viewsResult = await LocatorModel.updateOne(
         {

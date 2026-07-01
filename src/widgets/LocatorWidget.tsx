@@ -37,8 +37,12 @@ export default function LocatorWidget({ locator }: LocatorWidgetProps) {
 	useEffect(() => {
 		if (!locator) return;
 
-		fetch(`https://www.storefindy.com/api/get-locator/${locator}`)
-		// fetch(`http://localhost:3000/api/get-locator/${locator}`)
+		// Send the visitor's browser timezone offset so the analytics hour bucket
+		// reflects the user's PC time rather than the server's timezone.
+		const tzOffset = new Date().getTimezoneOffset();
+
+		fetch(`https://www.storefindy.com/api/get-locator/${locator}?tz_offset=${tzOffset}`)
+		// fetch(`http://localhost:3000/api/get-locator/${locator}?tz_offset=${tzOffset}`)
 			.then((response) => response.json())
 			.then((data) => {
 
