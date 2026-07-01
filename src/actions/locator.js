@@ -469,7 +469,6 @@ export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {})
             $group: {
                 _id: {
                     geo_label: "$views.searches.geo_label",
-                    exact_search: "$views.searches.exact_search",
                 },
                 count: {
                     $sum: "$views.searches.count",
@@ -493,7 +492,6 @@ export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {})
                 searches: {
                     $push: {
                         name: "$_id.geo_label",
-                        exact_search: "$_id.exact_search",
                         count: "$count",
                     },
                 },
@@ -506,7 +504,6 @@ export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {})
             $project: {
                 _id: 0,
                 name: "$searches.name",
-                exact_search: "$searches.exact_search",
                 count: {
                     $toString: "$searches.count",
                 },

@@ -7,7 +7,6 @@ import { getBillingStatus } from '@/actions/billing';
 
 export default async function BillingPage() {
     const billingStatus = await getBillingStatus();
-    console.log(billingStatus);
 
     return (
         <div className={styles.dashboard}>

@@ -6,8 +6,6 @@ export default async function LocatorsEmbedPage({ searchParams }) {
     const { id } = await searchParams;
     const locators = await getLocators();
 
-    console.log(locators);
-
     return <LocatorsEmbedPageClient
         activeLocatorId={id}
         locators={locators}

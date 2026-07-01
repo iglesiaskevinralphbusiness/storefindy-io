@@ -163,7 +163,7 @@ export async function GET(request) {
         center = { lat, lng };
         if(isRecordQuery) {
             const rev = await reverseGeocode(lat, lng);
-            searches_exact_search = rev?.label || '';
+            searches_exact_search = '';
             searches_city_provice = rev?.city_province || '';
             searches_country = rev?.country || '';
         }
@@ -181,7 +181,7 @@ export async function GET(request) {
         center = { lat: geo.lat, lng: geo.lng };
         label = geo.label; // note will use this geo_label in analytics for locatormodel > searches field
         if(isRecordQuery) {
-            searches_exact_search = geo.label;
+            searches_exact_search = query;
             searches_city_provice = geo.city_province;
             searches_country = geo.country;
         }
@@ -229,60 +229,98 @@ export async function GET(request) {
     const activeResults = results.filter(result => !inactiveIds.includes(String(result._id)));
 
 
-    // record query to analytics
-    if(searches_geo_label !== ''){
-        const today = new Date().toISOString().split("T")[0];
+    // ANALYTICS
+    const today = new Date().toISOString().split("T")[0];
+    const isViewExist = await LocatorModel.findOne({
+        _id: locatorId,
+        "views.date_id": today,
+    });
 
-        const isViewExist = await LocatorModel.findOne({
+    // record city/province, country to analytics
+    if(searches_geo_label !== '' && isViewExist){
+        const isExists = await LocatorModel.findOne({
             _id: locatorId,
             "views.date_id": today,
+            "views.searches.geo_label": searches_geo_label,
         });
-        if(isViewExist){
 
-            const isExists = await LocatorModel.findOne({
-                _id: locatorId,
-                "views.date_id": today,
-                "views.searches.geo_label": searches_geo_label,
-            });
-
-            if(!isExists) {
-                await LocatorModel.updateOne(
-                    {
-                        _id: locatorId,
-                        "views.date_id": today,
-                    },
-                    {
-                        $push: {
-                            "views.$.searches": {
-                                geo_label: searches_geo_label,
-                                exact_search: searches_exact_search,
-                                city_province: searches_city_provice,
-                                country: searches_country,
-                                count: 1
-                            }
+        if(!isExists) {
+            await LocatorModel.updateOne(
+                {
+                    _id: locatorId,
+                    "views.date_id": today,
+                },
+                {
+                    $push: {
+                        "views.$.searches": {
+                            geo_label: searches_geo_label,
+                            city_province: searches_city_provice,
+                            country: searches_country,
+                            count: 1
                         }
                     }
-                );
-            } else {
-                await LocatorModel.updateOne(
-                    {
-                        _id: locatorId,
+                }
+            );
+        } else {
+            await LocatorModel.updateOne(
+                {
+                    _id: locatorId,
+                },
+                {
+                    $inc: {
+                        "views.$[view].searches.$[search].count": 1,
                     },
-                    {
-                        $inc: {
-                            "views.$[view].searches.$[search].count": 1,
-                        },
-                    },
-                    {
-                        arrayFilters: [
-                            { "view.date_id": today },
-                            { "search.geo_label": searches_geo_label },
-                        ],
-                    }
-                );
-            }
+                },
+                {
+                    arrayFilters: [
+                        { "view.date_id": today },
+                        { "search.geo_label": searches_geo_label },
+                    ],
+                }
+            );
         }
+    }
 
+    // record exact search to analytics
+    if(searches_exact_search !== '' && isViewExist){
+        const isExactSearchExists = await LocatorModel.findOne({
+            _id: locatorId,
+            "views.date_id": today,
+            "views.searches.searches_exact_search": searches_exact_search,
+        });
+        if(!isExactSearchExists){
+            await LocatorModel.updateOne(
+                {
+                    _id: locatorId,
+                    "views.date_id": today,
+                },
+                {
+                    $push: {
+                        "views.$.exact_search": {
+                            exact_search: searches_exact_search,
+                            count: 1
+                        }
+                    }
+                }
+            );
+        } else {
+            await LocatorModel.updateOne(
+                {
+                    _id: locatorId,
+                },
+                {
+                    $inc: {
+                        "views.$[view].exact_search.$[search].count": 1,
+                    },
+                },
+                {
+                    arrayFilters: [
+                        { "view.date_id": today },
+                        { "search.exact_search": searches_exact_search },
+                    ],
+                }
+            );
+        }
     }
 
     return json({

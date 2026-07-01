@@ -10,9 +10,17 @@ const viewsSchema = new mongoose.Schema({
         type: [
             {
                 geo_label: { type: String, required: true },
-                exact_search: { type: String, required: false, default: '' },
                 city_province: { type: String, required: false, default: '' },
                 country: { type: String, required: false, default: '' },
+                count: { type: Number, required: true },
+            }
+        ],
+        default: []
+    },
+    exact_search: {
+        type: [
+            {
+                exact_search: { type: String, required: false, default: '' },
                 count: { type: Number, required: true },
             }
         ],
