@@ -4,7 +4,7 @@ import styles from './DashboardSidebar.module.scss';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { FaAngleUp } from "react-icons/fa6";
-import { LuHouse, LuPlus, LuPalette, LuCodeXml, LuList, LuUpload, LuUser, LuBookUser, LuKeyRound, LuBell, LuAppWindow, LuFileQuestion, LuBug, LuBookOpen, LuCircleUser, LuMapPin } from "react-icons/lu";
+import { LuHouse, LuPlus, LuPalette, LuCodeXml, LuList, LuUpload, LuUser, LuBookUser, LuKeyRound, LuBell, LuAppWindow, LuFileQuestion, LuBug, LuBookOpen, LuCircleUser, LuMapPin, LuLink } from "react-icons/lu";
 import { VscGraphLine } from "react-icons/vsc";
 import { IoMapOutline } from "react-icons/io5";
 import { HiOutlineSquares2X2 } from "react-icons/hi2";
@@ -93,6 +93,12 @@ export default function Sidebar() {
                             <Link href="/dashboard/locators/embed">
                                 <LuCodeXml />
                                 Embed Locator
+                            </Link>
+                        </li>
+                        <li className={isRootLinkParamsActive('/dashboard/locators/custom-subdomains')}>
+                            <Link href="/dashboard/locators/custom-subdomains">
+                                <LuLink />
+                                Custom Subdomains
                             </Link>
                         </li>
                     </ul>
