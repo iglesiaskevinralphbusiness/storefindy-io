@@ -50,21 +50,6 @@ const heatColor = (v) =>
     v < 5 ? '#f5f5f3' : v < 15 ? '#fff3cc' : v < 30 ? '#ffe54c' : v < 45 ? '#f5c800' : v < 55 ? '#BA7517' : '#854F0B';
 const HEAT_SWATCHES = ['#f5f5f3', '#fff3cc', '#ffe54c', '#f5c800', '#BA7517', '#854F0B'];
 
-const TOP_QUERIES = [
-    { term: 'BGC', count: 342 },
-    { term: 'Makati', count: 298 },
-    { term: 'near me', count: 276 },
-    { term: 'Ortigas', count: 241 },
-    { term: '1600', count: 198 },
-    { term: 'Cebu', count: 187 },
-    { term: 'SM Mall', count: 156 },
-    { term: 'Alabang', count: 143 },
-    { term: 'Davao', count: 132 },
-    { term: 'EDSA', count: 121 },
-    { term: 'Pasay', count: 98 },
-    { term: '1000', count: 87 },
-];
-
 const GEO_PINS = [
     { size: 50, bg: '#BA7517', color: '#fff', top: '20%', left: '34%', label: '5.2k', title: 'Metro Manila · 5,204 searches' },
     { size: 30, bg: '#ffe54c', color: '#171717', top: '53%', left: '62%', label: '1.3k', title: 'Cebu City · 1,304 searches' },
@@ -135,6 +120,9 @@ export default async function AnalyticsPage({ searchParams }) {
 
     // Top Searched Cities
     const TOP_7_CITIES = analyticsData.top_7_cities;
+
+    // Top Search Queries
+    const TOP_QUERIES = analyticsData.top_exact_searches;
 
 
 
@@ -293,7 +281,7 @@ export default async function AnalyticsPage({ searchParams }) {
                                     <TbTags /> Top Search Queries
                                     <span className={`${styles.badge} ${styles.pro}`}>Business</span>
                                 </div>
-                                <div className={styles.cardSub}>Exact terms customers typed into your widget</div>
+                                <div className={styles.cardSub}>Exact terms customers typed into your widget that shows result's.</div>
                                 <div className={styles.queryTags}>
                                     {TOP_QUERIES.map((q) => (
                                         <div key={q.term} className={styles.queryTag}>

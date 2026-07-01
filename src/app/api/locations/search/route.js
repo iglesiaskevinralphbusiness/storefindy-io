@@ -237,11 +237,21 @@ export async function GET(request) {
     });
 
     // record city/province, country to analytics
+    console.log('searches_geo_label-----------------', searches_geo_label);
+    console.log('searches_exact_search-----------------', searches_exact_search);
     if(searches_geo_label !== '' && isViewExist){
         const isExists = await LocatorModel.findOne({
             _id: locatorId,
-            "views.date_id": today,
-            "views.searches.geo_label": searches_geo_label,
+            views: {
+                $elemMatch: {
+                    date_id: today,
+                    searches: {
+                        $elemMatch: {
+                            geo_label: searches_geo_label,
+                        },
+                    },
+                },
+            },
         });
 
         if(!isExists) {
@@ -285,8 +295,16 @@ export async function GET(request) {
     if(searches_exact_search !== '' && isViewExist){
         const isExactSearchExists = await LocatorModel.findOne({
             _id: locatorId,
-            "views.date_id": today,
-            "views.searches.searches_exact_search": searches_exact_search,
+            views: {
+                $elemMatch: {
+                    date_id: today,
+                    exact_search: {
+                        $elemMatch: {
+                            exact_search: searches_exact_search,
+                        },
+                    },
+                },
+            },
         });
         if(!isExactSearchExists){
             await LocatorModel.updateOne(

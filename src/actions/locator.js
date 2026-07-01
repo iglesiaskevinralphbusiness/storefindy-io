@@ -535,6 +535,42 @@ export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {})
         },
     ]);
 
+    const topExactSearches = await LocatorModel.aggregate([
+        {
+            $match: query
+        },
+        {
+            $unwind: "$views",
+        },
+        {
+            $unwind: "$views.exact_search",
+        },
+        {
+            $group: {
+                _id: "$views.exact_search.exact_search",
+                count: {
+                    $sum: "$views.exact_search.count",
+                },
+            },
+        },
+        {
+            $sort: {
+                count: -1,
+                _id: 1,
+            },
+        },
+        {
+            $limit: 12,
+        },
+        {
+            $project: {
+                _id: 0,
+                term: "$_id",
+                count: 1,
+            },
+        },
+    ]);
+
     return {
         views_over_time: views_over_time ?? {
             views_labels: [],
@@ -564,6 +600,7 @@ export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {})
             },
         ],
         top_7_cities: top7Searches ?? [],
+        top_exact_searches: topExactSearches ?? [],
     };
 
 }

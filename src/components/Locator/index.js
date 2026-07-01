@@ -216,7 +216,7 @@ export default function Locator({
                 }
             }
             
-            const res = await fetch(`${API_BASE}/api/locations/search?${sp.toString()}&is_demo=${isDemo}&is_record_query=${isRecordQuery}`);
+            const res = await fetch(`${API_BASE}/api/locations/search?${sp.toString()}&is_demo=false&is_record_query=${isRecordQuery}`);
             const data = await res.json();
             const items = data.locations || [];
             setLocations(items);
