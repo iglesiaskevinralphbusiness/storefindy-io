@@ -12,6 +12,8 @@ const viewsSchema = new mongoose.Schema({
                 geo_label: { type: String, required: true },
                 city_province: { type: String, required: false, default: '' },
                 country: { type: String, required: false, default: '' },
+                lat: { type: Number, required: false, default: 0 },
+                lng: { type: Number, required: false, default: 0 },
                 count: { type: Number, required: true },
             }
         ],

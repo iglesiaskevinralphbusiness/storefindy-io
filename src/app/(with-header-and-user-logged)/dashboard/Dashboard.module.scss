@@ -2982,30 +2982,19 @@
     /* GEO MAP */
     .geoMap {
         position: relative;
-        height: 150px;
-        background: linear-gradient(135deg, #dce8f5, #c8dff0);
+        height: 280px;
+        background: #eef2f6;
         border-radius: 8px;
         overflow: hidden;
         margin-bottom: 8px;
-    }
-    .geoGrid {
-        position: absolute;
-        background: #fff;
-        opacity: 0.5;
-        border-radius: 2px;
-    }
-    .geoPin {
-        position: absolute;
-        border-radius: 50%;
-        opacity: 0.85;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 10px;
-        font-weight: 600;
-        color: #fff;
-        cursor: pointer;
-        transform: translate(-50%, -50%);
+        z-index: 0;
+
+        :global(.leaflet-container) {
+            height: 100%;
+            width: 100%;
+            background: #eef2f6;
+            font: inherit;
+        }
     }
     .geoHint {
         font-size: 11px;

@@ -535,6 +535,7 @@ export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {})
         },
     ]);
 
+    // Exact searches
     const topExactSearches = await LocatorModel.aggregate([
         {
             $match: query
@@ -571,6 +572,61 @@ export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {})
         },
     ]);
 
+    // Geographic Search Clusters
+    const geoClusters = await LocatorModel.aggregate([
+        {
+            $match: query,
+        },
+        {
+            $unwind: "$views",
+        },
+        {
+            $unwind: "$views.searches",
+        },
+        {
+            $group: {
+                _id: "$views.searches.geo_label",
+                name: {
+                    $first: "$views.searches.geo_label",
+                },
+                lat: {
+                    $first: "$views.searches.lat",
+                },
+                lng: {
+                    $first: "$views.searches.lng",
+                },
+                count: {
+                    $sum: "$views.searches.count",
+                },
+            },
+        },
+        {
+            $sort: {
+                count: -1,
+                name: 1,
+            },
+        },
+        {
+            $project: {
+                _id: 0,
+                name: 1,
+                lat: 1,
+                lng: 1,
+                count: 1,
+                title: {
+                    $concat: [
+                        "$name",
+                        " · ",
+                        {
+                            $toString: "$count",
+                        },
+                        " searches",
+                    ],
+                },
+            },
+        },
+    ]);
+
     return {
         views_over_time: views_over_time ?? {
             views_labels: [],
@@ -601,6 +657,7 @@ export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {})
         ],
         top_7_cities: top7Searches ?? [],
         top_exact_searches: topExactSearches ?? [],
+        geo_clusters: geoClusters ?? [],
     };
 
 }

@@ -27,6 +27,7 @@ import {
     TbCrown,
 } from 'react-icons/tb';
 import Button from '@/components/Forms/Button';
+import GeoClusterMap from '@/components/Dashboard/GeoClusterMap';
 
 const STATS = [
     { label: 'Widget Views', value: '24,831', trend: '+18% vs last period', up: true, icon: <TbEye /> },
@@ -50,13 +51,6 @@ const heatColor = (v) =>
     v < 5 ? '#f5f5f3' : v < 15 ? '#fff3cc' : v < 30 ? '#ffe54c' : v < 45 ? '#f5c800' : v < 55 ? '#BA7517' : '#854F0B';
 const HEAT_SWATCHES = ['#f5f5f3', '#fff3cc', '#ffe54c', '#f5c800', '#BA7517', '#854F0B'];
 
-const GEO_PINS = [
-    { size: 50, bg: '#BA7517', color: '#fff', top: '20%', left: '34%', label: '5.2k', title: 'Metro Manila · 5,204 searches' },
-    { size: 30, bg: '#ffe54c', color: '#171717', top: '53%', left: '62%', label: '1.3k', title: 'Cebu City · 1,304 searches' },
-    { size: 24, bg: '#f5d800', color: '#171717', top: '68%', left: '52%', label: '812', title: 'Davao City · 812 searches' },
-    { size: 20, bg: '#fff3cc', color: '#BA7517', top: '26%', left: '12%', label: '342', title: 'Iloilo · 342 searches' },
-    { size: 18, bg: '#fff3cc', color: '#BA7517', top: '14%', left: '72%', label: '287', title: 'Cagayan · 287 searches' },
-];
 
 const PEAK_DATA = [12, 8, 5, 4, 3, 6, 18, 42, 68, 82, 76, 80, 88, 74, 71, 78, 92, 98, 86, 64, 48, 34, 24, 16];
 const barColor = (v) => (v > 80 ? '#BA7517' : v > 60 ? '#ffe54c' : v > 40 ? '#fff3cc' : '#f0f0ee');
@@ -81,19 +75,23 @@ const TOP_LOCATIONS = [
     { name: 'Mercury Drug Makati', pct: 16, count: '764' },
 ];
 
-function buildLineChart(VIEWS_DATA) {
+function buildLineChart(VIEWS_DATA = []) {
     const W = 320;
     const H = 110;
     const P = 10;
-    const max = Math.max(...VIEWS_DATA);
-    const min = Math.min(...VIEWS_DATA);
+    const n = VIEWS_DATA.length;
+    const max = n ? Math.max(...VIEWS_DATA) : 0;
+    const min = n ? Math.min(...VIEWS_DATA) : 0;
+    // Guard against divide-by-zero: a single data point has no horizontal span,
+    // and a flat series (all equal) has no vertical span — either would yield NaN.
+    const span = max - min;
     const pts = VIEWS_DATA.map((v, i) => {
-        const x = P + (i / (VIEWS_DATA.length - 1)) * (W - 2 * P);
-        const y = H - P - ((v - min) / (max - min)) * (H - 2 * P);
+        const x = n > 1 ? P + (i / (n - 1)) * (W - 2 * P) : W / 2;
+        const y = span > 0 ? H - P - ((v - min) / span) * (H - 2 * P) : H / 2;
         return { x, y };
     });
     const line = pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
-    const area = `${P},${H - P} ${line} ${W - P},${H - P}`;
+    const area = pts.length ? `${P},${H - P} ${line} ${W - P},${H - P}` : '';
     return { W, H, pts, line, area };
 }
 
@@ -124,6 +122,8 @@ export default async function AnalyticsPage({ searchParams }) {
     // Top Search Queries
     const TOP_QUERIES = analyticsData.top_exact_searches;
 
+    // Geographic Search Clusters
+    const GEO_CLUSTERS = analyticsData.geo_clusters;
 
 
     // Helper functions
@@ -300,20 +300,7 @@ export default async function AnalyticsPage({ searchParams }) {
                                     <span className={`${styles.badge} ${styles.pro}`}>Business</span>
                                 </div>
                                 <div className={styles.geoMap}>
-                                    <div className={styles.geoGrid} style={{ width: '100%', height: '3px', top: '38%', left: 0 }} />
-                                    <div className={styles.geoGrid} style={{ width: '100%', height: '3px', top: '65%', left: 0 }} />
-                                    <div className={styles.geoGrid} style={{ width: '3px', height: '100%', left: '42%', top: 0 }} />
-                                    <div className={styles.geoGrid} style={{ width: '3px', height: '100%', left: '68%', top: 0 }} />
-                                    {GEO_PINS.map((p) => (
-                                        <div
-                                            key={p.title}
-                                            className={styles.geoPin}
-                                            style={{ width: p.size, height: p.size, background: p.bg, color: p.color, top: p.top, left: p.left }}
-                                            title={p.title}
-                                        >
-                                            {p.label}
-                                        </div>
-                                    ))}
+                                    <GeoClusterMap clusters={GEO_CLUSTERS} />
                                 </div>
                                 <div className={styles.geoHint}>Circle size = search volume · Hover pins for details</div>
                             </div>

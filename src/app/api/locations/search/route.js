@@ -153,6 +153,8 @@ export async function GET(request) {
     let searches_geo_label = '';
     let searches_city_provice = '';
     let searches_country = '';
+    let searches_lat = 0;
+    let searches_lng = 0;
 
     if (hasCoords) {
         const lat = parseFloat(latParam);
@@ -166,6 +168,8 @@ export async function GET(request) {
             searches_exact_search = '';
             searches_city_provice = rev?.city_province || '';
             searches_country = rev?.country || '';
+            searches_lat = lat;
+            searches_lng = lng;
         }
     } else if (query) {
         const geo = await geocode(query, countryParam || locator.default_country);
@@ -184,6 +188,8 @@ export async function GET(request) {
             searches_exact_search = query;
             searches_city_provice = geo.city_province;
             searches_country = geo.country;
+            searches_lat = geo.lat;
+            searches_lng = geo.lng;
         }
     }
 
@@ -237,8 +243,6 @@ export async function GET(request) {
     });
 
     // record city/province, country to analytics
-    console.log('searches_geo_label-----------------', searches_geo_label);
-    console.log('searches_exact_search-----------------', searches_exact_search);
     if(searches_geo_label !== '' && isViewExist){
         const isExists = await LocatorModel.findOne({
             _id: locatorId,
@@ -266,6 +270,8 @@ export async function GET(request) {
                             geo_label: searches_geo_label,
                             city_province: searches_city_provice,
                             country: searches_country,
+                            lat: searches_lat,
+                            lng: searches_lng,
                             count: 1
                         }
                     }
