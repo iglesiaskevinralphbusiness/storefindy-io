@@ -4,9 +4,8 @@ import { dbConnect } from '@/config/mongo.config';
 import { LocationModel } from '@/mongo/LocationsModel';
 import { LocatorModel } from '@/mongo/LocatorModel';
 import { UserModel } from '@/mongo/UserModel';
-import { serializeForClient } from '@/utils/helpers';
+import { serializeForClient, getCurrentHourCode } from '@/utils/helpers';
 import { plans } from '@/utils/constant/pricing';
-import { getLocationsInactiveIds } from '@/actions/locations';
 
 // This endpoint powers the public store-locator widget, which is embedded on
 // third-party sites, so every response carries permissive CORS headers and the
@@ -345,6 +344,22 @@ export async function GET(request) {
                 }
             );
         }
+    }
+
+    // record peak hours to analytics
+    if(isRecordQuery && isViewExist){
+        const hourCode = getCurrentHourCode();
+        await LocatorModel.updateOne(
+            {
+                _id: locatorId,
+                "views.date_id": today,
+            },
+            {
+                $inc: {
+                    [`views.$.${hourCode}`]: 1,
+                },
+            }
+        );
     }
 
     return json({

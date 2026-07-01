@@ -7,6 +7,7 @@ import { UserModel, LocatorModel, LocationModel } from '@/mongo';
 import { serializeForClient } from '@/utils/helpers';
 import { isValidObjectId } from 'mongoose';
 import { plans } from '@/utils/constant/pricing';
+import { HEAT_DAYS } from '@/utils/constant';
 
 export async function postCreateLocator(filters, _prev, formData) {
     const session = await getServerSession(authOptions);
@@ -627,6 +628,168 @@ export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {})
         },
     ]);
 
+    // Search Activity Heatmap
+    const heatmap = await LocatorModel.aggregate([
+        {
+            $match: query,
+        },
+        {
+            $unwind: "$views",
+        },
+        {
+            $addFields: {
+                day: {
+                    $isoDayOfWeek: {
+                        $dateFromString: {
+                            dateString: "$views.date_id",
+                        },
+                    },
+                },
+            },
+        },
+        {
+            $group: {
+                _id: "$day",
+
+                "12a": { $sum: "$views.12a" },
+                "1a": { $sum: "$views.1a" },
+                "2a": { $sum: "$views.2a" },
+                "3a": { $sum: "$views.3a" },
+                "4a": { $sum: "$views.4a" },
+                "5a": { $sum: "$views.5a" },
+                "6a": { $sum: "$views.6a" },
+                "7a": { $sum: "$views.7a" },
+                "8a": { $sum: "$views.8a" },
+                "9a": { $sum: "$views.9a" },
+                "10a": { $sum: "$views.10a" },
+                "11a": { $sum: "$views.11a" },
+
+                "12p": { $sum: "$views.12p" },
+                "1p": { $sum: "$views.1p" },
+                "2p": { $sum: "$views.2p" },
+                "3p": { $sum: "$views.3p" },
+                "4p": { $sum: "$views.4p" },
+                "5p": { $sum: "$views.5p" },
+                "6p": { $sum: "$views.6p" },
+                "7p": { $sum: "$views.7p" },
+                "8p": { $sum: "$views.8p" },
+                "9p": { $sum: "$views.9p" },
+                "10p": { $sum: "$views.10p" },
+                "11p": { $sum: "$views.11p" },
+            },
+        },
+        {
+            $sort: {
+                _id: 1,
+            },
+        },
+    ]);
+    const HEAT_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const HEAT_HOURS = [
+        "12a",
+        "2a",
+        "4a",
+        "6a",
+        "8a",
+        "10a",
+        "12p",
+        "2p",
+        "4p",
+        "6p",
+        "8p",
+        "10p",
+    ];
+    const map = new Map(
+        heatmap.map(item => [item._id, item])
+    );
+    const HEAT_DATA = [];
+    for (let day = 1; day <= 7; day++) {
+        const row = map.get(day) || {};
+
+        HEAT_DATA.push([
+            (row["12a"] || 0) + (row["1a"] || 0),
+            (row["2a"] || 0) + (row["3a"] || 0),
+            (row["4a"] || 0) + (row["5a"] || 0),
+            (row["6a"] || 0) + (row["7a"] || 0),
+            (row["8a"] || 0) + (row["9a"] || 0),
+            (row["10a"] || 0) + (row["11a"] || 0),
+            (row["12p"] || 0) + (row["1p"] || 0),
+            (row["2p"] || 0) + (row["3p"] || 0),
+            (row["4p"] || 0) + (row["5p"] || 0),
+            (row["6p"] || 0) + (row["7p"] || 0),
+            (row["8p"] || 0) + (row["9p"] || 0),
+            (row["10p"] || 0) + (row["11p"] || 0),
+        ]);
+    }
+
+    // Peak Hours
+    const peakHours = await LocatorModel.aggregate([
+        {
+            $match: query,
+        },
+        {
+            $unwind: "$views",
+        },
+        {
+            $group: {
+                _id: null,
+
+                "12a": { $sum: "$views.12a" },
+                "1a": { $sum: "$views.1a" },
+                "2a": { $sum: "$views.2a" },
+                "3a": { $sum: "$views.3a" },
+                "4a": { $sum: "$views.4a" },
+                "5a": { $sum: "$views.5a" },
+                "6a": { $sum: "$views.6a" },
+                "7a": { $sum: "$views.7a" },
+                "8a": { $sum: "$views.8a" },
+                "9a": { $sum: "$views.9a" },
+                "10a": { $sum: "$views.10a" },
+                "11a": { $sum: "$views.11a" },
+
+                "12p": { $sum: "$views.12p" },
+                "1p": { $sum: "$views.1p" },
+                "2p": { $sum: "$views.2p" },
+                "3p": { $sum: "$views.3p" },
+                "4p": { $sum: "$views.4p" },
+                "5p": { $sum: "$views.5p" },
+                "6p": { $sum: "$views.6p" },
+                "7p": { $sum: "$views.7p" },
+                "8p": { $sum: "$views.8p" },
+                "9p": { $sum: "$views.9p" },
+                "10p": { $sum: "$views.10p" },
+                "11p": { $sum: "$views.11p" },
+            },
+        },
+    ]);
+    const row = peakHours[0] || {};
+    const PEAK_DATA = [
+        row["12a"] || 0,
+        row["1a"] || 0,
+        row["2a"] || 0,
+        row["3a"] || 0,
+        row["4a"] || 0,
+        row["5a"] || 0,
+        row["6a"] || 0,
+        row["7a"] || 0,
+        row["8a"] || 0,
+        row["9a"] || 0,
+        row["10a"] || 0,
+        row["11a"] || 0,
+        row["12p"] || 0,
+        row["1p"] || 0,
+        row["2p"] || 0,
+        row["3p"] || 0,
+        row["4p"] || 0,
+        row["5p"] || 0,
+        row["6p"] || 0,
+        row["7p"] || 0,
+        row["8p"] || 0,
+        row["9p"] || 0,
+        row["10p"] || 0,
+        row["11p"] || 0,
+    ];
+
     return {
         views_over_time: views_over_time ?? {
             views_labels: [],
@@ -658,6 +821,11 @@ export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {})
         top_7_cities: top7Searches ?? [],
         top_exact_searches: topExactSearches ?? [],
         geo_clusters: geoClusters ?? [],
+        heatmap: {
+            heat_hours: HEAT_HOURS,
+            heat_data: HEAT_DATA,
+        },
+        peak_hours: PEAK_DATA
     };
 
 }

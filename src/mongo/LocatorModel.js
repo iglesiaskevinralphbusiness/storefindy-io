@@ -52,7 +52,6 @@ const viewsSchema = new mongoose.Schema({
     "9p": { type: Number, required: false, default: 0 },
     "10p": { type: Number, required: false, default: 0 },
     "11p": { type: Number, required: false, default: 0 },
-    "12p": { type: Number, required: false, default: 0 },
 }, { _id: false, timestamps: true })
 
 const locatorSchema = new mongoose.Schema({

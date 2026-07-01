@@ -123,3 +123,5 @@ const DUMMY_LOCATIONS = [
     { id: 23, name: 'S&R Membership',        address: 'Mindanao Ave, Quezon City',       locator: 'Main Store Locator', status: 'published', views: 421 },
     { id: 24, name: 'Snack Shack BGC',       address: '26th St, BGC, Taguig City',       locator: 'Pop-up Stores',      status: 'draft',     views: 0   },
 ];
+
+export const HEAT_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];

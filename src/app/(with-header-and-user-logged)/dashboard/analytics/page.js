@@ -28,6 +28,7 @@ import {
 } from 'react-icons/tb';
 import Button from '@/components/Forms/Button';
 import GeoClusterMap from '@/components/Dashboard/GeoClusterMap';
+import { HEAT_DAYS } from '@/utils/constant';
 
 const STATS = [
     { label: 'Widget Views', value: '24,831', trend: '+18% vs last period', up: true, icon: <TbEye /> },
@@ -36,23 +37,11 @@ const STATS = [
     { label: 'Avg Click-through', value: '41.6%', trend: '-2% vs last period', up: false, icon: <TbClick /> },
 ];
 
-const HEAT_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const HEAT_HOURS = ['12a', '2a', '4a', '6a', '8a', '10a', '12p', '2p', '4p', '6p', '8p', '10p'];
-const HEAT_DATA = [
-    [2, 1, 0, 1, 3, 8, 22, 38, 45, 42, 28, 12],
-    [3, 1, 0, 1, 4, 9, 24, 42, 48, 44, 30, 14],
-    [2, 1, 0, 1, 3, 8, 21, 40, 46, 43, 29, 13],
-    [3, 1, 0, 1, 4, 10, 25, 44, 50, 46, 32, 15],
-    [4, 2, 1, 1, 5, 12, 28, 48, 54, 52, 38, 20],
-    [8, 4, 2, 2, 6, 14, 32, 52, 60, 62, 54, 32],
-    [6, 3, 1, 1, 5, 10, 26, 44, 52, 54, 42, 24],
-];
 const heatColor = (v) =>
     v < 5 ? '#f5f5f3' : v < 15 ? '#fff3cc' : v < 30 ? '#ffe54c' : v < 45 ? '#f5c800' : v < 55 ? '#BA7517' : '#854F0B';
 const HEAT_SWATCHES = ['#f5f5f3', '#fff3cc', '#ffe54c', '#f5c800', '#BA7517', '#854F0B'];
 
 
-const PEAK_DATA = [12, 8, 5, 4, 3, 6, 18, 42, 68, 82, 76, 80, 88, 74, 71, 78, 92, 98, 86, 64, 48, 34, 24, 16];
 const barColor = (v) => (v > 80 ? '#BA7517' : v > 60 ? '#ffe54c' : v > 40 ? '#fff3cc' : '#f0f0ee');
 
 const CTR_ROWS = [
@@ -114,8 +103,6 @@ export default async function AnalyticsPage({ searchParams }) {
     // Device Breakdown
     const DEVICES = analyticsData.device_breakdown;
 
-    // Search Activity Heatmap
-
     // Top Searched Cities
     const TOP_7_CITIES = analyticsData.top_7_cities;
 
@@ -125,6 +112,12 @@ export default async function AnalyticsPage({ searchParams }) {
     // Geographic Search Clusters
     const GEO_CLUSTERS = analyticsData.geo_clusters;
 
+    // Search Activity Heatmap
+    const HEAT_HOURS = analyticsData.heatmap.heat_hours;
+    const HEAT_DATA = analyticsData.heatmap.heat_data;
+
+    // Peak Hours
+    const PEAK_DATA = analyticsData.peak_hours;
 
     // Helper functions
     const getDeviceIcon = (name) => {
