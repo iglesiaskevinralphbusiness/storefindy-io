@@ -164,6 +164,10 @@ export default async function AnalyticsPage({ searchParams }) {
                             </form>
                         </div>
 
+                        <div className={styles.analyticsHint}>
+                            Only embedded widgets and subdomains are recorded. Any actions performed on the Customize page are not recorded in your analytics.
+                        </div>
+
                         {/* STAT CARDS */}
                         <div className={styles.statsGrid}>
                             {STATS.map((s) => (
