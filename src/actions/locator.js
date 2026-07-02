@@ -287,6 +287,7 @@ export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {})
 
     // Query
     const query = {}
+    const locations_query = {}
     if (locatorId !== 'all') {
         query._id = new mongoose.Types.ObjectId(locatorId);
     }
@@ -790,6 +791,39 @@ export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {})
         row["11p"] || 0,
     ];
 
+    // Most Viewed Locations
+    const locations = await LocationModel.aggregate([
+        {
+            $match: locations_query,
+        },
+        {
+            $addFields: {
+                totalViews: {
+                    $sum: "$views.view_count",
+                },
+            },
+        },
+        {
+            $sort: {
+                totalViews: -1,
+            },
+        },
+        {
+            $limit: 7,
+        },
+    ]);
+
+    // Calculate percentages based on the highest viewed location
+    const maxViews = locations.length ? locations[0].totalViews : 0;
+    const TOP_LOCATIONS = locations.map((location) => ({
+        name: location.name,
+        pct: maxViews
+            ? Math.round((location.totalViews / maxViews) * 100)
+            : 0,
+        count: location.totalViews.toLocaleString(),
+    }));
+
+
     return {
         views_over_time: views_over_time ?? {
             views_labels: [],
@@ -825,7 +859,8 @@ export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {})
             heat_hours: HEAT_HOURS,
             heat_data: HEAT_DATA,
         },
-        peak_hours: PEAK_DATA
+        peak_hours: PEAK_DATA,
+        most_viewed_locations: TOP_LOCATIONS,
     };
 
 }

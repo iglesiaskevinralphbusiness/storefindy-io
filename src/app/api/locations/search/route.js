@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { isValidObjectId } from 'mongoose';
+import mongoose, { isValidObjectId } from 'mongoose';
 import { dbConnect } from '@/config/mongo.config';
 import { LocationModel } from '@/mongo/LocationsModel';
 import { LocatorModel } from '@/mongo/LocatorModel';
@@ -361,6 +361,50 @@ export async function GET(request) {
             }
         );
     }
+
+    // locations count viewed   in results
+    if(isRecordQuery && activeResults.length > 0){
+        const resultsIds = activeResults.map(result => result._id.toString());
+        // Convert string IDs to ObjectIds if your _id is ObjectId
+        const locationIds = resultsIds.map((id) => new mongoose.Types.ObjectId(id));
+
+        // step 1. Increment existing view_count
+        await LocationModel.updateMany(
+            {
+                _id: { $in: locationIds },
+                "views.date_id": today,
+            },
+            {
+                $inc: {
+                    "views.$.view_count": 1,
+                },
+            }
+        );
+
+        // step 2: Add today's record if it doesn't exist
+        await LocationModel.updateMany(
+            {
+                _id: { $in: locationIds },
+                views: {
+                    $not: {
+                        $elemMatch: {
+                            date_id: today,
+                        },
+                    },
+                },
+            },
+            {
+                $push: {
+                    views: {
+                        date_id: today,
+                        click_count: 0,
+                        view_count: 1,
+                    },
+                },
+            }
+        );
+    }
+
 
     return json({
         status: 'success',

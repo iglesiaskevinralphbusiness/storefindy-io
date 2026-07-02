@@ -19,9 +19,16 @@ const holidaySchema = new mongoose.Schema({
     close:   { type: String, required: true },
 }, { _id: false });
 
+const viewsSchema = new mongoose.Schema({
+  date_id: { type: String, required: true },
+  click_count: { type: Number, default: 0 },
+  view_count: { type: Number, default: 0 },
+}, { _id: false, timestamps: true });
+
+
 const locationSchema = new mongoose.Schema({
     user_id: { type: String, required: true, index: true },
-    views: { type: Number, required: false, default: 0 },
+    views: { type: [viewsSchema], default: [] },
 
     // Basic Information
     name: { type: String, required: true },

@@ -54,16 +54,6 @@ const CTR_ROWS = [
     { name: 'Mercury Drug Makati', views: '764', rate: '19%', level: 'lo' },
 ];
 
-const TOP_LOCATIONS = [
-    { name: 'SM Mall of Asia', pct: 100, count: '4,821' },
-    { name: 'Robinsons Galleria', pct: 64, count: '3,102' },
-    { name: 'Ayala Center Cebu', pct: 51, count: '2,441' },
-    { name: 'Abreeza Mall Davao', pct: 39, count: '1,876' },
-    { name: 'SM Megamall', pct: 34, count: '1,654' },
-    { name: 'Puregold Cubao', pct: 20, count: '987' },
-    { name: 'Mercury Drug Makati', pct: 16, count: '764' },
-];
-
 function buildLineChart(VIEWS_DATA = []) {
     const W = 320;
     const H = 110;
@@ -118,6 +108,9 @@ export default async function AnalyticsPage({ searchParams }) {
 
     // Peak Hours
     const PEAK_DATA = analyticsData.peak_hours;
+
+    // Most Viewed Locations
+    const TOP_LOCATIONS = analyticsData.most_viewed_locations;
 
     // Helper functions
     const getDeviceIcon = (name) => {
