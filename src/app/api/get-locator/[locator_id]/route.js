@@ -59,6 +59,7 @@ export async function GET(request, { params }) {
         },
         {
             $inc: {
+                "views_count": 1,
                 [`views.$.${type}_count`]: 1,
                 "views.$.view_count": 1,
                 [`views.$.${hourCode}`]: 1,

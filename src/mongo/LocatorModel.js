@@ -58,8 +58,9 @@ const locatorSchema = new mongoose.Schema({
     user_id: { type: String, required: true, index: true },
 
     // ANALYTICS
-    views: { type: [viewsSchema], default: [] }, // [ { date_id: '2026-06-25', view_count: 32, mobile_count: 10, tablet_count: 10, desktop_count: 12 } ]
-    
+    views: { type: [viewsSchema], default: [] },
+    views_count: { type: Number, default: 0 },
+
     // SETTINGS
     // basic information
     name: { type: String, required: true },
