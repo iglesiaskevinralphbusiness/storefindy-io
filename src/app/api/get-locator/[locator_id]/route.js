@@ -71,6 +71,9 @@ export async function GET(request, { params }) {
         await LocatorModel.updateOne(
             { _id: locatorId },
             {
+                $inc: {
+                    views_count: 1,
+                },
                 $push: {
                     views: {
                         date_id: today,
