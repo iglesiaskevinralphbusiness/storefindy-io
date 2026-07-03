@@ -516,6 +516,24 @@ export default function Locator({
         </>
     );
 
+    const handleClickSelectLocation = async (id) => {
+        setActiveId(id);
+
+        let isRecordQuery = false;
+        if(user_plan === 'business') {
+            isRecordQuery = true;
+        }
+        
+        try {
+            await fetch(`${API_BASE}/api/locations/result-clicked?location_id=${id}&is_demo=false&is_record_query=${isRecordQuery}`, {
+                method: 'POST',
+            });
+        } catch (error) {
+            console.error('Failed to record location click:');
+        }
+        
+    }
+
     return (
         <div className="locator-container">
             <style>{locatorStyles}</style>
@@ -741,7 +759,7 @@ export default function Locator({
                                         key={location._id}
                                         ref={(el) => { itemRefs.current[location._id] = el; }}
                                         className={activeId === location._id ? 'active' : ''}
-                                        onClick={() => setActiveId(location._id)}
+                                        onClick={() => handleClickSelectLocation(location._id)}
                                         style={{
                                             borderColor: settings.resultItem.border_color,
                                             backgroundColor: settings.resultItem.background,
