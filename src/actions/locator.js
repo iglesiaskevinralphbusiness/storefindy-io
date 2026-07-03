@@ -823,6 +823,70 @@ export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {})
         count: location.totalViews.toLocaleString(),
     }));
 
+    // Click-through Rate by Store
+    const CTR_ROWS = await LocationModel.aggregate([
+        {
+            $match: query,
+        },
+        {
+            $project: {
+                name: 1,
+                totalViews: {
+                    $sum: "$views.view_count",
+                },
+                totalClicks: {
+                    $sum: "$views.click_count",
+                },
+            },
+        },
+        {
+            $addFields: {
+                ctr: {
+                    $cond: [
+                        { $eq: ["$totalViews", 0] },
+                        0,
+                        {
+                            $multiply: [
+                                {
+                                    $divide: ["$totalClicks", "$totalViews"],
+                                },
+                                100,
+                            ],
+                        },
+                    ],
+                },
+            },
+        },
+        {
+            $sort: {
+                ctr: -1,
+            },
+        },
+        {
+            $limit: 7,
+        },
+    ]);
+
+    const result_click = CTR_ROWS.map((location) => {
+        const rate = Math.round(location.ctr);
+
+        let level = "lo";
+
+        if (rate >= 60) {
+            level = "hi";
+        } else if (rate >= 40) {
+            level = "md";
+        }
+
+        return {
+            name: location.name,
+            views: location.totalClicks.toLocaleString(), // using click_count as requested
+            rate: `${rate}%`,
+            level,
+        };
+    });
+
+
 
     return {
         views_over_time: views_over_time ?? {
@@ -861,6 +925,7 @@ export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {})
         },
         peak_hours: PEAK_DATA,
         most_viewed_locations: TOP_LOCATIONS,
+        click_through_rate_by_store: result_click,
     };
 
 }

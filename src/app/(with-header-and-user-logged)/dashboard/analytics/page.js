@@ -44,16 +44,6 @@ const HEAT_SWATCHES = ['#f5f5f3', '#fff3cc', '#ffe54c', '#f5c800', '#BA7517', '#
 
 const barColor = (v) => (v > 80 ? '#BA7517' : v > 60 ? '#ffe54c' : v > 40 ? '#fff3cc' : '#f0f0ee');
 
-const CTR_ROWS = [
-    { name: 'SM Mall of Asia', views: '4,821', rate: '68%', level: 'hi' },
-    { name: 'Robinsons Galleria', views: '3,102', rate: '61%', level: 'hi' },
-    { name: 'Ayala Center Cebu', views: '2,441', rate: '48%', level: 'md' },
-    { name: 'Abreeza Mall Davao', views: '1,876', rate: '42%', level: 'md' },
-    { name: 'SM Megamall', views: '1,654', rate: '39%', level: 'md' },
-    { name: 'Puregold Cubao', views: '987', rate: '24%', level: 'lo' },
-    { name: 'Mercury Drug Makati', views: '764', rate: '19%', level: 'lo' },
-];
-
 function buildLineChart(VIEWS_DATA = []) {
     const W = 320;
     const H = 110;
@@ -111,6 +101,9 @@ export default async function AnalyticsPage({ searchParams }) {
 
     // Most Viewed Locations
     const TOP_LOCATIONS = analyticsData.most_viewed_locations;
+
+    // Click-through Rate by Store
+    const CTR_ROWS = analyticsData.click_through_rate_by_store;
 
     // Helper functions
     const getDeviceIcon = (name) => {
