@@ -29,6 +29,7 @@ import {
 import Button from '@/components/Forms/Button';
 import GeoClusterMap from '@/components/Dashboard/GeoClusterMap';
 import { HEAT_DAYS } from '@/utils/constant';
+import { getLocators } from '@/actions/locator';
 
 const STATS = [
     { label: 'Widget Views', value: '24,831', trend: '+18% vs last period', up: true, icon: <TbEye /> },
@@ -65,6 +66,7 @@ function buildLineChart(VIEWS_DATA = []) {
 }
 
 export default async function AnalyticsPage({ searchParams }) {
+    const locators = await getLocators();
 
     const params = await searchParams;
     const range = params?.range ?? '30';
@@ -136,9 +138,11 @@ export default async function AnalyticsPage({ searchParams }) {
                             <form className={styles.toolbarActions} method="get">
                                 <select className={styles.select} name="locator" defaultValue={locator}>
                                     <option value="all">All Locators</option>
-                                    <option value="main">Main Store Locator</option>
-                                    <option value="branch">Branch Finder</option>
-                                    <option value="popup">Pop-up Stores</option>
+                                    {
+                                        locators.map((l) => (
+                                            <option key={l._id} value={l._id}>{l.name}</option>
+                                        ))
+                                    }
                                 </select>
                                 <select className={styles.select} name="range" defaultValue={range}>
                                     <option value="7">Last 7 days</option>

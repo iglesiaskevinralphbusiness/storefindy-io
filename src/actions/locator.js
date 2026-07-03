@@ -7,7 +7,7 @@ import { UserModel, LocatorModel, LocationModel } from '@/mongo';
 import { serializeForClient } from '@/utils/helpers';
 import { isValidObjectId } from 'mongoose';
 import { plans } from '@/utils/constant/pricing';
-import { HEAT_DAYS } from '@/utils/constant';
+import mongoose from "mongoose";
 
 export async function postCreateLocator(filters, _prev, formData) {
     const session = await getServerSession(authOptions);
@@ -265,7 +265,9 @@ export async function functionSaveCustomizeLocator(locator_id, settings, feature
     return { status: "success", message: 'Locator settings and features updated successfully' };
 }
 
-export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {}) {
+export async function getAnalyticsData({ range = '30', locator = 'all' } = {}) {
+    const locatorId = locator;
+    console.log(locatorId, 'locatorId');
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
         redirect('/sign-in');
@@ -286,11 +288,42 @@ export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {})
 
 
     // Query
-    const query = {}
-    const locations_query = {}
+    // - `query` targets LocatorModel (matched by its own `_id`).
+    // - `locations_query` targets LocationModel (locations reference their
+    //   parent locator via the `locator_id` string field, not `_id`).
+    // Both are scoped to the signed-in user.
+    const query = { user_id: session.user.id }
+    const locations_query = { user_id: session.user.id }
+    console.log(locatorId, 'locatorId');
     if (locatorId !== 'all') {
         query._id = new mongoose.Types.ObjectId(locatorId);
+        locations_query.locator_id = locatorId;
     }
+
+    // Date range filter (based on the `range` prop = number of days).
+    // e.g. range === '30' -> last 30 days of `views` records.
+    const days = parseInt(range, 10) || 30;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    // Matches a single unwound `views` element within the range.
+    // (Each `views` sub-document has a `createdAt` from `timestamps: true`.)
+    const viewsDateMatch = {
+        $match: { "views.createdAt": { $gte: startDate } },
+    };
+
+    // Trims a document's `views` array down to the range before summing.
+    const filterViewsInRange = {
+        $addFields: {
+            views: {
+                $filter: {
+                    input: "$views",
+                    as: "v",
+                    cond: { $gte: ["$$v.createdAt", startDate] },
+                },
+            },
+        },
+    };
 
 
 
@@ -302,6 +335,7 @@ export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {})
         {
             $unwind: "$views",
         },
+        viewsDateMatch,
         {
             $sort: {
                 "views.date_id": 1,
@@ -348,6 +382,7 @@ export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {})
                 preserveNullAndEmptyArrays: true,
             },
         },
+        viewsDateMatch,
         {
             $group: {
                 _id: null,
@@ -464,6 +499,7 @@ export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {})
         {
             $unwind: "$views",
         },
+        viewsDateMatch,
         {
             $unwind: "$views.searches",
         },
@@ -545,6 +581,7 @@ export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {})
         {
             $unwind: "$views",
         },
+        viewsDateMatch,
         {
             $unwind: "$views.exact_search",
         },
@@ -582,6 +619,7 @@ export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {})
         {
             $unwind: "$views",
         },
+        viewsDateMatch,
         {
             $unwind: "$views.searches",
         },
@@ -637,6 +675,7 @@ export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {})
         {
             $unwind: "$views",
         },
+        viewsDateMatch,
         {
             $addFields: {
                 day: {
@@ -731,6 +770,7 @@ export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {})
         {
             $unwind: "$views",
         },
+        viewsDateMatch,
         {
             $group: {
                 _id: null,
@@ -796,6 +836,7 @@ export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {})
         {
             $match: locations_query,
         },
+        filterViewsInRange,
         {
             $addFields: {
                 totalViews: {
@@ -826,8 +867,9 @@ export async function getAnalyticsData({ range = '30', locatorId = 'all' } = {})
     // Click-through Rate by Store
     const CTR_ROWS = await LocationModel.aggregate([
         {
-            $match: query,
+            $match: locations_query,
         },
+        filterViewsInRange,
         {
             $project: {
                 name: 1,
