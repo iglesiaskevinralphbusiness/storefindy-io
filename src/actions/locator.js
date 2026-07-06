@@ -336,10 +336,6 @@ export async function getAnalyticsData({ range = '30', locator = 'all' } = {}) {
     };
 
 
-    // Statistics
-
-
-
     // view data
     const [views_over_time] = await LocatorModel.aggregate([
         {
@@ -942,7 +938,7 @@ export async function getAnalyticsData({ range = '30', locator = 'all' } = {}) {
     });
 
 
-
+    // Statistics
     // ── Stat cards (top summary) ──────────────────────────────────────
     // Widget Views  -> LocatorModel:  sum of views.view_count
     // Total Searches -> LocatorModel: sum of counts in views.searches
