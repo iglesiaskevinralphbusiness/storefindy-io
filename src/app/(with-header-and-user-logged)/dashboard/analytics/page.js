@@ -66,7 +66,6 @@ export default async function AnalyticsPage({ searchParams }) {
     const locator = params?.locator ?? 'all';
 
     const analyticsData = await getAnalyticsData({ range, locator });
-    console.log(analyticsData);
     if(!analyticsData) {
         return <div>No dont have access to this page for your plan.</div>;
     }
