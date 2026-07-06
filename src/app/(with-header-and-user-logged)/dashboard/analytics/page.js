@@ -31,13 +31,6 @@ import GeoClusterMap from '@/components/Dashboard/GeoClusterMap';
 import { HEAT_DAYS } from '@/utils/constant';
 import { getLocators } from '@/actions/locator';
 
-const STATS = [
-    { label: 'Widget Views', value: '24,831', trend: '+18% vs last period', up: true, icon: <TbEye /> },
-    { label: 'Total Searches', value: '8,204', trend: '+12% vs last period', up: true, icon: <TbSearch /> },
-    { label: 'Direction Clicks', value: '3,417', trend: '+9% vs last period', up: true, icon: <TbNavigation /> },
-    { label: 'Avg Click-through', value: '41.6%', trend: '-2% vs last period', up: false, icon: <TbClick /> },
-];
-
 const heatColor = (v) =>
     v < 5 ? '#f5f5f3' : v < 15 ? '#fff3cc' : v < 30 ? '#ffe54c' : v < 45 ? '#f5c800' : v < 55 ? '#BA7517' : '#854F0B';
 const HEAT_SWATCHES = ['#f5f5f3', '#fff3cc', '#ffe54c', '#f5c800', '#BA7517', '#854F0B'];
@@ -77,6 +70,20 @@ export default async function AnalyticsPage({ searchParams }) {
     if(!analyticsData) {
         return <div>No dont have access to this page for your plan.</div>;
     }
+
+    // Statistics
+    const STAT_ICONS = {
+        widget_views: <TbEye />,
+        total_searches: <TbSearch />,
+        location_views: <TbMapPin />,
+        avg_click_through: <TbClick />,
+    };
+    const STATS = [
+        { key: 'widget_views', ...analyticsData.statistics.widget_views },
+        { key: 'total_searches', ...analyticsData.statistics.total_searches },
+        { key: 'location_views', ...analyticsData.statistics.location_views },
+        { key: 'avg_click_through', ...analyticsData.statistics.avg_click_through },
+    ].map((s) => ({ ...s, icon: STAT_ICONS[s.key] }));
     
     // Views over time
     const VIEWS_DATA = analyticsData.views_over_time.views_data;
