@@ -267,7 +267,6 @@ export async function functionSaveCustomizeLocator(locator_id, settings, feature
 
 export async function getAnalyticsData({ range = '30', locator = 'all' } = {}) {
     const locatorId = locator;
-    console.log(locatorId, 'locatorId');
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
         redirect('/sign-in');
@@ -302,9 +301,15 @@ export async function getAnalyticsData({ range = '30', locator = 'all' } = {}) {
 
     // Date range filter (based on the `range` prop = number of days).
     // e.g. range === '30' -> last 30 days of `views` records.
+    // Special case: range === '1' ("Today") means from the start of the
+    // current day (midnight UTC) rather than the last 24 hours.
     const days = parseInt(range, 10) || 30;
     const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
+    if (days === 1) {
+        startDate.setUTCHours(0, 0, 0, 0);
+    } else {
+        startDate.setDate(startDate.getDate() - days);
+    }
 
     // Matches a single unwound `views` element within the range.
     // (Each `views` sub-document has a `createdAt` from `timestamps: true`.)
