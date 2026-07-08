@@ -3107,10 +3107,10 @@
     flex-direction: column;
     gap: 14px;
     width: 100%;
-    max-width: 900px;
+    max-width: 700px;
     margin: 0 auto;
     display: flex;
-    
+
     .alert {
         background: #EAF3DE;
         border: 0.5px solid #b5d98a;
@@ -3158,7 +3158,7 @@
     .sdList {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 24px;
     }
 
     .sdCard {
@@ -3169,16 +3169,13 @@
         &:hover {
             border-color: #d4d4d4;
         }
-        &.sdCardActive {
-            border-color: #378ADD;
-        }
     }
 
     .sdCardHeader {
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 12px 14px;
+        padding: 16px;
         background-color: #fff;
         &.sdCardHeaderActive {
             background-color: #f5f9ff;
@@ -3190,19 +3187,13 @@
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
-        width: 34px;
-        height: 34px;
+        width: 36px;
+        height: 36px;
         border-radius: 9px;
         background-color: #f0f0f0;
         svg {
             font-size: 18px;
             color: #5F5E5A;
-        }
-        &.sdIconActive {
-            background-color: #185FA5;
-            svg {
-                color: #fff;
-            }
         }
     }
 
@@ -3215,7 +3206,7 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        margin-bottom: 3px;
+        margin-bottom: 8px;
         font-size: 14px;
         font-weight: 600;
         color: #1f1f1f;
@@ -3259,40 +3250,11 @@
         flex-shrink: 0;
     }
 
-    .actBtn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 30px;
-        height: 30px;
-        border-radius: 8px;
-        border: 1px solid #e4e4e4;
-        background: transparent;
-        color: #888;
-        cursor: pointer;
-        font-size: 15px;
-        transition: all 0.15s;
-        &:hover {
-            background-color: #f0f0f0;
-            color: #1f1f1f;
-        }
-        &.actBtnPrimary:hover {
-            background-color: #f5f9ff;
-            color: #185FA5;
-            border-color: #378ADD;
-        }
-        &.actBtnDanger:hover {
-            background-color: #FCEBEB;
-            color: #A32D2D;
-            border-color: #f09595;
-        }
-    }
-
     .sdCardBody {
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 10px 14px;
+        padding: 16px;
         border-top: 1px solid #f0f0f0;
         background-color: #fafafa;
     }
@@ -3305,38 +3267,20 @@
     }
 
     .sdLocatorLabel {
-        font-size: 12px;
-        color: #888;
+        font-size: 13px;
         white-space: nowrap;
     }
 
     .sdLocatorSelect {
-        flex: 1;
-        font-size: 12px;
-        padding: 6px 10px;
-        border-radius: 8px;
         border: 1px solid #e4e4e4;
-        background-color: #fff;
-        color: #1f1f1f;
+        border-radius: 8px;
+        width: 100%;
+        padding: 10px;
+        font-size: 13px;
         outline: none;
+        background: #fff;
         &:focus {
             border-color: #378ADD;
-        }
-    }
-
-    .btnSaveAssign {
-        font-size: 12px;
-        font-weight: 500;
-        padding: 7px 14px;
-        border-radius: 8px;
-        border: none;
-        background-color: #185FA5;
-        color: #fff;
-        cursor: pointer;
-        white-space: nowrap;
-        transition: background-color 0.15s;
-        &:hover {
-            background-color: #134d86;
         }
     }
 

@@ -6,12 +6,12 @@ import {
     RiGlobalLine,
     RiExternalLinkLine,
     RiRoadMapLine,
-    RiCalendarLine,
-    RiEyeLine,
     RiSettings3Line,
     RiFileCopyLine,
     RiDeleteBinLine,
 } from "react-icons/ri";
+    import { LuCopy, LuTrash2, LuSettings, LuExternalLink, LuCalendar, LuEye } from "react-icons/lu";
+import Button from "@/components/Forms/Button";
 
 const subdomains = [
     {
@@ -47,57 +47,65 @@ export default async function LocatorsSubdomainsPage() {
                     <div className={styles.subdomains}>
                         <p className={styles.alert}>Custom subdomains let your customers access your store locator at a branded URL like <strong>yourbusiness.storefindy.com</strong> — no embed code needed. You can also add a custom header and footer to match your brand.</p>
 
-                        {/* YOUR SUBDOMAINS */}
-                        <div className={styles.sdBlock}>
-                            <h2 className={styles.sdBlockTitle}>
-                                <RiListUnordered /> Your Subdomains
-                                <span className={styles.sdUsage}>2 of 3 used</span>
-                            </h2>
-                            <div className={styles.sdList}>
-                                {subdomains.map((sd) => (
-                                    <div
-                                        key={sd.url}
-                                        className={`${styles.sdCard} ${sd.active ? styles.sdCardActive : ''}`}
-                                    >
-                                        <div className={`${styles.sdCardHeader} ${sd.active ? styles.sdCardHeaderActive : ''}`}>
-                                            <div className={`${styles.sdIcon} ${sd.active ? styles.sdIconActive : ''}`}>
-                                                <RiGlobalLine />
+                        <div className={styles.sdList}>
+                            {subdomains.map((sd) => (
+                                <div
+                                    key={sd.url}
+                                    className={styles.sdCard}
+                                >
+                                    <div className={styles.sdCardHeader}>
+                                        <div className={styles.sdIcon}>
+                                            <RiGlobalLine />
+                                        </div>
+                                        <div className={styles.sdInfo}>
+                                            <div className={styles.sdUrl}>
+                                                {sd.url}
+                                                {sd.active && <span className={`${styles.badge} ${styles.badgeActive}`}>Active</span>}
+                                                <a href="#"><LuExternalLink /> Visit</a>
                                             </div>
-                                            <div className={styles.sdInfo}>
-                                                <div className={styles.sdUrl}>
-                                                    {sd.url}
-                                                    {sd.active && <span className={`${styles.badge} ${styles.badgeActive}`}>Active</span>}
-                                                    <a href="#"><RiExternalLinkLine /> Visit</a>
-                                                </div>
-                                                <div className={styles.sdMeta}>
-                                                    <span><RiRoadMapLine /> {sd.locator}</span>
-                                                    <span>·</span>
-                                                    <span><RiCalendarLine /> Created {sd.created}</span>
-                                                    <span>·</span>
-                                                    <span><RiEyeLine /> {sd.views} views</span>
-                                                </div>
-                                            </div>
-                                            <div className={styles.sdActions}>
-                                                <button className={`${styles.actBtn} ${styles.actBtnPrimary}`} title="Edit"><RiSettings3Line /></button>
-                                                <button className={styles.actBtn} title="Copy URL"><RiFileCopyLine /></button>
-                                                <button className={`${styles.actBtn} ${styles.actBtnDanger}`} title="Delete"><RiDeleteBinLine /></button>
+                                            <div className={styles.sdMeta}>
+                                                <span><LuExternalLink /> {sd.locator}</span>
+                                                <span>·</span>
+                                                <span><LuCalendar /> Created {sd.created}</span>
+                                                <span>·</span>
+                                                <span><LuEye /> {sd.views} visits</span>
                                             </div>
                                         </div>
-                                        <div className={styles.sdCardBody}>
-                                            <div className={styles.sdLocatorAssign}>
-                                                <span className={styles.sdLocatorLabel}>Assigned locator:</span>
-                                                <select className={styles.sdLocatorSelect} defaultValue={sd.locator}>
-                                                    {locatorOptions.map((opt) => (
-                                                        <option key={opt} value={opt}>{opt}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                            <button className={styles.btnSaveAssign}>Save</button>
+                                        <div className={styles.sdActions}>
+                                            <Button
+                                                icon={<LuSettings />}
+                                                value=""
+                                            />
+                                            <Button
+                                                icon={<LuCopy />}
+                                                value=""
+                                            />
+                                            <Button
+                                                icon={<LuTrash2 />}
+                                                value=""
+                                            />
                                         </div>
                                     </div>
-                                ))}
-                            </div>
+                                    <div className={styles.sdCardBody}>
+                                        <div className={styles.sdLocatorAssign}>
+                                            <span className={styles.sdLocatorLabel}>Assigned locator:</span>
+                                            <select className={styles.sdLocatorSelect} defaultValue={sd.locator}>
+                                                {locatorOptions.map((opt) => (
+                                                    <option key={opt} value={opt}>{opt}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <Button
+                                            primary={true}
+                                            type="submit"
+                                            value="Save"
+                                            pending={false}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
                         </div>
+
                     </div>
                 </div>
             </div>

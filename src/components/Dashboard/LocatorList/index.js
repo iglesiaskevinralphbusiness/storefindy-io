@@ -2,8 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './LocatorList.module.scss';
-import { LuMapPin, LuEye, LuTrash2, LuPalette, LuPlus, LuCodeXml, LuChevronLeft } from "react-icons/lu";
-import { PiGear } from "react-icons/pi";
+import { LuMapPin, LuEye, LuTrash2, LuPalette, LuPlus, LuCodeXml, LuChevronLeft, LuSettings } from "react-icons/lu";
 import Button from '@/components/Forms/Button';
 import { mongooseFormatTimeAgo } from '@/utils/helpers';
 import Link from 'next/link';
@@ -58,7 +57,7 @@ export default function LocatorList({ data=[] }) {
                                     <div className={styles.manage}>
                                         <Button
                                             value="Manage"
-                                            icon={<PiGear />}
+                                            icon={<LuSettings />}
                                             onClick={() => {
                                                 setIsManageOpen(locator._id);
                                             }}
@@ -67,7 +66,7 @@ export default function LocatorList({ data=[] }) {
                                         <div className={styles.manageBackground} onClick={() => { setIsManageOpen(null); }}></div>
                                             <ul className={styles.manageMenu}>
                                                 <li><Link href={`/dashboard/locators/customize/${locator._id}?preview=1`} target="_blank"><LuEye /> Preview</Link></li>
-                                                <li><Link href={`/dashboard/locators/edit/${locator._id}`}><PiGear /> Edit Locator</Link></li>
+                                                <li><Link href={`/dashboard/locators/edit/${locator._id}`}><LuSettings /> Edit Locator</Link></li>
                                                 <li><Link href={`/dashboard/locators/customize/${locator._id}`}><LuPalette /> Customize UI</Link></li>
                                                 <li><Link href={`/dashboard/locators/embed/?id=${locator._id}`}><LuCodeXml /> Embed Code</Link></li>
                                             </ul>
