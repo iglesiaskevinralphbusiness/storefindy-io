@@ -95,8 +95,8 @@ export default function Sidebar() {
                                 Embed Locator
                             </Link>
                         </li>
-                        <li className={isRootLinkParamsActive('/dashboard/locators/custom-subdomains')}>
-                            <Link href="/dashboard/locators/custom-subdomains">
+                        <li className={isRootLinkParamsActive('/dashboard/locators/subdomains')}>
+                            <Link href="/dashboard/locators/subdomains">
                                 <LuLink />
                                 Custom Subdomains
                             </Link>

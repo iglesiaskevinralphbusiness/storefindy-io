@@ -3103,6 +3103,256 @@
     }
 }
 
+.subdomains {
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    
+    .alert {
+        background: #EAF3DE;
+        border: 0.5px solid #b5d98a;
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+
+    /* YOUR SUBDOMAINS — themed like .create */
+    .sdBlock {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        padding: 14px 20px 20px;
+        border: 1px solid #e4e4e4;
+        border-radius: 16px;
+        background-color: #fff;
+        &:hover {
+            border-color: #d4d4d4;
+        }
+        .sdBlockTitle {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            margin: 0;
+            font-size: 15px;
+            font-weight: 600;
+            svg {
+                font-size: 18px;
+                color: #185FA5;
+            }
+            .sdUsage {
+                margin-left: auto;
+                font-size: 11px;
+                font-weight: 500;
+                padding: 3px 10px;
+                border-radius: 20px;
+                background-color: #fafafa;
+                border: 1px solid #e4e4e4;
+                color: #5F5E5A;
+            }
+        }
+    }
+
+    .sdList {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .sdCard {
+        border: 1px solid #e4e4e4;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: border-color 0.15s;
+        &:hover {
+            border-color: #d4d4d4;
+        }
+        &.sdCardActive {
+            border-color: #378ADD;
+        }
+    }
+
+    .sdCardHeader {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        background-color: #fff;
+        &.sdCardHeaderActive {
+            background-color: #f5f9ff;
+        }
+    }
+
+    .sdIcon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        background-color: #f0f0f0;
+        svg {
+            font-size: 18px;
+            color: #5F5E5A;
+        }
+        &.sdIconActive {
+            background-color: #185FA5;
+            svg {
+                color: #fff;
+            }
+        }
+    }
+
+    .sdInfo {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .sdUrl {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 3px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #1f1f1f;
+        a {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 12px;
+            font-weight: 400;
+            color: #185FA5;
+            text-decoration: none;
+            svg {
+                font-size: 13px;
+            }
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+
+    .sdMeta {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 12px;
+        color: #888;
+        span {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            svg {
+                font-size: 13px;
+            }
+        }
+    }
+
+    .sdActions {
+        display: flex;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+
+    .actBtn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        border: 1px solid #e4e4e4;
+        background: transparent;
+        color: #888;
+        cursor: pointer;
+        font-size: 15px;
+        transition: all 0.15s;
+        &:hover {
+            background-color: #f0f0f0;
+            color: #1f1f1f;
+        }
+        &.actBtnPrimary:hover {
+            background-color: #f5f9ff;
+            color: #185FA5;
+            border-color: #378ADD;
+        }
+        &.actBtnDanger:hover {
+            background-color: #FCEBEB;
+            color: #A32D2D;
+            border-color: #f09595;
+        }
+    }
+
+    .sdCardBody {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        border-top: 1px solid #f0f0f0;
+        background-color: #fafafa;
+    }
+
+    .sdLocatorAssign {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+    }
+
+    .sdLocatorLabel {
+        font-size: 12px;
+        color: #888;
+        white-space: nowrap;
+    }
+
+    .sdLocatorSelect {
+        flex: 1;
+        font-size: 12px;
+        padding: 6px 10px;
+        border-radius: 8px;
+        border: 1px solid #e4e4e4;
+        background-color: #fff;
+        color: #1f1f1f;
+        outline: none;
+        &:focus {
+            border-color: #378ADD;
+        }
+    }
+
+    .btnSaveAssign {
+        font-size: 12px;
+        font-weight: 500;
+        padding: 7px 14px;
+        border-radius: 8px;
+        border: none;
+        background-color: #185FA5;
+        color: #fff;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background-color 0.15s;
+        &:hover {
+            background-color: #134d86;
+        }
+    }
+
+    .badge {
+        font-size: 10px;
+        font-weight: 500;
+        padding: 2px 8px;
+        border-radius: 10px;
+        line-height: 1.4;
+        &.badgeActive {
+            background: #EAF3DE;
+            color: #3B6D11;
+        }
+    }
+}
+
 /* REPORT BUG */
 .report {
     max-width: 760px;

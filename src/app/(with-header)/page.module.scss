@@ -197,6 +197,10 @@
         border: 2px solid #ffe54c;
         background: #fffbe6;
     }
+    &:first-child,
+    &:last-child {
+        margin-top: 30px;
+    }
 }
 .pricingBadge {
     font-size: 10px;

@@ -4,7 +4,6 @@ import styles from '../../Dashboard.module.scss';
 import Sidebar from '@/components/Dashboard/Sidebar';
 import {
     TbPalette,
-    TbSettings,
     TbCode,
     TbBrandHtml5,
     TbBrandReact,
