@@ -10,8 +10,9 @@ import {
     RiFileCopyLine,
     RiDeleteBinLine,
 } from "react-icons/ri";
-    import { LuCopy, LuTrash2, LuSettings, LuExternalLink, LuCalendar, LuEye } from "react-icons/lu";
+    import { LuCopy, LuTrash2, LuSettings, LuExternalLink, LuCalendar, LuEye, LuPlus } from "react-icons/lu";
 import Button from "@/components/Forms/Button";
+import CreateAndIndicator from '@/components/Dashboard/CreateAndIndicator';
 
 const subdomains = [
     {
@@ -46,6 +47,11 @@ export default async function LocatorsSubdomainsPage() {
                 <div className={styles.body}>
                     <div className={styles.subdomains}>
                         <p className={styles.alert}>Custom subdomains let your customers access your store locator at a branded URL like <strong>yourbusiness.storefindy.com</strong> — no embed code needed. You can also add a custom header and footer to match your brand.</p>
+
+                        <CreateAndIndicator 
+                            buttonIcon={<LuPlus />}
+                            buttonValue="Create Subdomain"
+                        />
 
                         <div className={styles.sdList}>
                             {subdomains.map((sd) => (
