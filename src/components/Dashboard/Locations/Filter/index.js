@@ -87,12 +87,6 @@ const Filter = ({ locators}) => {
                 icon={<LuSearch />}
                 primary={true}
             />
-            <Button
-                type="button"
-                value="Add Location"
-                icon={<LuPlus />}
-                onClick={() => router.push('/dashboard/locations/add-location')}
-            />
         </div>
     </form>
 }

@@ -2,13 +2,7 @@ import styles from '../../Dashboard.module.scss';
 import Sidebar from '@/components/Dashboard/Sidebar';
 import {
     RiArrowRightLine,
-    RiListUnordered,
     RiGlobalLine,
-    RiExternalLinkLine,
-    RiRoadMapLine,
-    RiSettings3Line,
-    RiFileCopyLine,
-    RiDeleteBinLine,
 } from "react-icons/ri";
     import { LuCopy, LuTrash2, LuSettings, LuExternalLink, LuCalendar, LuEye, LuPlus } from "react-icons/lu";
 import Button from "@/components/Forms/Button";
@@ -51,6 +45,8 @@ export default async function LocatorsSubdomainsPage() {
                         <CreateAndIndicator 
                             buttonIcon={<LuPlus />}
                             buttonValue="Create Subdomain"
+                            buttonHref="/dashboard/locators/subdomains/create"
+                            used="2 of 3 used"
                         />
 
                         <div className={styles.sdList}>
