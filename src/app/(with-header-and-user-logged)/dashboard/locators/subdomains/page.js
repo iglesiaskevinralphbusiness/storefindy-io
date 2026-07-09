@@ -7,6 +7,7 @@ import {
     import { LuCopy, LuTrash2, LuSettings, LuExternalLink, LuCalendar, LuEye, LuPlus } from "react-icons/lu";
 import Button from "@/components/Forms/Button";
 import CreateAndIndicator from '@/components/Dashboard/CreateAndIndicator';
+import { getSubDomains } from '@/actions/sub-domain';
 
 const subdomains = [
     {
@@ -28,7 +29,8 @@ const subdomains = [
 const locatorOptions = ['Main Store Locator', 'Branch Finder', 'Pop-up Stores', 'Flagship Stores'];
 
 export default async function LocatorsSubdomainsPage() {
-
+    const subDomains = await getSubDomains();
+    console.log(subDomains);
 
     return (
         <div className={styles.dashboard}>

@@ -2,12 +2,19 @@ import Link from 'next/link';
 import Button from '@/components/Forms/Button';
 import { LuChevronRight } from "react-icons/lu";
 
-export default function LimitReached({ msg="You've reached your limit. To add more locations, please subscribe to Pro or Business." }) {
+export default function LimitReached({
+    heading="Limit Reached",
+    msg="You've reached your limit. To add more locations, please subscribe to Pro or Business.",
+    href="/dashboard/billing",
+    buttonText="See Your Subscription"
+}) {
     return (
         <div className="empty">
-            <h2>Limit Reached</h2>
+            <h2>{ heading }</h2>
             <p>{ msg }</p>
-            <Link href="/dashboard/billing"><Button value="See Your Subscription" icon={<LuChevronRight />} iconPosition="right" primary={true} /></Link>
+            <Link href={href}>
+                <Button value={buttonText} icon={<LuChevronRight />} iconPosition="right" primary={true} />
+            </Link>
         </div>
     );
 }

@@ -1,13 +1,9 @@
 "use server";
-import { z } from 'zod';
 import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { dbConnect } from '@/config/mongo.config';
-import { UserModel, LocatorModel, LocationModel } from '@/mongo';
-import { sanitizeInput } from '@/utils/lib/input-sanitization';
-import { serializeForClient } from '@/utils/helpers';
-import { isValidObjectId } from 'mongoose';
+import { UserModel, LocatorModel, LocationModel, SubDomainModel } from '@/mongo';
 import { plans } from '@/utils/constant/pricing';
 import { reconcileUserSubscription } from '@/lib/lemonsqueezy';
 import { TbMap, TbMapPin, TbEye } from 'react-icons/tb';
@@ -34,6 +30,7 @@ export async function getBillingStatus() {
 
     const locator = await LocatorModel.countDocuments({ user_id: session.user.id });
     const location = await LocationModel.countDocuments({ user_id: session.user.id });
+    const sub_domain = await SubDomainModel.countDocuments({ user_id: session.user.id });
 
     const plan = plans.find(p => p.id === user.plan) || plans[0];
 
@@ -44,6 +41,10 @@ export async function getBillingStatus() {
     const location_used = plan.id === 'business' ? location : location > plan.max_location ? plan.max_location : location;
     const location_inactive = plan.id === 'business' ? 0 : location - plan.max_location;
     const location_percent = plan.id === 'business' ? 100 : (location_used / plan.max_location) * 100;
+
+    const sub_domain_used = sub_domain > plan.max_sub_domain ? plan.max_sub_domain : sub_domain;
+    const sub_domain_inactive = sub_domain - plan.max_sub_domain;
+    const sub_domain_percent = (sub_domain_used / plan.max_sub_domain) * 100;
 
     return {
         id: plan.id,
@@ -61,6 +62,10 @@ export async function getBillingStatus() {
         location_max: plan.id === 'business' ? 'Unlimited' : plan.max_location,
         location_count: location,
         location_is_limit_reached: plan.id === 'business' ? false : location >= plan.max_location,
+
+        sub_domain_max: plan.max_sub_domain,
+        sub_domain_count: sub_domain,
+        sub_domain_is_limit_reached: sub_domain >= plan.max_sub_domain,
 
         usage: [
             {
