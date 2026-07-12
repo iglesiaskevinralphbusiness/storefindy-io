@@ -28,10 +28,11 @@ export default async function LocatorsCustomizePage() {
                 {
                     locators === null ? null
                         : locators.length === 0 ? (
-                            <div className="empty">
-                                <p>You don&apos;t have any locators yet. Please create a locator first.</p>
-                                <Link href="/dashboard/locators/create"><Button value="Create Locator" icon={<LuPlus />} primary={true} /></Link>
-                            </div>
+                            <LimitReached
+                                msg="You don't have any locators yet. Please create a locator first."
+                                href="/dashboard/locators/create"
+                                buttonText={<><LuPlus /> Create Locator</>}
+                            />
                         ) : <>
                             <div className={csv.wizard}>
                                 <div className={csv.steps} style={{ width: '300px', margin: '0 auto' }}>

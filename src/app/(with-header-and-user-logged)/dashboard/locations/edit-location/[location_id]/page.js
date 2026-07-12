@@ -9,6 +9,7 @@ import Button from '@/components/Forms/Button';
 import { LuPlus } from 'react-icons/lu';
 import Link from 'next/link';
 import { LuArrowLeft } from 'react-icons/lu';
+import LimitReached from '@/components/LimitReached';
 
 export default async function AddLocationPage({ params}) {
     const { location_id } = await params;
@@ -25,14 +26,19 @@ export default async function AddLocationPage({ params}) {
                 </div>
                 <div className={styles.body}>
                     {
-                        !locators || locators.length === 0 ? <div className="empty">
-                            <p>You don't have any locators yet. Please create a locator first.</p>
-                            <Link href="/dashboard/locators/create"><Button value="Create Locator" icon={<LuPlus />} primary={true} /></Link>
-                        </div> : !location ? 
-                            <div className="empty">
-                                <p>Location not found, it could have been deleted.</p>
-                                <Link href="/dashboard/locations"><Button value="Back" icon={<LuArrowLeft />} primary={true} /></Link>
-                            </div> : <AddLocationClient locators={locators} data={location} />
+                        !locators || locators.length === 0 ? 
+                            <LimitReached
+                                msg="You don't have any locators yet. Please create a locator first."
+                                href="/dashboard/locators/create"
+                                buttonText={<><LuPlus /> Create Locator</>}
+                            />
+                        : !location ? 
+                            <LimitReached
+                                msg="Location not found, it could have been deleted."
+                                href="/dashboard/locations"
+                                buttonText={<><LuArrowLeft /> Back</>}
+                            />
+                        : <AddLocationClient locators={locators} data={location} />
                     }
                     
                 </div>

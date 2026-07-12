@@ -3,9 +3,8 @@ import { getLocatorById } from '@/actions/locator';
 import styles from '../../../Dashboard.module.scss';
 import Sidebar from '@/components/Dashboard/Sidebar';
 import { RiArrowRightLine } from "react-icons/ri";
-import Link from 'next/link';
-import Button from '@/components/Forms/Button';
 import { LuArrowLeft } from 'react-icons/lu';
+import LimitReached from '@/components/LimitReached';
 
 export default async function LocatorsEditPage({ params }) {
     const { locator_id } = await params;
@@ -20,10 +19,11 @@ export default async function LocatorsEditPage({ params }) {
                     <p>Dashboard <RiArrowRightLine /> My Locators <RiArrowRightLine /> All Locators <RiArrowRightLine /> Create Locator</p>
                 </div>
                 <div className={styles.body}>
-                    <div className="empty">
-                        <p>Locator not found, it could have been deleted.</p>
-                        <Link href="/dashboard/locators"><Button value="Back" icon={<LuArrowLeft />} primary={true} /></Link>
-                    </div>
+                    <LimitReached
+                        msg="Locator not found, it could have been deleted."
+                        href="/dashboard/locators"
+                        buttonText={<><LuArrowLeft /> Back</>}
+                    />
                 </div>
             </div>
         </div>

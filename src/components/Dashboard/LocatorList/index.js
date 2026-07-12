@@ -52,7 +52,7 @@ export default function LocatorList({ data=[] }) {
                                 </div>
                                 <div className={styles.actions}>
                                     <div className={styles.history}>
-                                        { mongooseFormatTimeAgo(locator.updatedAt) }
+                                        { mongooseFormatTimeAgo(locator.createdAt, locator.updatedAt) }
                                     </div>
                                     <div className={styles.manage}>
                                         <Button

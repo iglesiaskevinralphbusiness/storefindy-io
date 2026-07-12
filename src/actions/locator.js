@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { dbConnect } from '@/config/mongo.config';
-import { UserModel, LocatorModel, LocationModel } from '@/mongo';
+import { UserModel, LocatorModel, LocationModel, SubDomainModel } from '@/mongo';
 import { serializeForClient } from '@/utils/helpers';
 import { isValidObjectId } from 'mongoose';
 import { plans } from '@/utils/constant/pricing';
@@ -235,6 +235,7 @@ export async function postDeleteLocator(locator_id) {
 
     await LocatorModel.findByIdAndDelete(locator_id);
     await LocationModel.deleteMany({ locator_id });
+    await SubDomainModel.deleteMany({ locator_id });
     return { status: "success", message: 'Locator deleted successfully' };
 }
 

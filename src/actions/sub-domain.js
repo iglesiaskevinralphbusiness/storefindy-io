@@ -168,7 +168,37 @@ export async function getSubDomains() {
             $match: {
                 user_id: session.user.id,
             },
-        }
+        },
+
+        // add locator name
+        { $addFields: { locatorId: { "$toObjectId": "$locator_id" } } },
+        {
+            $lookup: {
+                from: "locatormodels",
+                localField: "locatorId",
+                foreignField: "_id",
+                as: "locator"
+            }
+        },
+        {
+            $addFields: {
+                locator: {
+                    $arrayElemAt: ["$locator.name", 0]
+                }
+            }
+        },
+
+        {
+            $project: {
+                locator_id: 1,
+                locator: 1,
+                _id: 1,
+                name: 1,
+                visits: 1,
+                updatedAt: 1,
+                createdAt: 1,
+            }
+        },
     ]);
     // const inactiveIds = await getInactiveIds(session.user.id);
 
@@ -290,4 +320,16 @@ export async function postCreateDomain(_prev, formData) {
 
 export async function postEditDomain(domain_id, _prev, formData) {
    
+}
+
+export async function postDeleteSubDomain(subDomain_id) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    await dbConnect();
+
+    await SubDomainModel.findByIdAndDelete(subDomain_id);
+    return { status: "success", message: 'Sub domain deleted successfully' };
 }

@@ -12,6 +12,8 @@ const subDomainSchema = new mongoose.Schema({
     custom_js: { type: String, default: '' },
     custom_html_footer: { type: String, default: '' },
     custom_html_header: { type: String, default: '' },
+
+    visits: { type: Number, default: 0 },
 }, { timestamps: true },);
 
 let SubDomainModel;

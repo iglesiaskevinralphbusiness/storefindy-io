@@ -26,12 +26,13 @@ export default async function AddLocationPage() {
                 <div className={styles.body}>
                     {
                         billingStatus.location_is_limit_reached ?
-                            <LimitReached msg="You've reached your limit. To add more locations, please subscribe to Pro or Business." />
+                            <LimitReached heading="Limit Reached" msg="You've reached your limit. To add more locations, please subscribe to Pro or Business." />
                         :
-                            !locators || locators.length === 0 ? <div className="empty">
-                                <p>You don't have any locators yet. Please create a locator first.</p>
-                                <Link href="/dashboard/locators/create"><Button value="Create Locator" icon={<LuPlus />} primary={true} /></Link>
-                            </div> : <AddLocationClient locators={locators} />
+                            !locators || locators.length === 0 ? <LimitReached
+                                msg="You don't have any locators yet. Please create a locator first."
+                                href="/dashboard/locators/create"
+                                buttonText={<><LuPlus /> Create Locator</>}
+                            /> : <AddLocationClient locators={locators} />
                     }
                     
                 </div>

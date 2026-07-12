@@ -34,7 +34,7 @@ export default function CustomizeWrapper({ data, available_countries, onPreview 
     };
 
     const Inactive = () => {
-        return <LimitReached msg="You've reached your limit. To enable this locator, please subscribe to Pro or Business." />
+        return <LimitReached heading="Limit Reached" msg="You've reached your limit. To enable this locator, please subscribe to Pro or Business." />
     };
 
     return<div className={`${styles.dashboard} ${styles.customizeLocator}`}>

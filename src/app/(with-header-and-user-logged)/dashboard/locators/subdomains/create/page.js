@@ -19,7 +19,7 @@ export default async function SubdomainsCreatePage() {
                         <p>Dashboard <RiArrowRightLine /> My Locators <RiArrowRightLine /> Custom Sub Domains <RiArrowRightLine /> Create Sub Domain</p>
                     </div>
                     <div className={styles.body}>
-                        <LimitReached msg="You've reached your limit. To create more sub domains, please subscribe to Pro or Business." />
+                        <LimitReached heading="Limit Reached" msg="You've reached your limit. To create more sub domains, please subscribe to Pro or Business." />
                     </div>
                 </div>
             </div>
@@ -38,7 +38,6 @@ export default async function SubdomainsCreatePage() {
                     </div>
                     <div className={styles.body}>
                         <LimitReached
-                            heading="No Locators Found"
                             msg="You need to create at least one locator before you can create a sub domain."
                             href="/dashboard/locators/create"
                             buttonText="Create Locator"

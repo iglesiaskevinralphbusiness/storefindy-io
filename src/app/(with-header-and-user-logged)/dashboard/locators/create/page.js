@@ -19,7 +19,7 @@ export default async function LocatorsCreatePage() {
                         <p>Dashboard <RiArrowRightLine /> My Locators <RiArrowRightLine /> All Locators <RiArrowRightLine /> Create Locator</p>
                     </div>
                     <div className={styles.body}>
-                        <LimitReached msg="You've reached your limit. To create more locators, please subscribe to Pro or Business." />
+                        <LimitReached heading="Limit Reached" msg="You've reached your limit. To create more locators, please subscribe to Pro or Business." />
                     </div>
                 </div>
             </div>

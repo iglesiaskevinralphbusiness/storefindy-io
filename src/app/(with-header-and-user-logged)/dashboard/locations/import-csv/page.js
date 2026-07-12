@@ -19,7 +19,7 @@ export default async function ImportCSVPage() {
                         <p>Dashboard <RiArrowRightLine /> Locations <RiArrowRightLine /> All Locations <RiArrowRightLine /> Import CSV</p>
                     </div>
                     <div className={styles.body}>
-                        <LimitReached msg="You've reached your limit. To import more locations, please subscribe to Pro or Business." />
+                        <LimitReached heading="Limit Reached" msg="You've reached your limit. To import more locations, please subscribe to Pro or Business." />
                     </div>
                 </div>
             </div>
