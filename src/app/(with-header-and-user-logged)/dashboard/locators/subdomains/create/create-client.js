@@ -23,8 +23,8 @@ export default function SubdomainsCreatePageClient({ locators=[], data=null }) {
     const [name, setName] = useState(data?.name || '');
     const [metaTitle, setMetaTitle] = useState(data?.meta_title || '');
     const [metaDescription, setMetaDescription] = useState(data?.meta_description || '');
-    const [header, setHeader] = useState(data?.header || '');
-    const [footer, setFooter] = useState(data?.footer || '');
+    const [header, setHeader] = useState(data?.custom_html_header || '');
+    const [footer, setFooter] = useState(data?.custom_html_footer || '');
     const [customCss, setCustomCss] = useState(data?.custom_css || '');
     const [customJs, setCustomJs] = useState(data?.custom_js || '');
 
@@ -43,7 +43,7 @@ export default function SubdomainsCreatePageClient({ locators=[], data=null }) {
 
         if (state.status === "idle") return;
         if (state.status === "success") {
-            toast.success(data ? "Locator updated successfully" : "Locator created successfully", { description: state.message });
+            toast.success(data ? "Subdomain updated successfully" : "Subdomain created successfully", { description: state.message });
             router.push('/dashboard/locators/subdomains');
         } else if (state.status === "error") {
             toast.warning("Some fields are not valid", { description: Object.values(state.errors)[0] });
@@ -80,41 +80,51 @@ export default function SubdomainsCreatePageClient({ locators=[], data=null }) {
                         <div className={styles.block}>
                             <h2><LuInfo /> Sub Domain Assignment</h2>
 
-                            <div className={`${styles.subDomainInput} ${err("name") ? styles.errorForm : ''} ${isNameAvailable ? styles[isNameAvailable] : ''}`}>
-                                <label htmlFor='name'>Subdomain Name <span className={styles.required}>*</span></label>
-                                <div className={styles.inputBox}>
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        value={name}
-                                        maxLength={30}
-                                        min={3}
-                                        max={30}
-                                        onChange={e => {
-                                            setName(e.target.value);
-                                            setIsNameAvailable(null);
-                                            setClearedErrors(prev => ({ ...prev, name: true }));
-                                        }}
-                                        placeholder="yourbusinessname"
-                                        required={true}
-                                    />
-                                    <span>.storefindy.com</span>
-                                    <Button
-                                        type="button"
-                                        value="Check"
-                                        primary={false}
-                                        disabled={isCheckLoading}
-                                        pending={isCheckLoading}
-                                        onClick={handleCheckSubDomainAvailability}
-                                    />
+                            { !data ? (
+                                <div className={`${styles.subDomainInput} ${err("name") ? styles.errorForm : ''} ${isNameAvailable ? styles[isNameAvailable] : ''}`}>
+                                    <label htmlFor='name'>Subdomain Name <span className={styles.required}>*</span></label>
+                                    <div className={styles.inputBox}>
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            value={name}
+                                            maxLength={30}
+                                            min={3}
+                                            max={30}
+                                            onChange={e => {
+                                                setName(e.target.value);
+                                                setIsNameAvailable(null);
+                                                setClearedErrors(prev => ({ ...prev, name: true }));
+                                            }}
+                                            placeholder="yourbusinessname"
+                                            required={true}
+                                        />
+                                        <span>.storefindy.com</span>
+                                        <Button
+                                            type="button"
+                                            value="Check"
+                                            primary={false}
+                                            disabled={isCheckLoading}
+                                            pending={isCheckLoading}
+                                            onClick={handleCheckSubDomainAvailability}
+                                        />
+                                    </div>
+                                    { isNameAvailable === 'available' && <p className={styles.availableMessage}><LuCheck />{isNameAvailableMessage}</p> }
+                                    { isNameAvailable === 'notAvailable' && <p className={styles.notAvailableMessage}><LuX />{isNameAvailableMessage}</p> }
+                                    <p className={styles.note}>
+                                        Only lowercase letters, numbers, and hyphens. 3–30 characters. e.g. <span>mybrand</span> or <span>my-pharmacy</span>
+                                    </p>
+                                    { err("name") ? <p className={styles.error}>{err("name")}</p> : '' }
                                 </div>
-                                { isNameAvailable === 'available' && <p className={styles.availableMessage}><LuCheck />{isNameAvailableMessage}</p> }
-                                { isNameAvailable === 'notAvailable' && <p className={styles.notAvailableMessage}><LuX />{isNameAvailableMessage}</p> }
-                                <p className={styles.note}>
-                                    Only lowercase letters, numbers, and hyphens. 3–30 characters. e.g. <span>mybrand</span> or <span>my-pharmacy</span>
-                                </p>
-                                { err("name") ? <p className={styles.error}>{err("name")}</p> : '' }
-                            </div>
+                            ) : (
+                                <Input
+                                    label="Sub Domain Name"
+                                    name="sub_domain_name"
+                                    onChange={e => {}}
+                                    value={data?.name}
+                                    readOnly={true}
+                                />
+                            )}
 
                             <Select
                                 label="Assigne to Locator"
@@ -208,8 +218,8 @@ export default function SubdomainsCreatePageClient({ locators=[], data=null }) {
                             >Back</Button>
                             <Button
                                 type="submit"
-                                name={data ? "update_locator" : "create_domain"}
-                                value={data ? "Update Locator" : "Create Subdomain"}
+                                name={data ? "update_subdomain" : "create_subdomain"}
+                                value={data ? "Update Subdomain" : "Create Subdomain"}
                                 required={true}
                                 icon={<LuCheck />}
                                 iconPosition='right'

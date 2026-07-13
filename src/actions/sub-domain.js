@@ -246,6 +246,18 @@ export async function postCheckSubDomainAvailability(name) {
     };
 }
 
+export async function getSubDomainById(subdomain_id) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    await dbConnect();
+
+    const subDomain = await SubDomainModel.findById(subdomain_id);
+    return serializeForClient(subDomain);
+}
+
 export async function postCreateDomain(_prev, formData) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -287,6 +299,17 @@ export async function postCreateDomain(_prev, formData) {
         };
     }
 
+
+    // validate if locator_id is a valid object id and exists in the database
+    if(!isValidObjectId(form.locator_id)) {
+        return { status: "error", errors: { locator_id: 'Invalid locator id' } };
+    }
+    const locator = await LocatorModel.findById(form.locator_id);
+    if(!locator) {
+        return { status: "error", errors: { locator_id: 'Locator not found' } };
+    }
+
+
     // validate if header and footer are valid HTML
     let errors = {};
     if (form.header && !isValidHTML(form.header)) {
@@ -319,7 +342,64 @@ export async function postCreateDomain(_prev, formData) {
 }
 
 export async function postEditDomain(domain_id, _prev, formData) {
-   
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    await dbConnect();
+
+    const form = {
+        locator_id: formData.get('locator_id'),
+        meta_title: formData.get('meta_title'),
+        meta_description: formData.get('meta_description'),
+        custom_html_header: formData.get('header'),
+        custom_html_footer: formData.get('footer'),
+        custom_css: formData.get('custom_css'),
+        custom_js: formData.get('custom_js'),
+    }
+
+    // validate if locator_id is a valid object id and exists in the database
+    if(!isValidObjectId(form.locator_id)) {
+        return { status: "error", errors: { locator_id: 'Invalid locator id' } };
+    }
+    const locator = await LocatorModel.findById(form.locator_id);
+    if(!locator) {
+        return { status: "error", errors: { locator_id: 'Locator not found' } };
+    }
+
+
+    // validate if header and footer are valid HTML
+    let errors = {};
+    if (form.header && !isValidHTML(form.header)) {
+        errors.header = 'Header is not valid HTML';
+    }
+    if (form.footer && !isValidHTML(form.footer)) {
+        errors.footer = 'Footer is not valid HTML';
+    }
+
+    if(form.custom_css && !isValidCSS(form.custom_css)) {
+        errors.custom_css = 'Custom CSS is not valid CSS';
+    }
+    if(form.custom_js && !isValidJS(form.custom_js)) {
+        errors.custom_js = 'Custom JS is not valid JS';
+    }
+
+    // if any errors, return early
+    if (Object.keys(errors).length > 0) {
+        return { status: "error", errors };
+    }
+
+
+    // save
+    try {
+        await SubDomainModel.findByIdAndUpdate(domain_id, form);
+        return { status: "success", message: 'Subdomain updated successfully' };
+    } catch (error) {
+        return { status: "fatal", message: "Server error. Please try again." };
+    }
+
+
 }
 
 export async function postDeleteSubDomain(subDomain_id) {

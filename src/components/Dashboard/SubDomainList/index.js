@@ -4,7 +4,7 @@ import { useState } from 'react';
 import {
     RiGlobalLine,
 } from "react-icons/ri";
-    import { LuCopy, LuTrash2, LuSettings, LuExternalLink, LuCalendar, LuEye, LuChevronLeft } from "react-icons/lu";
+    import { LuCopy, LuTrash2, LuPen, LuExternalLink, LuCalendar, LuEye, LuChevronLeft } from "react-icons/lu";
 import Button from "@/components/Forms/Button";
 import { mongooseFormatTimeAgo } from '@/utils/helpers';
 import Modal from '@/components/Modal';
@@ -25,6 +25,11 @@ export default function SubDomainList({ locators=[], data=[] }) {
         } else {
             toast.error(res.message);
         }
+    }
+
+    const handleClickEdit = (subDomain_id) => {
+        console.log(subDomain_id);
+        router.push(`/dashboard/locators/subdomains/edit/${subDomain_id}`);
     }
 
     return <>
@@ -54,8 +59,9 @@ export default function SubDomainList({ locators=[], data=[] }) {
                         </div>
                         <div className={styles.sdActions}>
                             <Button
-                                icon={<LuSettings />}
+                                icon={<LuPen />}
                                 value=""
+                                onClick={() => handleClickEdit(sd._id)}
                             />
                             <Button
                                 icon={<LuCopy />}

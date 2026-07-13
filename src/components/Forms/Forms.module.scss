@@ -22,6 +22,14 @@
         outline: none;
         border-color: #185FA5;
     }
+    input:read-only {
+        background-color: #fafafa;
+        cursor: default;
+        &:focus {
+            outline: none;
+            border-color: #e4e4e4;
+        }
+    }
 }
 
 .textarea {

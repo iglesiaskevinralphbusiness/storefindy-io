@@ -16,7 +16,6 @@ import SubDomainList from '@/components/Dashboard/SubDomainList';
 export default async function LocatorsSubdomainsPage() {
     const locators = await getLocators();
     const subDomains = await getSubDomains();
-    console.log(subDomains);
 
     return (
         <div className={styles.dashboard}>
