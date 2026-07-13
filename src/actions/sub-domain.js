@@ -155,13 +155,24 @@ export async function getSubDomainInactiveIds(){
     return [];
 }
 
-export async function getSubDomains() {
+export async function getSubDomains(page=1, rows=10, sort='createdAt', order='asc') {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
         redirect('/sign-in');
     }
 
     await dbConnect();
+
+    // pagination
+    const currentPage = Number(page) > 0 ? Number(page) : 1;
+    const currentRows = Number(rows) > 0 ? Number(rows) : 10;
+
+    const totalCount = await SubDomainModel.countDocuments({ user_id: session.user.id });
+    const totalPages = Math.ceil(totalCount / currentRows);
+
+    // sort
+    const sortField = sort || 'updatedAt';
+    const sortOrder = order === 'desc' ? 1 : -1;
 
     const subDomains = await SubDomainModel.aggregate([
         {
@@ -199,16 +210,24 @@ export async function getSubDomains() {
                 createdAt: 1,
             }
         },
+        { $sort: { [sortField]: sortOrder } },
+        { $skip: (currentPage - 1) * currentRows },
+        { $limit: currentRows }
     ]);
-    // const inactiveIds = await getInactiveIds(session.user.id);
 
-    // const updatedLocators = locators.map(locator => ({
-    //     ...locator,
-    //     status: inactiveIds.includes(String(locator._id)) ? "inactive" : "active"
-    // }));
+    // inactive ids - set inactive locations that are beyond the plan's limit
+    const inactiveIds = await getSubDomainInactiveIds(session.user.id);
+    const subDomainsWithStatus = subDomains.map(subDomain => ({
+        ...subDomain,
+        status: inactiveIds.includes(String(subDomain._id)) ? "inactive" : "active"
+    }));
 
-
-    return serializeForClient(subDomains);
+    return {
+        rows: currentRows,
+        page: currentPage,
+        pages: totalPages === 0 ? 1 : totalPages,
+        items: serializeForClient(subDomainsWithStatus)
+    }
 }
 
 export async function postCheckSubDomainAvailability(name) {
