@@ -4,12 +4,11 @@ import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { dbConnect } from '@/config/mongo.config';
-import { LocatorModel, SubDomainModel } from '@/mongo';
+import { UserModel, LocatorModel, SubDomainModel } from '@/mongo';
 import { sanitizeInput } from '@/utils/lib/input-sanitization';
 import { serializeForClient } from '@/utils/helpers';
 import { isValidObjectId } from 'mongoose';
 import { plans } from '@/utils/constant/pricing';
-import zodSchema from 'zod';
 
 // subdomain name validation schema
 // Only lowercase letters, numbers, and hyphens. 3–30 characters.
@@ -150,9 +149,25 @@ function isValidJS(js) {
     }
 }
 
-export async function getSubDomainInactiveIds(){
+export async function getSubDomainInactiveIds(user_id){
+    await dbConnect();
 
-    return [];
+    const user = await UserModel.findOne({ _id: user_id }).lean();
+    if (!user) {
+        return [];
+    }
+
+    const plan = plans.find(p => p.id === user.plan) || plan[0];
+    const skip = plan.max_sub_domain;
+
+    const subDomains = (await SubDomainModel.find({ user_id })
+        .sort({ createdAt: 1 }) // oldest -> newest
+        .skip(skip)
+        .select('_id')
+        .lean()
+    ).map(({ _id }) => _id.toString());
+
+    return subDomains;
 }
 
 export async function getSubDomains(page=1, rows=10, sort='createdAt', order='asc') {

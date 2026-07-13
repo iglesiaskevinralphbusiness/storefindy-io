@@ -13,6 +13,7 @@ import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 
 export default function SubDomainList({ locators=[], data=[] }) {
+    console.log(data);
     const router = useRouter();
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -50,6 +51,18 @@ export default function SubDomainList({ locators=[], data=[] }) {
                                 <a href={`https://${sd.name}.storefindy.com`} target="_blank"><LuExternalLink /> Visit</a>
                             </div>
                             <div className={styles.sdMeta}>
+                                
+                                {sd.status === 'active' ? (
+                                    <span className={styles.active}>Active</span>
+                                ) : (
+                                    <span className={styles.inactive}>
+                                        Inactive
+                                        <span className={styles.tooltip}>
+                                            You&rsquo;ve reached your limit. To enable this locator, please subscribe to Pro or Business.
+                                        </span>
+                                    </span>
+                                )}
+                                <span>·</span>
                                 <span><LuExternalLink /> {sd.locator}</span>
                                 <span>·</span>
                                 <span><LuCalendar /> { mongooseFormatTimeAgo(sd.createdAt, sd.updatedAt) }</span>
