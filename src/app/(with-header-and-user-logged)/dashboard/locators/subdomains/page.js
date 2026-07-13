@@ -7,6 +7,7 @@ import { getLocators } from '@/actions/locator';
 import { getSubDomains } from '@/actions/sub-domain';
 import SubDomainList from '@/components/Dashboard/SubDomainList';
 import Pagination from '@/components/Pagination';
+import Information from '@/components/Information';
 
 export default async function LocatorsSubdomainsPage({ searchParams }) {
     const { page, rows, sort, order } = await searchParams;
@@ -23,8 +24,7 @@ export default async function LocatorsSubdomainsPage({ searchParams }) {
                 </div>
                 <div className={styles.body}>
                     <div className={styles.subdomains}>
-                        <p className={styles.alert}>Custom subdomains let your customers access your store locator at a branded URL like <strong>yourbusiness.storefindy.com</strong> — no embed code needed. You can also add a custom header and footer to match your brand.</p>
-
+                        <Information type="information" message={<>Custom subdomains let your customers access your store locator at a branded URL like <strong>yourbusiness.storefindy.com</strong> — no embed code needed. You can also add a custom header and footer to match your brand.</>} />
                         <CreateAndIndicator 
                             buttonIcon={<LuPlus />}
                             buttonValue="Create Subdomain"

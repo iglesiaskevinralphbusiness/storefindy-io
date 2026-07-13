@@ -1,0 +1,29 @@
+.information {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: #eaf3de;
+    border: .5px solid #b5d98a;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+    svg {
+        font-size: 18px;
+        margin-top: -2px;
+    }
+}
+.warning {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: #fff3cd;
+    border: .5px solid #ffeeba;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+    color: #856404;
+    svg {
+        font-size: 18px;
+        margin-top: -2px;
+    }
+}
