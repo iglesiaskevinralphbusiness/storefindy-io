@@ -208,7 +208,7 @@ export async function getLocatorById(locator_id) {
     });
 }
 
-export async function getLocatorByName(locator_name) {
+export async function getLocatorByName(locator_name, record_visit=false) {
     await dbConnect();
     const sub_domain = await SubDomainModel.findOne({ name: locator_name }).lean();
     if(!sub_domain) {
@@ -219,7 +219,9 @@ export async function getLocatorByName(locator_name) {
         return null;
     }
 
-    await SubDomainModel.findOneAndUpdate({ _id: sub_domain._id }, { $inc: { visits: 1 } }, { new: true });
+    if(record_visit){
+        await SubDomainModel.findOneAndUpdate({ _id: sub_domain._id }, { $inc: { visits: 1 } }, { new: true });
+    }
     
     return {
         sub_domain,

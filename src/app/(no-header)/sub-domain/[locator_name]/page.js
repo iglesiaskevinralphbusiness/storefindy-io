@@ -5,7 +5,7 @@ import Script from "next/script";
 export async function generateMetadata({ params }) {
     const { locator_name } = await params;
 
-    const locator = await getLocatorByName(locator_name);
+    const locator = await getLocatorByName(locator_name, false);
 
     if (!locator) {
         return {
@@ -29,10 +29,8 @@ export async function generateMetadata({ params }) {
 
 export default async function SubDomainPage({ params }) {
     const { locator_name } = await params;
-    const tzOffset = new Date().getTimezoneOffset();
 
-    const data = await getLocatorByName(locator_name, tzOffset);
-
+    const data = await getLocatorByName(locator_name, true);
     if (!data) {
         notFound();
     }
