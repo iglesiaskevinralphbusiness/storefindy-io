@@ -149,6 +149,81 @@ function isValidJS(js) {
     }
 }
 
+/**
+ * Reads the format and pixel dimensions of a favicon image straight from its
+ * binary header — no image library needed. Supports PNG and ICO.
+ *
+ * @param {Buffer} buffer
+ * @returns {{ format: 'png' | 'ico', width: number, height: number } | null}
+ */
+function getImageInfo(buffer) {
+    // PNG: 8-byte signature followed by the IHDR chunk holding the dimensions
+    const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+    if (buffer.length >= 24 && PNG_SIGNATURE.every((b, i) => buffer[i] === b)) {
+        return {
+            format: 'png',
+            width: buffer.readUInt32BE(16),  // width lives at byte 16 (big-endian)
+            height: buffer.readUInt32BE(20), // height lives at byte 20 (big-endian)
+        };
+    }
+
+    // ICO: header is reserved(2)=0, type(2)=1, count(2); then 16-byte entries.
+    // The dimensions are the largest entry (0 means 256).
+    if (buffer.length >= 6 && buffer[0] === 0 && buffer[1] === 0 && buffer[2] === 1 && buffer[3] === 0) {
+        const count = buffer.readUInt16LE(4);
+        let width = 0;
+        let height = 0;
+        for (let i = 0; i < count; i++) {
+            const offset = 6 + i * 16;
+            if (offset + 1 >= buffer.length) break;
+            const w = buffer[offset] === 0 ? 256 : buffer[offset];
+            const h = buffer[offset + 1] === 0 ? 256 : buffer[offset + 1];
+            if (w > width) width = w;
+            if (h > height) height = h;
+        }
+        return { format: 'ico', width, height };
+    }
+
+    return null;
+}
+
+/**
+ * Validates an uploaded favicon and, when valid, converts it to a base64
+ * data-URL ready to persist on the SubDomain model.
+ *
+ * Rules: must be a .png or .ico image and be between 16x16 and 64x64 pixels.
+ *
+ * @param {File} file
+ * @returns {Promise<{ error: string } | { dataUrl: string }>}
+ */
+async function processFavicon(file) {
+    // first check: the file must be a PNG or ICO
+    const name = (file.name || '').toLowerCase();
+    const isPng = name.endsWith('.png');
+    const isIco = name.endsWith('.ico');
+    if (!isPng && !isIco) {
+        return { error: 'Favicon must be a .png or .ico file' };
+    }
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const info = getImageInfo(buffer);
+    if (!info) {
+        return { error: 'Favicon must be a valid .png or .ico file' };
+    }
+
+    // second check: the image must meet the size requirements (16x16 – 64x64)
+    if (info.width < 16 || info.height < 16) {
+        return { error: 'Favicon must be at least 16x16 pixels' };
+    }
+    if (info.width > 64 || info.height > 64) {
+        return { error: 'Favicon must be at most 64x64 pixels' };
+    }
+
+    // convert to a data-URL for storage
+    const mime = info.format === 'png' ? 'image/png' : 'image/x-icon';
+    return { dataUrl: `data:${mime};base64,${buffer.toString('base64')}` };
+}
+
 export async function getSubDomainInactiveIds(user_id){
     await dbConnect();
 
@@ -223,6 +298,7 @@ export async function getSubDomains(page=1, rows=10, sort='createdAt', order='as
                 visits: 1,
                 updatedAt: 1,
                 createdAt: 1,
+                favicon: 1,
             }
         },
         { $sort: { [sortField]: sortOrder } },
@@ -360,6 +436,17 @@ export async function postCreateDomain(_prev, formData) {
         errors.custom_js = 'Custom JS is not valid JS';
     }
 
+    // validate + convert the favicon (only when a file was actually uploaded)
+    const favicon = formData.get('favicon');
+    if (favicon && typeof favicon.arrayBuffer === 'function' && favicon.size > 0) {
+        const result = await processFavicon(favicon);
+        if (result.error) {
+            errors.favicon = result.error;
+        } else {
+            form.favicon = result.dataUrl;
+        }
+    }
+
     // if any errors, return early
     if (Object.keys(errors).length > 0) {
         return { status: "error", errors };
@@ -417,6 +504,18 @@ export async function postEditDomain(domain_id, _prev, formData) {
     }
     if(form.custom_js && !isValidJS(form.custom_js)) {
         errors.custom_js = 'Custom JS is not valid JS';
+    }
+
+    // validate + convert the favicon (only when a new file was uploaded so we
+    // don't overwrite an existing favicon with an empty value)
+    const favicon = formData.get('favicon');
+    if (favicon && typeof favicon.arrayBuffer === 'function' && favicon.size > 0) {
+        const result = await processFavicon(favicon);
+        if (result.error) {
+            errors.favicon = result.error;
+        } else {
+            form.favicon = result.dataUrl;
+        }
     }
 
     // if any errors, return early

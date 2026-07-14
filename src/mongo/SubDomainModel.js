@@ -8,6 +8,7 @@ const subDomainSchema = new mongoose.Schema({
     
     meta_title: { type: String, default: '' },
     meta_description: { type: String, default: '' },
+    favicon: { type: String, default: '' },
     custom_css: { type: String, default: '' },
     custom_js: { type: String, default: '' },
     custom_html_footer: { type: String, default: '' },

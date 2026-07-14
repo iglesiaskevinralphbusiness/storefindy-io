@@ -9,6 +9,7 @@ import Input from '@/components/Forms/Input';
 import Textarea from '@/components/Forms/Textarea';
 import Select from '@/components/Forms/Select';
 import Button from '@/components/Forms/Button';
+import formStyles from '@/components/Forms/Forms.module.scss';
 import { toast } from 'react-toastify';
 import { postCheckSubDomainAvailability, postCreateDomain, postEditDomain } from '@/actions/sub-domain';
 
@@ -159,6 +160,20 @@ export default function SubdomainsCreatePageClient({ locators=[], data=null }) {
                                 onChange={e => setMetaDescription(e.target.value)}
                                 placeholder="Enter a brief description of this page. This may be used as the meta description for search engines and social sharing."
                             />
+                            <div className={`${formStyles.input} ${err("favicon") ? formStyles.errorForm : ''}`}>
+                                <label htmlFor="favicon">Upload Favicon</label>
+                                <input
+                                    type="file"
+                                    id="favicon"
+                                    name="favicon"
+                                    accept=".ico,.png,image/png,image/x-icon,image/vnd.microsoft.icon"
+                                    onChange={() => setClearedErrors(prev => ({ ...prev, favicon: true }))}
+                                />
+                                <p className={formStyles.note}>
+                                    Only accepts .ico and .png files. Maximum size is 64x64 and smallest size is 16x16.
+                                </p>
+                                { err("favicon") ? <p className={formStyles.error}>{err("favicon")}</p> : '' }
+                            </div>
                         </div>
 
                         <div className={styles.block}>

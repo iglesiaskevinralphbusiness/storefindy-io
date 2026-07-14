@@ -14,10 +14,17 @@ export async function generateMetadata({ params }) {
         };
     }
 
-    return {
+    const metadata = {
         title: locator.sub_domain.meta_title,
         description: locator.sub_domain.meta_description,
     };
+
+    // use the custom favicon (stored as a data-URL) when one is set
+    if (locator.sub_domain.favicon) {
+        metadata.icons = { icon: locator.sub_domain.favicon };
+    }
+
+    return metadata;
 }
 
 export default async function SubDomainPage({ params }) {
@@ -25,7 +32,6 @@ export default async function SubDomainPage({ params }) {
     const tzOffset = new Date().getTimezoneOffset();
 
     const data = await getLocatorByName(locator_name, tzOffset);
-    console.log(data);
 
     if (!data) {
         notFound();

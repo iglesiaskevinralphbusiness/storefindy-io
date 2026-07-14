@@ -42,7 +42,7 @@ export default function SubDomainList({ locators=[], data=[] }) {
                 >
                     <div className={styles.sdCardHeader}>
                         <div className={styles.sdIcon}>
-                            <RiGlobalLine />
+                            { sd.favicon ? <img src={sd.favicon} alt={sd.name} /> : <RiGlobalLine /> }
                         </div>
                         <div className={styles.sdInfo}>
                             <div className={styles.sdUrl}>
