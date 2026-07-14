@@ -9,12 +9,16 @@ import { plans } from '@/utils/constant/pricing';
 
 const CORS_HEADERS = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
 };
 
 function json(body, status = 200) {
     return NextResponse.json(body, { status, headers: CORS_HEADERS });
+}
+
+export async function OPTIONS() {
+    return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
 }
 
 export async function POST(request) {

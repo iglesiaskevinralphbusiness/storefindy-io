@@ -22,8 +22,6 @@ import SearchSuggest from './SearchSuggest';
 // mount. React.lazy works in both the Next.js bundle and the esbuild widget bundle.
 const LocatorMap = lazy(() => import('./LocatorMap'));
 
-const API_BASE = process.env.NEXT_PUBLIC_ROOT_URL || '';
-
 // Maps JS Date.getDay() (0 = Sunday) to the schema's hours keys.
 const DAY_KEYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const WEEK = [
@@ -216,7 +214,15 @@ export default function Locator({
                 }
             }
             
-            const res = await fetch(`https://storefindy.com/api/locations/search?${sp.toString()}&is_demo=${isDemo}&is_record_query=${isRecordQuery}`);
+            // Always hit the canonical `www` host directly. Pointing at the apex
+            // (`storefindy.com`) triggers Vercel's apex->www 308 redirect, and the
+            // browser drops the CORS headers across that cross-origin redirect,
+            // which surfaces as a CORS block when the widget runs on a tenant
+            // sub-domain (demo.storefindy.com) or a third-party embed. This mirrors
+            // the get-locator call in LocatorWidget.tsx.
+            const res = await fetch(`https://www.storefindy.com/api/locations/search?${sp.toString()}&is_demo=${isDemo}&is_record_query=${isRecordQuery}`);
+            // Local testing: comment the line above and use the localhost API instead.
+            // const res = await fetch(`http://localhost:3000/api/locations/search?${sp.toString()}&is_demo=${isDemo}&is_record_query=${isRecordQuery}`);
             const data = await res.json();
             const items = data.locations || [];
             setLocations(items);
@@ -525,9 +531,15 @@ export default function Locator({
         }
         
         try {
-            await fetch(`${API_BASE}/api/locations/result-clicked?location_id=${id}&is_demo=${isDemo}&is_record_query=${isRecordQuery}`, {
+            // Same canonical-host reasoning as the search call in runSearch: the
+            // widget runs on tenant sub-domains and third-party embeds, so it must
+            // POST straight to the `www` host and never the apex (which redirects
+            // and drops CORS headers).
+            await fetch(`https://www.storefindy.com/api/locations/result-clicked?location_id=${id}&is_demo=${isDemo}&is_record_query=${isRecordQuery}`, {
                 method: 'POST',
             });
+            // Local testing: comment the line above and use the localhost API instead.
+            // await fetch(`http://localhost:3000/api/locations/result-clicked?location_id=${id}&is_demo=${isDemo}&is_record_query=${isRecordQuery}`, { method: 'POST' });
         } catch (error) {
             console.error('Failed to record location click:');
         }
