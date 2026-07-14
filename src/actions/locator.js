@@ -219,7 +219,7 @@ export async function getLocatorByName(locator_name) {
         return null;
     }
 
-    await SubDomainModel.findOneAndUpdate({ _id: sub_domain._id }, { $inc: { views: 1 } }, { new: true });
+    await SubDomainModel.findOneAndUpdate({ _id: sub_domain._id }, { $inc: { visits: 1 } }, { new: true });
     
     return {
         sub_domain,
