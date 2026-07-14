@@ -208,6 +208,22 @@ export async function getLocatorById(locator_id) {
     });
 }
 
+export async function getLocatorByName(locator_name) {
+    await dbConnect();
+    const sub_domain = await SubDomainModel.findOne({ name: locator_name }).lean();
+    if(!sub_domain) {
+        return null;
+    }
+    const locator = await LocatorModel.findOne({ _id: sub_domain.locator_id }).lean();
+    if(!locator) {
+        return null;
+    }
+    return {
+        sub_domain,
+        locator
+    };
+}
+
 export async function getAvailableCountriesBasedOnLocations(locator_id) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
