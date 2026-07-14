@@ -85,8 +85,6 @@ export default function LocatorWidget({ locator }: LocatorWidgetProps) {
 	if (loading) return <div>Loading...</div>;
 	if (!data) return null;
 
-	console.log(data)
-
 	return <>
 		 <Locator
 			// active/Inactive

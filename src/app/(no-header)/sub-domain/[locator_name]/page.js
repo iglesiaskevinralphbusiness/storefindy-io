@@ -22,23 +22,24 @@ export async function generateMetadata({ params }) {
 
 export default async function SubDomainPage({ params }) {
     const { locator_name } = await params;
+    const tzOffset = new Date().getTimezoneOffset();
 
-    const locator = await getLocatorByName(locator_name);
+    const data = await getLocatorByName(locator_name, tzOffset);
+    console.log(data);
 
-    if (!locator) {
+    if (!data) {
         notFound();
     }
 
     return <>
-        {locator.sub_domain.custom_html_header && <div dangerouslySetInnerHTML={{ __html: locator.sub_domain.custom_html_header }} />}
-        <div>
-            <h1>{locator.sub_domain.name}</h1>
-        </div>
-        {locator.sub_domain.custom_html_footer && <div dangerouslySetInnerHTML={{ __html: locator.sub_domain.custom_html_footer }} />}
+        {data.sub_domain.custom_html_header && <div dangerouslySetInnerHTML={{ __html: data.sub_domain.custom_html_header }} />}
+        <locator-widget locator={data.locator._id.toString()}></locator-widget>
+        {data.sub_domain.custom_html_footer && <div dangerouslySetInnerHTML={{ __html: data.sub_domain.custom_html_footer }} />}
 
+        <Script src={`https://www.storefindy.com/widgets.js`} defer></Script>
         <Script id="custom-js" strategy="afterInteractive">
-            {locator.sub_domain.custom_js}
+            {data.sub_domain.custom_js}
         </Script>
-        <style dangerouslySetInnerHTML={{ __html: locator.sub_domain.custom_css }} />
+        <style dangerouslySetInnerHTML={{ __html: data.sub_domain.custom_css }} />
     </>;
 }
