@@ -755,7 +755,6 @@ export async function getAnalyticsData({ range = '30', locator = 'all' } = {}) {
             },
         },
     ]);
-    const HEAT_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     const HEAT_HOURS = [
         "12a",
         "2a",
@@ -893,7 +892,7 @@ export async function getAnalyticsData({ range = '30', locator = 'all' } = {}) {
             ? Math.round((location.totalViews / maxViews) * 100)
             : 0,
         count: location.totalViews.toLocaleString(),
-    }));
+    })).filter(location => location.pct > 0);
 
     // Click-through Rate by Store
     const CTR_ROWS = await LocationModel.aggregate([
@@ -957,7 +956,7 @@ export async function getAnalyticsData({ range = '30', locator = 'all' } = {}) {
             rate: `${rate}%`,
             level,
         };
-    });
+    }).filter(location => location.views > 0);
 
 
     // Statistics
@@ -1072,6 +1071,7 @@ export async function getAnalyticsData({ range = '30', locator = 'all' } = {}) {
     };
 
     return {
+        plan: plan.id,
         statistics,
         views_over_time: views_over_time ?? {
             views_labels: [],
@@ -1100,16 +1100,24 @@ export async function getAnalyticsData({ range = '30', locator = 'all' } = {}) {
                 color: "#3B6D11",
             },
         ],
-        top_7_cities: top7Searches ?? [],
-        top_exact_searches: topExactSearches ?? [],
-        geo_clusters: geoClusters ?? [],
+        top_7_cities: plan.id === 'business' ? top7Searches ?? [] : [],
+        top_exact_searches: plan.id === 'business' ? topExactSearches ?? [] : [],
+        geo_clusters: plan.id === 'business' ? geoClusters ?? [] : [],
         heatmap: {
             heat_hours: HEAT_HOURS,
-            heat_data: HEAT_DATA,
+            heat_data: plan.id === 'business' ? HEAT_DATA : [
+                [0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0]
+            ],
         },
-        peak_hours: PEAK_DATA,
-        most_viewed_locations: TOP_LOCATIONS,
-        click_through_rate_by_store: result_click,
+        peak_hours: plan.id === 'business' ? PEAK_DATA : [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        most_viewed_locations: plan.id === 'business' ? TOP_LOCATIONS : [],
+        click_through_rate_by_store: plan.id === 'business' ? result_click : [],
     };
 
 }

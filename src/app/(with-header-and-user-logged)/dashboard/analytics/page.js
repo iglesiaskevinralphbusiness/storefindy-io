@@ -7,7 +7,6 @@ import { getAnalyticsData } from '@/actions/locator';
 import {    
     TbEye,
     TbSearch,
-    TbNavigation,
     TbClick,
     TbTrendingUp,
     TbTrendingDown,
@@ -22,14 +21,14 @@ import {
     TbMap2,
     TbClock,
     TbMapPin,
-    TbCalendar,
-    TbDownload,
-    TbCrown,
 } from 'react-icons/tb';
 import Button from '@/components/Forms/Button';
 import GeoClusterMap from '@/components/Dashboard/GeoClusterMap';
 import { HEAT_DAYS } from '@/utils/constant';
 import { getLocators } from '@/actions/locator';
+import LimitReached from '@/components/LimitReached';
+import { TbLockExclamation } from "react-icons/tb";
+import Link from 'next/link';
 
 const heatColor = (v) =>
     v < 5 ? '#f5f5f3' : v < 15 ? '#fff3cc' : v < 30 ? '#ffe54c' : v < 45 ? '#f5c800' : v < 55 ? '#BA7517' : '#854F0B';
@@ -58,6 +57,21 @@ function buildLineChart(VIEWS_DATA = []) {
     return { W, H, pts, line, area };
 }
 
+const LimitCover = ({title='', message='', data }) => {
+    if(data.plan === 'pro') {
+        return <div className={styles.limitCover}>
+            <div>
+                <div className={styles.limitCoverIcon}><TbLockExclamation /></div>
+                {title && <h2>{title}</h2>}
+                {message && <p>{message}</p>}
+                {title && <div><Link href="/dashboard/billing">Upgrade to Business Plan</Link></div>}
+            </div>
+        </div>
+    } else {
+        return;
+    }
+}
+
 export default async function AnalyticsPage({ searchParams }) {
     const locators = await getLocators();
 
@@ -66,8 +80,20 @@ export default async function AnalyticsPage({ searchParams }) {
     const locator = params?.locator ?? 'all';
 
     const analyticsData = await getAnalyticsData({ range, locator });
+    console.log(analyticsData);
     if(!analyticsData) {
-        return <div>No dont have access to this page for your plan.</div>;
+        return <div className={styles.dashboard}>
+            <Sidebar />
+            <div className={styles.content}>
+                <div className={styles.title}>
+                    <h1>Analytics</h1>
+                    <p>Dashboard <RiArrowRightLine /> Analytics</p>
+                </div>
+                <div className={styles.body}>
+                    <LimitReached heading="Limit Reached!" msg="You don't have access to this page for current your plan. To continue using this feature, please upgrade to Pro or Business." />
+                </div>
+            </div>
+        </div>;
     }
 
     // Statistics
@@ -167,8 +193,15 @@ export default async function AnalyticsPage({ searchParams }) {
 
                         {/* STAT CARDS */}
                         <div className={styles.statsGrid}>
-                            {STATS.map((s) => (
+                            {STATS.map((s, index) => (
                                 <div key={s.label} className={styles.statCard}>
+                                    { index >= 1 && (
+                                        <LimitCover
+                                            title=""
+                                            message=""
+                                            data={analyticsData}
+                                        />
+                                    )}
                                     <div className={styles.statLabel}>{s.icon} {s.label}</div>
                                     <div className={styles.statValue}>{s.value}</div>
                                     <div className={`${styles.statTrend} ${s.up ? styles.up : styles.down}`}>
@@ -183,7 +216,6 @@ export default async function AnalyticsPage({ searchParams }) {
                             <div className={styles.card}>
                                 <div className={styles.cardTitle}>
                                     <TbChartLine /> Views Over Time
-                                    <span className={`${styles.badge} ${styles.blue}`}>Pro + Business</span>
                                 </div>
                                 <svg className={styles.lineChart} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
                                     <polygon points={area} fill="rgba(255,229,76,0.18)" />
@@ -193,13 +225,12 @@ export default async function AnalyticsPage({ searchParams }) {
                                     ))}
                                 </svg>
                                 <div className={styles.lineLabels}>
-                                    {VIEWS_LABELS.map((l) => <span key={l}>{l}</span>)}
+                                    {VIEWS_LABELS.map((l, index) => <span key={l + index}>{l}</span>)}
                                 </div>
                             </div>
                             <div className={styles.card}>
                                 <div className={styles.cardTitle}>
                                     <TbDevices /> Device Breakdown
-                                    <span className={`${styles.badge} ${styles.pro}`}>Business</span>
                                 </div>
                                 {DEVICES.map((d) => (
                                     <div key={d.name} className={styles.deviceRow}>
@@ -218,9 +249,13 @@ export default async function AnalyticsPage({ searchParams }) {
 
                         {/* HEATMAP */}
                         <div className={styles.card}>
+                            <LimitCover
+                                title="Search Activity Heatmap"
+                                message="Discover peak hours and days when customers search for your stores"
+                                data={analyticsData}
+                            />
                             <div className={styles.cardTitle}>
                                 <TbFlame /> Search Activity Heatmap — Peak Hours by Day
-                                <span className={`${styles.badge} ${styles.pro}`}>Business</span>
                             </div>
                             <div className={styles.heatLegend}>
                                 <span>Low</span>
@@ -253,9 +288,13 @@ export default async function AnalyticsPage({ searchParams }) {
                         {/* TOP CITIES + SEARCH QUERIES */}
                         <div className={styles.twoCol}>
                             <div className={styles.card}>
+                                <LimitCover
+                                    title="Top Searched Cities"
+                                    message="See which cities your customers are searching from"
+                                    data={analyticsData}
+                                />
                                 <div className={styles.cardTitle}>
                                     <TbBuildingCommunity /> Top Searched Cities
-                                    <span className={`${styles.badge} ${styles.blue}`}>Pro + Business</span>
                                 </div>
                                 <div className={styles.topList}>
                                     {TOP_7_CITIES.map((c, i) => (
@@ -271,9 +310,13 @@ export default async function AnalyticsPage({ searchParams }) {
                                 </div>
                             </div>
                             <div className={styles.card}>
+                                <LimitCover
+                                    title="Top Search Queries"
+                                    message="See the exact words customers type to find your stores"
+                                    data={analyticsData}
+                                />
                                 <div className={styles.cardTitle}>
                                     <TbTags /> Top Search Queries
-                                    <span className={`${styles.badge} ${styles.pro}`}>Business</span>
                                 </div>
                                 <div className={styles.cardSub}>Exact terms customers typed into your widget that shows result's.</div>
                                 <div className={styles.queryTags}>
@@ -289,9 +332,13 @@ export default async function AnalyticsPage({ searchParams }) {
                         {/* GEO MAP + PEAK HOURS */}
                         <div className={styles.twoCol}>
                             <div className={styles.card}>
+                                <LimitCover
+                                    title="Geographic Search Clusters"
+                                    message="Visualize where your customers are searching from on a map"
+                                    data={analyticsData}
+                                />
                                 <div className={styles.cardTitle}>
                                     <TbMap2 /> Geographic Search Clusters
-                                    <span className={`${styles.badge} ${styles.pro}`}>Business</span>
                                 </div>
                                 <div className={styles.geoMap}>
                                     <GeoClusterMap clusters={GEO_CLUSTERS} />
@@ -299,9 +346,13 @@ export default async function AnalyticsPage({ searchParams }) {
                                 <div className={styles.geoHint}>Circle size = search volume · Hover pins for details</div>
                             </div>
                             <div className={styles.card}>
+                                <LimitCover
+                                    title="Geographic Search Clusters"
+                                    message="Find out what time of day customers are most active"
+                                    data={analyticsData}
+                                />
                                 <div className={styles.cardTitle}>
                                     <TbClock /> Peak Hours
-                                    <span className={`${styles.badge} ${styles.pro}`}>Business</span>
                                 </div>
                                 <div className={styles.barChart}>
                                     {PEAK_DATA.map((v, i) => (
@@ -322,9 +373,13 @@ export default async function AnalyticsPage({ searchParams }) {
                         {/* CTR + TOP STORES */}
                         <div className={styles.twoCol}>
                             <div className={styles.card}>
+                                <LimitCover
+                                    title="Click-through Rate by Store"
+                                    message="See which stores drive the most engagement and directions"
+                                    data={analyticsData}
+                                />
                                 <div className={styles.cardTitle}>
                                     <TbClick /> Click-through Rate by Store
-                                    <span className={`${styles.badge} ${styles.pro}`}>Business</span>
                                 </div>
                                 <div className={styles.ctrHead}>
                                     <span className={styles.ctrHeadStore}>Store</span>
@@ -340,9 +395,13 @@ export default async function AnalyticsPage({ searchParams }) {
                                 ))}
                             </div>
                             <div className={styles.card}>
+                                <LimitCover
+                                    title="Most Viewed Locations"
+                                    message="Identify your most popular locations and optimize visibility"
+                                    data={analyticsData}
+                                />
                                 <div className={styles.cardTitle}>
                                     <TbMapPin /> Most Viewed Locations
-                                    <span className={`${styles.badge} ${styles.blue}`}>Pro + Business</span>
                                 </div>
                                 <div className={styles.topList}>
                                     {TOP_LOCATIONS.map((l, i) => (

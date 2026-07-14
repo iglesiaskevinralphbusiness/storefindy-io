@@ -546,17 +546,3 @@ export async function postDeleteSubDomain(subDomain_id) {
     await SubDomainModel.findByIdAndDelete(subDomain_id);
     return { status: "success", message: 'Sub domain deleted successfully' };
 }
-
-export async function postSubdomainAssignLocator(subDomain_id, _prev, formData) {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-        redirect('/sign-in');
-    }
-
-    await dbConnect();
-
-    console.log(subDomain_id)
-
-    // await SubDomainModel.findByIdAndUpdate(subDomain_id, { locator_id });
-    // return { status: "success", message: 'Locator assigned successfully' };
-}

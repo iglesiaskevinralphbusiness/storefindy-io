@@ -8,7 +8,7 @@ import {
 import Button from "@/components/Forms/Button";
 import { mongooseFormatTimeAgo } from '@/utils/helpers';
 import Modal from '@/components/Modal';
-import { postDeleteSubDomain, postSubdomainAssignLocator } from '@/actions/sub-domain';
+import { postDeleteSubDomain } from '@/actions/sub-domain';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 
@@ -32,8 +32,6 @@ export default function SubDomainList({ locators=[], data=[] }) {
         console.log(subDomain_id);
         router.push(`/dashboard/locators/subdomains/edit/${subDomain_id}`);
     }
-
-    const handleSubmitAssignLocator = (subDomain_id) => postSubdomainAssignLocator.bind(null, subDomain_id);
 
     return <>
         <div className={styles.sdList}>
@@ -91,28 +89,12 @@ export default function SubDomainList({ locators=[], data=[] }) {
                             />
                         </div>
                     </div>
-                    <form
-                        onSubmit={handleSubmitAssignLocator(sd._id)}
-                        className={styles.sdCardBody}
-                    >
+                    <div className={styles.sdCardBody}>
                         <div className={styles.sdLocatorAssign}>
                             <span className={styles.sdLocatorLabel}>Assigned locator:</span>
-                            <select className={styles.sdLocatorSelect} defaultValue={sd.locator_id}>
-                                {locators.map((opt) => (
-                                    <option
-                                        key={opt._id}
-                                        value={opt._id}
-                                    >{opt.name}</option>
-                                ))}
-                            </select>
+                            <input type="text" className={styles.sdLocatorInput} defaultValue={sd.locator} readOnly />
                         </div>
-                        <Button
-                            primary={true}
-                            type="submit"
-                            value="Save"
-                            pending={false}
-                        />
-                    </form>
+                    </div>
                 </div>
             ))}
         </div>
