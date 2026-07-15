@@ -49,8 +49,8 @@
 .home {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    max-width: 1200px;
+    gap: 14px;
+    max-width: 900px;
     width: 100%;
     margin: 0 auto;
 
@@ -172,7 +172,7 @@
             }
         }
         .scTrend {
-            font-size: 10px;
+            font-size: 11px;
             display: flex;
             align-items: center;
             gap: 2px;
@@ -180,7 +180,7 @@
             border-radius: 10px;
             white-space: nowrap;
             svg {
-                font-size: 12px;
+                font-size: 13px;
             }
             &.up {
                 background: #EAF3DE;
@@ -196,14 +196,14 @@
             }
         }
         .scVal {
-            font-size: 22px;
+            font-size: 24px;
             font-weight: 500;
             margin-bottom: 2px;
             line-height: 1;
             color: #1a1a1a;
         }
         .scLbl {
-            font-size: 10px;
+            font-size: 12px;
             color: #888;
         }
     }
@@ -229,6 +229,7 @@
 
     /* CARD */
     .card {
+        height: 100%;
         background: #fff;
         border: 1px solid #e5e5e3;
         border-radius: 10px;
@@ -240,14 +241,14 @@
             margin-bottom: 12px;
         }
         .cardTitle {
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 500;
             display: flex;
             align-items: center;
             gap: 6px;
             color: #1a1a1a;
             svg {
-                font-size: 14px;
+                font-size: 16px;
                 color: #BA7517;
             }
         }
@@ -367,7 +368,7 @@
 
     /* QUICK EMBED SNIPPET */
     .quickEmbed {
-        margin-top: 10px;
+        margin-top: auto;
         padding-top: 10px;
         border-top: 1px solid #f0f0ee;
         .snippetLabel {
@@ -390,7 +391,7 @@
             flex: 1;
             overflow: hidden;
             text-overflow: ellipsis;
-            white-space: nowrap;
+            white-space: normal;
         }
         .snippetCopy {
             font-size: 10px;

@@ -2,7 +2,8 @@ import Link from 'next/link';
 import styles from './Dashboard.module.scss';
 import Sidebar from '@/components/Dashboard/Sidebar';
 import QuickEmbed from './QuickEmbed';
-import { getLocators } from '@/actions/locator';
+import { getLocators, getHomeData } from '@/actions/locator';
+import { getBillingStatus } from '@/actions/billing';
 import { plans } from '@/utils/constant/pricing';
 import {
     TbMapPin,
@@ -19,7 +20,6 @@ import {
     TbPalette,
     TbCode,
     TbChartBar,
-    TbChartPie,
     TbWorld,
     TbChartLine,
     TbActivity,
@@ -29,25 +29,28 @@ import {
     TbCreditCard,
     TbArrowRight,
 } from 'react-icons/tb';
+import { mongooseFormatTimeAgo } from '@/utils/helpers';
 
-// Build SVG polylines for the "Widget Views" chart. All series share the same
-// scale so they line up. (Same technique as the Analytics "Views Over Time" chart.)
-function buildLineChart(series, W = 320, H = 110, P = 10) {
-    const all = series.flatMap((s) => s.data);
-    const max = all.length ? Math.max(...all) : 0;
-    const min = all.length ? Math.min(...all) : 0;
-    const span = max - min || 1;
-    const n = series[0]?.data.length ?? 0;
-    return series.map((s) => {
-        const pts = s.data.map((v, i) => {
-            const x = n > 1 ? P + (i / (n - 1)) * (W - 2 * P) : W / 2;
-            const y = H - P - ((v - min) / span) * (H - 2 * P);
-            return { x, y };
-        });
-        const line = pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
-        const area = pts.length ? `${P},${H - P} ${line} ${W - P},${H - P}` : '';
-        return { ...s, pts, line, area };
+// Build the SVG polyline for the "Views Over Time" chart. (Same technique as the
+// Analytics "Views Over Time" chart.)
+function buildLineChart(VIEWS_DATA = []) {
+    const W = 320;
+    const H = 110;
+    const P = 10;
+    const n = VIEWS_DATA.length;
+    const max = n ? Math.max(...VIEWS_DATA) : 0;
+    const min = n ? Math.min(...VIEWS_DATA) : 0;
+    // Guard against divide-by-zero: a single data point has no horizontal span,
+    // and a flat series (all equal) has no vertical span — either would yield NaN.
+    const span = max - min;
+    const pts = VIEWS_DATA.map((v, i) => {
+        const x = n > 1 ? P + (i / (n - 1)) * (W - 2 * P) : W / 2;
+        const y = span > 0 ? H - P - ((v - min) / span) * (H - 2 * P) : H / 2;
+        return { x, y };
     });
+    const line = pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+    const area = pts.length ? `${P},${H - P} ${line} ${W - P},${H - P}` : '';
+    return { W, H, pts, line, area };
 }
 
 // "Edited 2d ago" style label from a serialized date string.
@@ -77,8 +80,6 @@ export default async function DashboardPage() {
     const proPlan = plans.find((p) => p.id === 'pro') || plans[0];
     const locatorsCount = locators.length;
     const totalLocations = locators.reduce((acc, l) => acc + (l.total_locations || 0), 0);
-    const locatorPct = Math.min(100, Math.round((locatorsCount / proPlan.max_locator) * 100) || 0);
-    const locationPct = Math.min(100, Math.round((totalLocations / proPlan.max_location) * 100) || 0);
 
     // ── Stat cards (dummy, except Total Locations) ──
     const STATS = [
@@ -98,34 +99,6 @@ export default async function DashboardPage() {
         { icon: <TbChartBar />, bg: '#f0f9ff', color: '#0284c7', text: 'Analytics', sub: 'View insights', href: '/dashboard/analytics' },
     ];
 
-    // ── Plan usage rows ──
-    const USAGE = [
-        {
-            icon: <TbMap />, label: 'Locators',
-            count: `${locatorsCount} / ${proPlan.max_locator}`,
-            pct: locatorPct,
-            fill: locatorPct >= 100 ? '#E05C2A' : '#ffe54c',
-            hint: locatorPct >= 100 ? 'Limit reached — upgrade for more' : `${Math.max(0, proPlan.max_locator - locatorsCount)} locator slot(s) remaining`,
-            hintColor: locatorPct >= 100 ? '#E05C2A' : '#aaa',
-        },
-        {
-            icon: <TbMapPin />, label: 'Locations',
-            count: `${totalLocations} / ${proPlan.max_location}`,
-            pct: locationPct,
-            fill: '#ffe54c',
-            hint: `${Math.max(0, proPlan.max_location - totalLocations)} remaining`,
-            hintColor: '#aaa',
-        },
-        {
-            icon: <TbWorld />, label: 'Subdomains',
-            count: `2 / ${proPlan.max_sub_domain}`,
-            pct: Math.round((2 / proPlan.max_sub_domain) * 100),
-            fill: '#ffe54c',
-            hint: `${Math.max(0, proPlan.max_sub_domain - 2)} subdomain slot remaining`,
-            hintColor: '#aaa',
-        },
-    ];
-
     // ── Recent activity (dummy) ──
     const ACTIVITY = [
         { bg: '#EAF3DE', color: '#3B6D11', icon: <TbMapPinPlus />, text: <><strong>SM Mall of Asia</strong> added to Main Store Locator</>, time: '2 minutes ago' },
@@ -137,14 +110,25 @@ export default async function DashboardPage() {
         { bg: '#EBF4FF', color: '#185FA5', icon: <TbCreditCard />, text: <>Pro plan renewed — <strong>$10.00</strong> charged via Lemon Squeezy</>, time: 'Jun 1, 2026' },
     ];
 
-    // ── Widget views chart (dummy) ──
-    const CHART = buildLineChart([
-        { key: 'main', color: '#ffe54c', fill: 'rgba(255,229,76,0.18)', data: [180, 210, 260, 280, 320, 340, 380, 400, 380, 460, 420, 520, 560] },
-        { key: 'branch', color: '#185FA5', fill: 'rgba(24,95,165,0.06)', data: [80, 100, 120, 130, 150, 160, 175, 185, 185, 220, 215, 250, 270] },
-    ]);
-    const CHART_LABELS = ['Jun 1', 'Jun 8', 'Jun 15', 'Jun 22', 'Jun 30'];
-
     const firstLocator = locators[0];
+
+
+    const homeData = await getHomeData();
+    const billingData = await getBillingStatus();
+    console.log(homeData, 'homeData');
+    console.log(billingData, 'billingData');
+
+    // ── Upgrade nudge: point at the next plan up, or hide it on the top plan ──
+    const currentPlanIndex = plans.findIndex((p) => p.id === billingData.id);
+    const nextPlan = plans[currentPlanIndex + 1];
+
+    // ── Views over time chart ──
+    const VIEWS_DATA = homeData.views_over_time.views_data;
+    const VIEWS_LABELS = homeData.views_over_time.views_labels;
+    const { W, H, pts, line, area } = buildLineChart(VIEWS_DATA);
+    // Thin the x-axis labels so a 30-point series doesn't crowd/wrap.
+    const AXIS_LABEL_STEP = Math.max(1, Math.ceil(VIEWS_LABELS.length / 7));
+    const AXIS_LABELS = VIEWS_LABELS.filter((_, i) => i % AXIS_LABEL_STEP === 0);
 
     return (
         <div className={styles.dashboard}>
@@ -167,8 +151,12 @@ export default async function DashboardPage() {
                                 </div>
                             </div>
                             <div className={styles.wRight}>
-                                <div className={styles.wPlan}>Pro Plan</div>
-                                <div className={styles.wDate}>Renews Jul 1, 2026</div>
+                                <div className={styles.wPlan}>{billingData.planName} Plan</div>
+                                <div className={styles.wDate}>
+                                    {billingData.renewal && billingData.renewal !== '-'
+                                        ? `Renews ${new Date(billingData.renewal).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                                        : 'No renewal'}
+                                </div>
                             </div>
                         </div>
 
@@ -192,7 +180,7 @@ export default async function DashboardPage() {
                         <div className={styles.twoCol}>
 
                             {/* MY LOCATORS */}
-                            <div className={styles.card}>
+                            <div className={styles.card} style={{ display: 'flex', flexDirection: 'column' }}>
                                 <div className={styles.cardHeader}>
                                     <div className={styles.cardTitle}><TbMap /> My Locators</div>
                                     <Link className={styles.cardAction} href="/dashboard/locators">View all <TbArrowRight /></Link>
@@ -213,17 +201,17 @@ export default async function DashboardPage() {
                                                 <div className={styles.locMeta}>
                                                     <TbMapPin /> {l.total_locations || 0} locations
                                                     <span className={styles.locDot}>·</span>
-                                                    <TbCalendar /> {editedLabel(l.updatedAt)}
+                                                    <TbCalendar /> { mongooseFormatTimeAgo(l.createdAt, l.updatedAt) }
                                                 </div>
                                             </div>
                                             <div className={styles.locRight}>
-                                                <div className={styles.locViews}>{l.total_locations ? (l.total_locations * 93).toLocaleString() : '0'}</div>
+                                                <div className={styles.locViews}>{l.views_count || 0}</div>
                                                 <div className={styles.locViewsLbl}>views</div>
                                                 <div className={`${styles.locStatus} ${l.status === 'active' ? styles.active : styles.inactive}`}>
                                                     {l.status === 'active' ? 'Active' : 'Inactive'}
                                                 </div>
                                             </div>
-                                        </Link>
+                                        </Link> 
                                     ))}
                                 </div>
 
@@ -253,26 +241,36 @@ export default async function DashboardPage() {
                                     </div>
                                 </div>
 
-                                {/* PLAN USAGE */}
+                                {/* CURRENT USAGE */}
                                 <div className={styles.card}>
                                     <div className={styles.cardHeader}>
-                                        <div className={styles.cardTitle}><TbChartPie /> Plan Usage</div>
+                                        <div className={styles.cardTitle}><TbChartBar /> Current Usage</div>
                                         <Link className={styles.cardAction} href="/dashboard/billing">Billing <TbArrowRight /></Link>
                                     </div>
                                     <div className={styles.planBadgeRow}>
-                                        <div className={styles.planBadge}>Pro Plan</div>
-                                        <div className={styles.planRenew}>Renews Jul 1, 2026</div>
+                                        <div className={styles.planBadge}>{billingData.planName} Plan</div>
+                                        <div className={styles.planRenew}>
+                                            {billingData.renewal && billingData.renewal !== '-'
+                                                ? `Renews ${new Date(billingData.renewal).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                                                : 'No renewal'}
+                                        </div>
                                     </div>
-                                    {USAGE.map((u) => (
-                                        <div className={styles.usageItem} key={u.label}>
+                                    {billingData.usage.map((item) => (
+                                        <div className={styles.usageItem} key={item.label}>
                                             <div className={styles.usageRow}>
-                                                <div className={styles.usageLabel}>{u.icon} {u.label}</div>
-                                                <div className={styles.usageCount}>{u.count}</div>
+                                                <div className={styles.usageLabel}>{item.icon} {item.label}</div>
+                                                <div className={styles.usageCount}>{item.used} / {item.limit}</div>
                                             </div>
                                             <div className={styles.usageBar}>
-                                                <div className={styles.usageFill} style={{ width: `${u.pct}%`, background: u.fill }} />
+                                                <div
+                                                    className={styles.usageFill}
+                                                    style={{
+                                                        width: `${Math.min(100, item.percent)}%`,
+                                                        background: item.fill === 'warn' ? '#E05C2A' : item.fill === 'ok' ? '#639922' : '#ffe54c',
+                                                    }}
+                                                />
                                             </div>
-                                            <div className={styles.usageHint} style={{ color: u.hintColor }}>{u.hint}</div>
+                                            <div className={styles.usageHint}>{item.hint}</div>
                                         </div>
                                     ))}
                                 </div>
@@ -283,28 +281,21 @@ export default async function DashboardPage() {
                         {/* VIEWS CHART + ACTIVITY */}
                         <div className={styles.threeCol}>
 
-                            {/* WIDGET VIEWS CHART */}
+                            {/* VIEWS OVER TIME CHART */}
                             <div className={styles.card}>
                                 <div className={styles.cardHeader}>
-                                    <div className={styles.cardTitle}><TbChartLine /> Widget Views — Last 30 Days</div>
+                                    <div className={styles.cardTitle}><TbChartLine /> Views Over Time - Last 30 Days</div>
                                     <Link className={styles.cardAction} href="/dashboard/analytics">Full report <TbArrowRight /></Link>
                                 </div>
-                                <div className={styles.chartLegend}>
-                                    {CHART.map((s) => (
-                                        <span className={styles.legendItem} key={s.key}>
-                                            <span className={styles.legendDot} style={{ background: s.color }} />
-                                            {s.key === 'main' ? 'Main Locator' : 'Branch Finder'}
-                                        </span>
-                                    ))}
-                                </div>
-                                <svg className={styles.lineChart} viewBox="0 0 320 110" preserveAspectRatio="none">
-                                    {CHART.map((s) => <polygon key={`a-${s.key}`} points={s.area} fill={s.fill} />)}
-                                    {CHART.map((s) => (
-                                        <polyline key={`l-${s.key}`} points={s.line} fill="none" stroke={s.color} strokeWidth={s.key === 'main' ? 2.5 : 1.8} strokeLinejoin="round" strokeLinecap="round" />
+                                <svg className={styles.lineChart} style={{ height: 'auto' }} viewBox={`0 0 ${W} ${H}`}>
+                                    <polygon points={area} fill="rgba(255,229,76,0.18)" />
+                                    <polyline points={line} fill="none" stroke="#ffe54c" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+                                    {pts.map((p, i) => (
+                                        <circle key={i} cx={p.x} cy={p.y} r="3" fill="#ffe54c" stroke="#fff" strokeWidth="1" />
                                     ))}
                                 </svg>
                                 <div className={styles.lineLabels}>
-                                    {CHART_LABELS.map((l) => <span key={l}>{l}</span>)}
+                                    {AXIS_LABELS.map((l, index) => <span key={l + index}>{l}</span>)}
                                 </div>
                             </div>
 
@@ -328,14 +319,20 @@ export default async function DashboardPage() {
                         </div>
 
                         {/* UPGRADE NUDGE */}
-                        <div className={styles.upgradeNudge}>
-                            <div className={styles.unIcon}><TbCrown /></div>
-                            <div className={styles.unInfo}>
-                                <div className={styles.unTitle}>Unlock more with Business</div>
-                                <div className={styles.unDesc}>Upgrade to Business for 10 locators, unlimited locations, advanced analytics, heatmap, and priority support.</div>
+                        {nextPlan && (
+                            <div className={styles.upgradeNudge}>
+                                <div className={styles.unIcon}><TbCrown /></div>
+                                <div className={styles.unInfo}>
+                                    <div className={styles.unTitle}>Unlock more with {nextPlan.name}</div>
+                                    <div className={styles.unDesc}>
+                                        Upgrade to {nextPlan.name} for {nextPlan.max_locator} locators,{' '}
+                                        {nextPlan.max_location === 0 ? 'unlimited locations' : `up to ${nextPlan.max_location} locations`}, and{' '}
+                                        {nextPlan.max_sub_domain} custom subdomains.
+                                    </div>
+                                </div>
+                                <Link className={styles.btnUpgradeSm} href="/dashboard/billing"><TbRocket /> Upgrade to {nextPlan.name}</Link>
                             </div>
-                            <Link className={styles.btnUpgradeSm} href="/dashboard/billing"><TbRocket /> Upgrade to Business</Link>
-                        </div>
+                        )}
 
                     </div>
                 </div>

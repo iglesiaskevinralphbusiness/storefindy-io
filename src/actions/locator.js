@@ -315,7 +315,6 @@ export async function getAnalyticsData({ range = '30', locator = 'all' } = {}) {
     // Both are scoped to the signed-in user.
     const query = { user_id: session.user.id }
     const locations_query = { user_id: session.user.id }
-    console.log(locatorId, 'locatorId');
     if (locatorId !== 'all') {
         query._id = new mongoose.Types.ObjectId(locatorId);
         locations_query.locator_id = locatorId;
@@ -1120,4 +1119,139 @@ export async function getAnalyticsData({ range = '30', locator = 'all' } = {}) {
         click_through_rate_by_store: plan.id === 'business' ? result_click : [],
     };
 
+}
+
+export async function getHomeData() {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    await dbConnect();
+
+    const range = '30';
+    const locator = 'all';
+    const query = { user_id: session.user.id }
+    const locations_query = { user_id: session.user.id }
+
+    const days = parseInt(range, 10) || 30;
+    const startDate = new Date();
+    if (days === 1) {
+        startDate.setUTCHours(0, 0, 0, 0);
+    } else {
+        startDate.setDate(startDate.getDate() - days);
+    }
+    const prevStartDate = new Date(startDate);
+    prevStartDate.setDate(prevStartDate.getDate() - days);
+    const viewsDateMatch = {
+        $match: { "views.createdAt": { $gte: startDate } },
+    };
+
+    // view data
+    const [views_over_time] = await LocatorModel.aggregate([
+        {
+            $match: query
+        },
+        {
+            $unwind: "$views",
+        },
+        viewsDateMatch,
+        {
+            $sort: {
+                "views.date_id": 1,
+            },
+        },
+        {
+            $group: {
+                _id: null,
+                views_labels: {
+                    $push: {
+                        $dateToString: {
+                            format: "%b %d",
+                            date: {
+                                $dateFromString: {
+                                    dateString: "$views.date_id",
+                                },
+                            },
+                            timezone: "UTC",
+                        },
+                    },
+                },
+                views_data: {
+                    $push: "$views.view_count",
+                },
+            },
+        },
+        {
+            $project: {
+                _id: 0,
+                views_labels: 1,
+                views_data: 1,
+            },
+        },
+    ]);
+
+
+    // Statistics
+    const [locatorStats] = await LocatorModel.aggregate([
+        { $match: query },
+        { $unwind: "$views" },
+        {
+            $facet: {
+                widget_views_current: [
+                    { $match: { "views.createdAt": { $gte: startDate } } },
+                    { $group: { _id: null, total: { $sum: "$views.view_count" } } },
+                ],
+                widget_views_previous: [
+                    { $match: { "views.createdAt": { $gte: prevStartDate, $lt: startDate } } },
+                    { $group: { _id: null, total: { $sum: "$views.view_count" } } },
+                ],
+                total_searches_current: [
+                    { $match: { "views.createdAt": { $gte: startDate } } },
+                    { $unwind: "$views.searches" },
+                    { $group: { _id: null, total: { $sum: "$views.searches.count" } } },
+                ],
+                total_searches_previous: [
+                    { $match: { "views.createdAt": { $gte: prevStartDate, $lt: startDate } } },
+                    { $unwind: "$views.searches" },
+                    { $group: { _id: null, total: { $sum: "$views.searches.count" } } },
+                ],
+            },
+        },
+    ]);
+
+    // Unwrap the $facet buckets (each is an array with 0 or 1 grouped result).
+    const facetVal = (arr) => (arr && arr[0]) || {};
+
+    const widgetViewsCur = facetVal(locatorStats?.widget_views_current).total ?? 0;
+    const widgetViewsPrev = facetVal(locatorStats?.widget_views_previous).total ?? 0;
+
+    // Percent change vs previous period -> { trend, up } for the stat cards.
+    const trendOf = (cur, prev) => {
+        const change = prev ? ((cur - prev) / prev) * 100 : (cur ? 100 : 0);
+        const rounded = Math.round(change);
+        return {
+            trend: `${rounded >= 0 ? "+" : ""}${rounded}% vs last period`,
+            up: rounded >= 0,
+        };
+    };
+
+    const statistics = {
+        widget_views: {
+            label: "Widget Views",
+            value: widgetViewsCur.toLocaleString(),
+            ...trendOf(widgetViewsCur, widgetViewsPrev),
+        },
+        total_sub_domains_visits: 0,
+        total_locations: 0,
+    };
+
+
+    return {
+        statistics,
+        views_over_time: views_over_time ?? {
+            views_labels: [],
+            views_data: [],
+        },
+    }
 }
