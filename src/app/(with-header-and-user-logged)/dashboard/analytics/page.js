@@ -80,7 +80,6 @@ export default async function AnalyticsPage({ searchParams }) {
     const locator = params?.locator ?? 'all';
 
     const analyticsData = await getAnalyticsData({ range, locator });
-    console.log(analyticsData);
     if(!analyticsData) {
         return <div className={styles.dashboard}>
             <Sidebar />
@@ -198,7 +197,7 @@ export default async function AnalyticsPage({ searchParams }) {
                                     { index >= 1 && (
                                         <LimitCover
                                             title=""
-                                            message=""
+                                            message={s.label}
                                             data={analyticsData}
                                         />
                                     )}
