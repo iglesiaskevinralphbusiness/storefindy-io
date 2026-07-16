@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { dbConnect } from '@/config/mongo.config';
 import { UserModel, LocatorModel, LocationModel, SubDomainModel } from '@/mongo';
+import { getLocationsInactiveIds } from '@/actions/locations';
 import { serializeForClient } from '@/utils/helpers';
 import { isValidObjectId } from 'mongoose';
 import { plans } from '@/utils/constant/pricing';
@@ -1193,6 +1194,7 @@ export async function getHomeData() {
 
 
     // Statistics
+    // Widget Views
     const [locatorStats] = await LocatorModel.aggregate([
         { $match: query },
         { $unwind: "$views" },
@@ -1219,31 +1221,57 @@ export async function getHomeData() {
             },
         },
     ]);
-
-    // Unwrap the $facet buckets (each is an array with 0 or 1 grouped result).
     const facetVal = (arr) => (arr && arr[0]) || {};
-
     const widgetViewsCur = facetVal(locatorStats?.widget_views_current).total ?? 0;
     const widgetViewsPrev = facetVal(locatorStats?.widget_views_previous).total ?? 0;
-
-    // Percent change vs previous period -> { trend, up } for the stat cards.
     const trendOf = (cur, prev) => {
         const change = prev ? ((cur - prev) / prev) * 100 : (cur ? 100 : 0);
         const rounded = Math.round(change);
         return {
-            trend: `${rounded >= 0 ? "+" : ""}${rounded}% vs last period`,
+            trend: `${rounded >= 0 ? "+" : ""}${rounded}%`,
             up: rounded >= 0,
         };
     };
 
+    // Total Sub Domain Visits
+    const [subDomainStats] = await SubDomainModel.aggregate([
+        { $match: query },
+        { $group: { _id: null, total: { $sum: "$visits" } } },
+    ]);
+    const totalSubDomainVisits = subDomainStats.total ?? 0;
+
+    // Total Active Locators
+    const activeLocators = await LocatorModel.countDocuments({ user_id: session.user.id });
+    const inactiveLocators = await getLocatorInactiveIds(session.user.id);
+
+    // Total Active Locations
+    const activeLocations = await LocationModel.countDocuments({ user_id: session.user.id });
+    const inactiveLocations = await getLocationsInactiveIds(session.user.id);
+
     const statistics = {
         widget_views: {
-            label: "Widget Views",
+            label: "Widget Views this month",
             value: widgetViewsCur.toLocaleString(),
             ...trendOf(widgetViewsCur, widgetViewsPrev),
         },
-        total_sub_domains_visits: 0,
-        total_locations: 0,
+        total_sub_domains_visits: {
+            label: "Overall Sub Domain Visits",
+            value: totalSubDomainVisits.toLocaleString(),
+            up: '',
+            trend: '',
+        },
+        total_active_locators: {
+            label: "Locator Active Count",
+            value: (activeLocators - inactiveLocators.length).toLocaleString(),
+            up: `${inactiveLocators.length} Inactive`,
+            trend: 'neu',
+        },
+        total_active_locations: {
+            label: "Locations Active Count",
+            value: (activeLocations - inactiveLocations.length).toLocaleString(),
+            up: `${inactiveLocations.length} Inactive`,
+            trend: 'neu',
+        },
     };
 
 

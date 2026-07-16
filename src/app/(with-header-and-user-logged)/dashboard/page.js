@@ -81,14 +81,6 @@ export default async function DashboardPage() {
     const locatorsCount = locators.length;
     const totalLocations = locators.reduce((acc, l) => acc + (l.total_locations || 0), 0);
 
-    // ── Stat cards (dummy, except Total Locations) ──
-    const STATS = [
-        { icon: <TbEye />, iconBg: '#fffbe6', iconColor: '#BA7517', trend: '+14%', trendType: 'up', value: '8,421', label: 'Widget Views this month' },
-        { icon: <TbSearch />, iconBg: '#EBF4FF', iconColor: '#185FA5', trend: '+8%', trendType: 'up', value: '3,102', label: 'Searches this month' },
-        { icon: <TbNavigation />, iconBg: '#EAF3DE', iconColor: '#3B6D11', trend: '+6%', trendType: 'up', value: '1,284', label: 'Direction Clicks' },
-        { icon: <TbMapPin />, iconBg: '#f5f5f3', iconColor: '#555', trend: `${totalLocations} / ${proPlan.max_location}`, trendType: 'neu', value: totalLocations.toLocaleString(), label: 'Total Locations' },
-    ];
-
     // ── Quick actions ──
     const QUICK_ACTIONS = [
         { icon: <TbMapPlus />, bg: '#fffbe6', color: '#BA7517', text: 'New Locator', sub: 'Create a widget', href: '/dashboard/locators/create' },
@@ -117,6 +109,38 @@ export default async function DashboardPage() {
     const billingData = await getBillingStatus();
     console.log(homeData, 'homeData');
     console.log(billingData, 'billingData');
+
+    // ── Stat cards (built from homeData.statistics) ──
+    // Icon + colors are presentation-only, keyed by stat name; label/value/trend
+    // come from the API.
+    const STAT_STYLES = {
+        widget_views: { icon: <TbEye />, iconBg: '#fffbe6', iconColor: '#BA7517' },
+        total_sub_domains_visits: { icon: <TbWorld />, iconBg: '#EBF4FF', iconColor: '#185FA5' },
+        total_active_locators: { icon: <TbMap />, iconBg: '#EAF3DE', iconColor: '#3B6D11' },
+        total_active_locations: { icon: <TbMapPin />, iconBg: '#f5f0ff', iconColor: '#7c3aed' },
+    };
+
+    // The API is inconsistent about which field holds what: some stats put the
+    // % in `trend` with a boolean `up`, others put the display text in `up` with
+    // the trend type in `trend`. Normalize both shapes to { trend, trendType }.
+    const normalizeTrend = (stat) => {
+        if (typeof stat.up === 'boolean') {
+            return { trend: stat.trend, trendType: stat.up ? 'up' : 'down' };
+        }
+        return { trend: stat.up, trendType: stat.trend };
+    };
+
+    const STATS = Object.keys(STAT_STYLES)
+        .filter((key) => homeData.statistics?.[key])
+        .map((key) => {
+            const stat = homeData.statistics[key];
+            return {
+                ...STAT_STYLES[key],
+                label: stat.label,
+                value: stat.value,
+                ...normalizeTrend(stat),
+            };
+        });
 
     // ── Upgrade nudge: point at the next plan up, or hide it on the top plan ──
     const currentPlanIndex = plans.findIndex((p) => p.id === billingData.id);
@@ -259,7 +283,7 @@ export default async function DashboardPage() {
                                         <div className={styles.usageItem} key={item.label}>
                                             <div className={styles.usageRow}>
                                                 <div className={styles.usageLabel}>{item.icon} {item.label}</div>
-                                                <div className={styles.usageCount}>{item.used} / {item.limit}</div>
+                                                <div className={styles.usageCount}>{item.used} <span>/ {item.limit}</span></div>
                                             </div>
                                             <div className={styles.usageBar}>
                                                 <div
