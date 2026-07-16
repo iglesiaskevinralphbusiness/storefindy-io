@@ -29,34 +29,34 @@ import {
     TbExternalLink,
 } from 'react-icons/tb';
 
-const SUBSCRIPTIONS = {
-    free: {
-        status: 'free',
-        planName: 'Free',
-        billingEmail: 'mystore@email.com',
-        planStarted: '-',
-        planStartedLabel: 'Plan started',
-        renewal: null,
-        usage: [
-            { icon: <TbMap />, label: 'Locators', used: 1, limit: '1', percent: 100, fill: 'warn', hint: 'Limit reached. Upgrade to create more.' },
-            { icon: <TbMapPin />, label: 'Locations', used: 12, limit: '25', percent: 48, fill: '', hint: '13 locations remaining.' },
-            { icon: <TbEye />, label: 'Widget Views', used: '1,204', limit: 'unlimited', percent: 100, fill: 'ok', hint: 'Unlimited on all plans.' },
-        ],
-    },
-    pro: {
-        status: 'active',
-        planName: 'Pro',
-        billingEmail: 'mystore@email.com',
-        planStarted: 'April 1, 2026',
-        planStartedLabel: 'Subscribed since',
-        renewal: 'July 1, 2026',
-        usage: [
-            { icon: <TbMap />, label: 'Locators', used: 2, limit: '3', percent: 66, fill: '', hint: '1 locator slot remaining.' },
-            { icon: <TbMapPin />, label: 'Locations', used: 87, limit: '500', percent: 17, fill: 'ok', hint: '413 locations remaining.' },
-            { icon: <TbEye />, label: 'Widget Views', used: '4,821', limit: 'unlimited', percent: 100, fill: 'ok', hint: 'Unlimited on all plans.' },
-        ],
-    },
-};
+// const SUBSCRIPTIONS = {
+//     free: {
+//         status: 'free',
+//         planName: 'Free',
+//         billingEmail: 'mystore@email.com',
+//         planStarted: '-',
+//         planStartedLabel: 'Plan started',
+//         renewal: null,
+//         usage: [
+//             { icon: <TbMap />, label: 'Locators', used: 1, limit: '1', percent: 100, fill: 'warn', hint: 'Limit reached. Upgrade to create more.' },
+//             { icon: <TbMapPin />, label: 'Locations', used: 12, limit: '25', percent: 48, fill: '', hint: '13 locations remaining.' },
+//             { icon: <TbEye />, label: 'Widget Views', used: '1,204', limit: 'unlimited', percent: 100, fill: 'ok', hint: 'Unlimited on all plans.' },
+//         ],
+//     },
+//     pro: {
+//         status: 'active',
+//         planName: 'Pro',
+//         billingEmail: 'mystore@email.com',
+//         planStarted: 'April 1, 2026',
+//         planStartedLabel: 'Subscribed since',
+//         renewal: 'July 1, 2026',
+//         usage: [
+//             { icon: <TbMap />, label: 'Locators', used: 2, limit: '3', percent: 66, fill: '', hint: '1 locator slot remaining.' },
+//             { icon: <TbMapPin />, label: 'Locations', used: 87, limit: '500', percent: 17, fill: 'ok', hint: '413 locations remaining.' },
+//             { icon: <TbEye />, label: 'Widget Views', used: '4,821', limit: 'unlimited', percent: 100, fill: 'ok', hint: 'Unlimited on all plans.' },
+//         ],
+//     },
+// };
 
 export default function BillingPageClient({ data }) {
     // TODO: replace with the real subscription state from the database / Lemon Squeezy.

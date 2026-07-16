@@ -6,7 +6,7 @@ import { dbConnect } from '@/config/mongo.config';
 import { UserModel, LocatorModel, LocationModel, SubDomainModel } from '@/mongo';
 import { plans } from '@/utils/constant/pricing';
 import { reconcileUserSubscription } from '@/lib/lemonsqueezy';
-import { TbMap, TbMapPin, TbEye } from 'react-icons/tb';
+import { TbMap, TbMapPin, TbWorld } from 'react-icons/tb';
 
 export async function getBillingStatus() {
     const session = await getServerSession(authOptions);
@@ -89,13 +89,13 @@ export async function getBillingStatus() {
                 hint: plan.id === 'business' ? 'Unlimited locations' : location_percent >= 100 ? `Limit reached${location_inactive > 0 ? ` and ${location_inactive} locations inactive` : ''}. Upgrade to ${location_inactive > 0 ? `enable them` : 'create more'}.` : `${plan.max_location - location_used} locations remaining.`
             },
             {
-                icon: <TbEye />,
-                label: 'Widget Views',
-                used: '1,204',
-                limit: 'unlimited',
-                percent: 100,
-                fill: 'ok',
-                hint: 'Unlimited widget views on all plans.'
+                icon: <TbWorld />,
+                label: 'Sub Domain',
+                used: sub_domain_used,
+                limit: plan.max_sub_domain,
+                percent: sub_domain_percent,
+                fill: sub_domain_percent >= 100 ? 'warn' : '',
+                hint: sub_domain_percent >= 100 ? `Limit reached${sub_domain_inactive > 0 ? ` and ${sub_domain_inactive} sub domains inactive` : ''}. Upgrade to ${sub_domain_inactive > 0 ? `enable them` : 'create more'}.` : `${plan.max_sub_domain - sub_domain_used} sub domains remaining.`
             },
         ],
     }
