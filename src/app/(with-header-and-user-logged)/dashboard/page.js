@@ -107,7 +107,6 @@ export default async function DashboardPage() {
 
     const homeData = await getHomeData();
     const billingData = await getBillingStatus();
-    console.log(homeData, 'homeData');
     console.log(billingData, 'billingData');
 
     // ── Stat cards (built from homeData.statistics) ──

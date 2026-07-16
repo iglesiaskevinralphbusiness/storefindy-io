@@ -7,8 +7,6 @@ import { getLocators } from '@/actions/locator';
 export default async function LocatorsPage() {
     const locators = await getLocators();
 
-    console.log(locators);
-    
     return (
         <div className={styles.dashboard}>
             <Sidebar />

@@ -13,7 +13,6 @@ import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 
 export default function SubDomainList({ locators=[], data=[] }) {
-    console.log(data);
     const router = useRouter();
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -29,7 +28,6 @@ export default function SubDomainList({ locators=[], data=[] }) {
     }
 
     const handleClickEdit = (subDomain_id) => {
-        console.log(subDomain_id);
         router.push(`/dashboard/locators/subdomains/edit/${subDomain_id}`);
     }
 
