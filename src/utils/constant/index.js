@@ -64,6 +64,10 @@ export const SEARCH_RADII = [
 	{ code: '25', label: '25 miles' },
 	{ code: '50', label: '50 miles' },
 	{ code: '100', label: '100 miles' },
+    { code: '300', label: '300 miles' },
+    { code: '500', label: '500 miles' },
+    { code: '1000', label: '1000 miles' },
+    { code: '2000', label: '2000 miles' },
 ];
 
 export const MAXIMUM_RESULTS_SHOWN = [

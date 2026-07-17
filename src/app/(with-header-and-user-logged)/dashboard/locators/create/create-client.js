@@ -20,7 +20,6 @@ import { isNull } from 'lodash';
 
 export default function LocatorsCreatePage({ data=null }) {
     const router = useRouter();
-    console.log(data);
 
     const [locatorName, setLocatorName] = useState(data?.name || '');
     const [locatorDescription, setLocatorDescription] = useState(data?.description || '');

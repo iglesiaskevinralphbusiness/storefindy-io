@@ -14,7 +14,7 @@ import { formStyles, resultsStyles, mapStyles, userDefinedStyles, formStyle2Styl
 import Link from 'next/link';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { COUNTRIES } from '@/utils/constant/countries';
-import { SOCIAL_MEDIA_LINKS } from '@/utils/constant';
+import { SOCIAL_MEDIA_LINKS, SEARCH_RADII } from '@/utils/constant';
 
 import SearchSuggest from './SearchSuggest';
 
@@ -108,8 +108,10 @@ export default function Locator({
     // browser blocks/denies geolocation.
     const countryView = COUNTRIES.find((c) => c.code === String(default_country || '').toLowerCase());
     const defaultCenter = countryView ? [countryView.lat, countryView.lng] : null;
-    // Radius choices, always including the locator's configured default.
-    const radiusOptions = [...new Set([5, 10, 25, 50, 100, defaultRadius])].sort((a, b) => a - b);
+    // Radius choices come from the shared SEARCH_RADII constant, always
+    // including the locator's configured default even if it isn't a preset.
+    const radiusOptions = [...new Set([...SEARCH_RADII.map((r) => Number(r.code)), defaultRadius])]
+        .sort((a, b) => a - b);
 
     // Country dropdown choices — restricted to the locator's configured
     // available_countries (a list of codes like ["us", "ph"]). Falls back to the
