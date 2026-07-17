@@ -286,6 +286,14 @@ export default function Locator({
             };
 
             request(true);
+        } else if (!detect_location) {
+            // Auto-detect is off: open the widget already showing this locator's
+            // stores for the configured default country rather than an empty map.
+            // A country-only search (no query/coords) returns no center from the
+            // API, so the map view stays on default_country (defaultCenter) while
+            // the pins and result list populate. 'default-load' is deliberately
+            // not one of the analytics-recorded methods.
+            runSearch({ method: 'default-load', country: String(default_country || '').toLowerCase() });
         }
     }, [locator_id]); // eslint-disable-line react-hooks/exhaustive-deps
 

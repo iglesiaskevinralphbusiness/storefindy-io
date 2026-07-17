@@ -16,9 +16,11 @@ import Checkbox from '@/components/Forms/Checkbox';
 import Button from '@/components/Forms/Button';
 import { LOCALES, COUNTRIES, ZOOM_LEVELS, SEARCH_RADII, MAXIMUM_RESULTS_SHOWN } from '@/utils/constant';
 import { toast } from 'react-toastify';
+import { isNull } from 'lodash';
 
 export default function LocatorsCreatePage({ data=null }) {
     const router = useRouter();
+    console.log(data);
 
     const [locatorName, setLocatorName] = useState(data?.name || '');
     const [locatorDescription, setLocatorDescription] = useState(data?.description || '');
@@ -31,14 +33,14 @@ export default function LocatorsCreatePage({ data=null }) {
     const [filters, setFilters] = useState(data?.filters || []);
     const [editingIndex, setEditingIndex] = useState(null);
     const [editingValue, setEditingValue] = useState('');
-    const [showSearchBar, setShowSearchBar] = useState(data?.show_search_bar || true);
-    const [detectLocation, setDetectLocation] = useState(data?.detect_location || true);
-    const [showFilters, setShowFilters] = useState(data?.show_filters || true);
-    const [showRadius, setShowRadius] = useState(data?.show_radius || false);
-    const [showStoreList, setShowStoreList] = useState(data?.show_store_list || true);
-    const [showDirections, setShowDirections] = useState(data?.show_directions || true);
-    const [showStoreHours, setShowStoreHours] = useState(data?.show_store_hours || true);
-    const [poweredByStorefindy, setPoweredByStorefindy] = useState(data?.powered_by_storefindy || true);
+    const [showSearchBar, setShowSearchBar] = useState(isNull(data) ? true : data.show_search_bar);
+    const [detectLocation, setDetectLocation] = useState(isNull(data) ? true : data.detect_location);
+    const [showFilters, setShowFilters] = useState(isNull(data) ? true : data.show_filters);
+    const [showRadius, setShowRadius] = useState(isNull(data) ? false : data.show_radius);
+    const [showStoreList, setShowStoreList] = useState(isNull(data) ? true : data.show_store_list);
+    const [showDirections, setShowDirections] = useState(isNull(data) ? true : data.show_directions);
+    const [showStoreHours, setShowStoreHours] = useState(isNull(data) ? true : data.show_store_hours);
+    const [poweredByStorefindy, setPoweredByStorefindy] = useState(isNull(data) ? true : data.powered_by_storefindy);
 
     const handleClickAddFilter = () => {
         const title = filterTitle.trim();
@@ -246,7 +248,7 @@ export default function LocatorsCreatePage({ data=null }) {
                             <Checkbox
                                 label="Detect my location"
                                 name="detect_location"
-                                description="Allow users to auto-detect their location"
+                                description="Allow users to auto-detect their location and show the nearest stores. When disabled, will use the default country you selected."
                                 checked={detectLocation}
                                 onChange={() => setDetectLocation(!detectLocation)}
                             />

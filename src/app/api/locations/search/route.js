@@ -200,6 +200,13 @@ export async function GET(request) {
     if (filters.length) {
         match.filters = { $in: filters };
     }
+    // Browse-by-country: when the widget loads with a default country but no
+    // query and no coordinates (auto-detect off), restrict results to that
+    // country's locations. On text/coordinate searches the country only biases
+    // geocoding, so it must NOT filter the DB there.
+    if (countryParam && !hasCoords && !query) {
+        match.country = countryParam;
+    }
 
     const docs = await LocationModel.find(match).lean();
 
