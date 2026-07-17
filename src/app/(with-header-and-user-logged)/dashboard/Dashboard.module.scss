@@ -4514,5 +4514,588 @@
 }
 
 .documentation {
-    
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    /* HERO */
+    .docHero {
+        background: #171717;
+        border-radius: 12px;
+        padding: 24px 26px;
+        position: relative;
+        overflow: hidden;
+        &::before {
+            content: '';
+            position: absolute;
+            right: -30px;
+            top: -30px;
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: #ffe54c;
+            opacity: 0.06;
+        }
+        &::after {
+            content: '';
+            position: absolute;
+            right: 90px;
+            bottom: -40px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #ffe54c;
+            opacity: 0.05;
+        }
+        .docHeroIcon {
+            width: 46px;
+            height: 46px;
+            border-radius: 10px;
+            background: #ffe54c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 14px;
+            position: relative;
+            z-index: 1;
+            svg {
+                font-size: 24px;
+                color: #171717;
+            }
+        }
+        h2 {
+            margin: 0 0 6px;
+            font-size: 22px;
+            font-weight: 600;
+            color: #fff;
+            position: relative;
+            z-index: 1;
+        }
+        p {
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.6);
+            max-width: 560px;
+            position: relative;
+            z-index: 1;
+        }
+        .docHeroMeta {
+            display: flex;
+            gap: 8px;
+            margin-top: 14px;
+            position: relative;
+            z-index: 1;
+            span {
+                font-size: 11px;
+                font-weight: 500;
+                background: rgba(255, 255, 255, 0.08);
+                color: rgba(255, 255, 255, 0.7);
+                padding: 4px 10px;
+                border-radius: 20px;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                svg {
+                    font-size: 13px;
+                    color: #ffe54c;
+                }
+            }
+        }
+    }
+
+    /* TABLE OF CONTENTS */
+    .docToc {
+        background: #fff;
+        border: 1px solid #e5e5e3;
+        border-radius: 10px;
+        padding: 16px 18px;
+        .docTocTitle {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #aaa;
+            margin-bottom: 12px;
+        }
+        .docTocGrid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px 16px;
+        }
+        a {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #555;
+            text-decoration: none;
+            padding: 6px 8px;
+            border-radius: 7px;
+            transition: all 0.15s;
+            svg {
+                font-size: 15px;
+                color: #BA7517;
+                flex-shrink: 0;
+            }
+            span {
+                flex: 1;
+            }
+            .docTocNum {
+                font-size: 11px;
+                color: #bbb;
+                font-weight: 500;
+            }
+            &:hover {
+                background: #fffbe6;
+                color: #171717;
+            }
+        }
+    }
+
+    /* SECTION CARD */
+    .docSection {
+        background: #fff;
+        border: 1px solid #e5e5e3;
+        border-radius: 10px;
+        padding: 22px 24px;
+        scroll-margin-top: 20px;
+        .docSectionHead {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 14px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid #f0f0ee;
+            .docSectionIcon {
+                width: 34px;
+                height: 34px;
+                border-radius: 8px;
+                background: #fffbe6;
+                border: 1px solid #ffe54c;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+                svg {
+                    font-size: 18px;
+                    color: #171717;
+                }
+            }
+            h3 {
+                margin: 0;
+                font-size: 17px;
+                font-weight: 600;
+                color: #1a1a1a;
+            }
+            .docSectionSub {
+                font-size: 12px;
+                color: #999;
+                margin-top: 1px;
+            }
+        }
+
+        /* Body typography */
+        p {
+            font-size: 13.5px;
+            line-height: 1.7;
+            color: #555;
+            margin: 0 0 12px;
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+        strong {
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+        a {
+            color: #185FA5;
+            text-decoration: none;
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+        code {
+            font-family: monospace;
+            font-size: 11.5px;
+            background: #f0f0ee;
+            border: 0.5px solid #e5e5e3;
+            padding: 1px 6px;
+            border-radius: 4px;
+            color: #555;
+        }
+        h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin: 20px 0 10px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            svg {
+                font-size: 16px;
+                color: #BA7517;
+            }
+        }
+        ul {
+            margin: 0 0 12px;
+            padding-left: 20px;
+            li {
+                font-size: 13.5px;
+                line-height: 1.7;
+                color: #555;
+                padding: 2px 0;
+                &::marker {
+                    color: #ffca1c;
+                }
+            }
+        }
+    }
+
+    /* NUMBERED STEPS */
+    .docSteps {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin: 4px 0 8px;
+        .docStep {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        .docStepNum {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #171717;
+            color: #ffe54c;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .docStepBody {
+            flex: 1;
+            .docStepTitle {
+                font-size: 13.5px;
+                font-weight: 600;
+                color: #1a1a1a;
+                margin-bottom: 2px;
+            }
+            .docStepDesc {
+                font-size: 13px;
+                color: #777;
+                line-height: 1.6;
+            }
+        }
+    }
+
+    /* FIELD / DEFINITION TABLE */
+    .docTable {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 8px 0 12px;
+        border: 1px solid #e5e5e3;
+        border-radius: 8px;
+        overflow: hidden;
+        th {
+            font-size: 10px;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 9px 12px;
+            background: #fafaf8;
+            border-bottom: 1px solid #e5e5e3;
+            text-align: left;
+        }
+        td {
+            padding: 10px 12px;
+            font-size: 13px;
+            border-bottom: 1px solid #f5f5f3;
+            color: #555;
+            vertical-align: top;
+            line-height: 1.55;
+            strong {
+                color: #1a1a1a;
+                font-weight: 600;
+            }
+            code {
+                font-family: monospace;
+                font-size: 11px;
+                background: #f0f0ee;
+                padding: 1px 5px;
+                border-radius: 3px;
+                color: #555;
+            }
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+    }
+
+    /* CODE BLOCK (dark) */
+    .docCode {
+        background: #1e1e2e;
+        border-radius: 8px;
+        overflow: hidden;
+        margin: 8px 0 12px;
+        .docCodeTop {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: #16162a;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .docCodeLang {
+            font-size: 11px;
+            color: #888;
+            font-family: monospace;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .docCodeDots {
+            display: flex;
+            gap: 4px;
+            span {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                &:nth-child(1) { background: #ff5f56; }
+                &:nth-child(2) { background: #ffbd2e; }
+                &:nth-child(3) { background: #27c93f; }
+            }
+        }
+        pre {
+            padding: 14px;
+            margin: 0;
+            overflow-x: auto;
+            font-size: 12.5px;
+            line-height: 1.7;
+            font-family: 'Courier New', monospace;
+            color: #cdd6f4;
+            white-space: pre;
+            &::-webkit-scrollbar {
+                height: 5px;
+            }
+            &::-webkit-scrollbar-thumb {
+                background: #444;
+                border-radius: 4px;
+            }
+        }
+        .cTag { color: #89b4fa; }
+        .cAttr { color: #cba6f7; }
+        .cVal { color: #a6e3a1; }
+        .cComment { color: #6c7086; font-style: italic; }
+    }
+
+    /* CALLOUT / NOTE */
+    .docNote {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin: 12px 0;
+        padding: 12px 14px;
+        font-size: 13px;
+        line-height: 1.6;
+        border-radius: 8px;
+        svg {
+            flex-shrink: 0;
+            margin-top: 2px;
+            font-size: 16px;
+        }
+        strong {
+            font-weight: 600;
+        }
+        &.info {
+            color: #185FA5;
+            background: #f0f6fc;
+            border: 1px solid #d6e6f5;
+            p { color: #3f6a94; }
+            svg { color: #185FA5; }
+        }
+        &.tip {
+            color: #3B6D11;
+            background: #EAF3DE;
+            border: 1px solid #b5d98a;
+            p { color: #4a6d2a; }
+            svg { color: #3B6D11; }
+        }
+        &.warn {
+            color: #92700a;
+            background: #fffbe6;
+            border: 1px solid #ffe08a;
+            p { color: #8a6d00; }
+            svg { color: #d9a400; }
+        }
+        p {
+            margin: 0;
+            font-size: 13px;
+        }
+    }
+
+    /* PLAN LIMITS PILLS */
+    .docPlanRow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 10px 0 4px;
+        .docPlanPill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 1px solid #e5e5e3;
+            background: #fafaf8;
+            color: #555;
+            svg {
+                font-size: 13px;
+            }
+            &.free {
+                background: #fffbe6;
+                border-color: #ffe54c;
+                color: #171717;
+            }
+            &.pro {
+                background: #171717;
+                border-color: #171717;
+                color: #ffe54c;
+            }
+            &.biz {
+                background: #ede9fe;
+                border-color: #d6cbfa;
+                color: #635bff;
+            }
+        }
+    }
+
+    /* FAQ */
+    .docFaq {
+        display: flex;
+        flex-direction: column;
+        .docFaqItem {
+            padding: 14px 0;
+            border-bottom: 1px solid #f5f5f3;
+            &:last-child {
+                border-bottom: none;
+                padding-bottom: 0;
+            }
+            &:first-child {
+                padding-top: 0;
+            }
+            .docFaqQ {
+                font-size: 13.5px;
+                font-weight: 600;
+                color: #1a1a1a;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 6px;
+                svg {
+                    font-size: 15px;
+                    color: #BA7517;
+                    flex-shrink: 0;
+                }
+            }
+            .docFaqA {
+                font-size: 13px;
+                color: #666;
+                line-height: 1.7;
+                padding-left: 23px;
+            }
+        }
+    }
+
+    /* SUPPORT FOOTER */
+    .docSupport {
+        background: #fffbe6;
+        border: 1px solid #ffe54c;
+        border-radius: 10px;
+        padding: 18px 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        .docSupportIcon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: #ffe54c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            svg {
+                font-size: 21px;
+                color: #171717;
+            }
+        }
+        .docSupportInfo {
+            flex: 1;
+            .docSupportTitle {
+                font-size: 14px;
+                font-weight: 600;
+                color: #1a1a1a;
+                margin-bottom: 2px;
+            }
+            .docSupportDesc {
+                font-size: 12px;
+                color: #888;
+                line-height: 1.5;
+            }
+        }
+        .docSupportActions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .docSupportBtn {
+            font-size: 12px;
+            font-weight: 500;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            svg {
+                font-size: 14px;
+            }
+            &.dark {
+                background: #171717;
+                color: #ffe54c;
+                border: none;
+                &:hover { background: #2a2a2a; }
+            }
+            &.light {
+                background: #fff;
+                color: #555;
+                border: 1px solid #e5e5e3;
+                &:hover { border-color: #ccc; }
+            }
+        }
+    }
+
+    @media (max-width: 720px) {
+        .docToc .docTocGrid {
+            grid-template-columns: 1fr;
+        }
+        .docSupport {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
 }

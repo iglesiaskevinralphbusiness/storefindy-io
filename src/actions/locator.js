@@ -1250,7 +1250,7 @@ export async function getHomeData() {
 
     const statistics = {
         widget_views: {
-            label: "Widget Views this month",
+            label: "Widget Views last 30 days",
             value: widgetViewsCur.toLocaleString(),
             ...trendOf(widgetViewsCur, widgetViewsPrev),
         },
