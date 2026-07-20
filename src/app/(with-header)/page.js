@@ -64,7 +64,7 @@ const testimonials = [
     },
     {
         initials: 'JC',
-        text: '"I imported 120 pharmacy locations in one CSV upload. The map was live on our website within an hour. Couldn\'t believe it was free."',
+        text: '"I imported 120 pharmacy locations in one CSV upload. The map was live on our website within an hour. Couldn\'t believe it was fast."',
         name: 'James Chen',
         role: 'IT Manager, QuickCare Pharmacy · Singapore',
     },
@@ -112,8 +112,8 @@ export default function Home() {
                 <h1>Store Locator for Your Website — Beautiful and Fast at the Cheapest Cost</h1>
                 <p>Customized to your brand. Live in minutes. No developer, zero complexity — just a store locator that works.</p>
                 <div className={styles.buttonBox}>
-                    <a href="#" className="buttonBox secondary">See Our Live Demo</a>
-                    <a href="#" className="buttonBox">Create Store Locator</a>
+                    <a href="https://demo.storefindy.com" className="buttonBox secondary">See Our Live Demo</a>
+                    <a href="/dashboard" className="buttonBox">Create Store Locator</a>
                 </div>
 
                 <div className={styles.heroSample}>
@@ -267,8 +267,8 @@ export default function Home() {
                 <h2>Start finding your customers more stores — free</h2>
                 <p>Join hundreds of businesses already using Storefindy to help customers find their nearest store, branch, or outlet.</p>
                 <div className={styles.ctaBannerActions}>
-                    <button className={styles.btnCtaYellow}>Create your free locator</button>
-                    <button className={styles.btnCtaGhost}>View live demo</button>
+                    <a href="https://demo.storefindy.com" className={`${styles.ctaButtonBox} ${styles.secondary}`}>View live demo</a>
+                    <a href="/dashboard" className={styles.ctaButtonBox}>Create your free locator</a>
                 </div>
             </div>
         </div>
