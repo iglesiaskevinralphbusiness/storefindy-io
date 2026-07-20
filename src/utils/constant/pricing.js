@@ -46,7 +46,7 @@ export const plans = [
             { ok: false, text: 'API access' },
             { ok: false, text: 'Remove Storefindy branding' },
         ],
-        cta: 'Start Pro free trial',
+        cta: 'Start with Pro Plan',
         ctaClass: 'pro',
     },
     {
@@ -70,7 +70,7 @@ export const plans = [
             { ok: true, text: 'Remove Storefindy branding' },
             { ok: true, text: 'Priority support' },
         ],
-        cta: 'Contact sales',
+        cta: 'Start with Business Plan',
         ctaClass: 'biz',
     },
 ];

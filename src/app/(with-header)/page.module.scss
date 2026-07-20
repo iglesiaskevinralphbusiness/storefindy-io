@@ -312,12 +312,13 @@
 }
 .btnPricing {
     width: 100%;
-    padding: 10px;
+    padding: 11px 10px;
     border-radius: 8px;
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
     border: none;
+    text-align: center;
     &.free {
         background: #171717;
         color: #ffe54c;

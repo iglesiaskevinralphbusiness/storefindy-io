@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import {
     TbGift,
     TbCode,
@@ -199,7 +200,7 @@ export default function Home() {
                                     </div>
                                 ))}
                             </div>
-                            <button className={`${styles.btnPricing} ${styles[plan.ctaClass]}`}>{plan.cta}</button>
+                            <Link href="/dashboard/billing" className={`${styles.btnPricing} ${styles[plan.ctaClass]}`}>{plan.cta}</Link>
                         </div>
                     ))}
                 </div>
