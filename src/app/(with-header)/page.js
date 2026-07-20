@@ -35,7 +35,7 @@ const industries = [
 ];
 
 const features = [
-    { icon: TbGift, title: 'Free forever', desc: 'No monthly fees, no credit card, no surprise charges. Our core store locator widget is completely free to use for all businesses.' },
+    { icon: TbGift, title: 'Free forever', desc: 'No monthly fees, no credit card, no surprise charges. Our core store locator widget is completely free for stores with 20 locations and below.' },
     { icon: TbCode, title: 'One-line embed', desc: "Paste a single script tag into your website and you're live. Works with any website — WordPress, Shopify, Squarespace, or plain HTML." },
     { icon: TbMap, title: 'Beautiful interactive map', desc: 'Powered by OpenStreetMap and Leaflet.js — a fast, modern map experience that looks great on any device, with no Google Maps fees.' },
     { icon: TbPalette, title: 'Fully customizable', desc: 'Match your brand perfectly. Customize colors, fonts, pin styles, map theme, button labels, and more from an easy visual editor.' },
@@ -79,7 +79,7 @@ const testimonials = [
 const faqs = [
     {
         q: 'Is Storefindy really free forever?',
-        a: 'Yes. Our Free plan is genuinely free with no time limit and no credit card required. You can create up to 3 locators with up to 50 locations and embed the widget on any website — completely free, forever. We make money through our Pro and Business plans for users who need advanced features.',
+        a: 'Yes. Our Free plan is genuinely free with no time limit and no credit card required. It covers stores with 20 locations and below — you can create your locator, add up to 20 locations, and embed the widget on any website completely free, forever. If your store grows beyond 20 locations, our Pro and Business plans unlock higher limits and advanced features.',
     },
     {
         q: 'Do I need a developer to install the widget?',
@@ -99,14 +99,14 @@ const faqs = [
     },
     {
         q: 'Is Storefindy a good alternative to Stockist or Storemapper?',
-        a: "Yes — and it's free where they are not. Stockist starts at $15/month and Storemapper at $25/month. Storefindy offers comparable core features including multiple locators, CSV import, customization, and embedding — all on a free plan. For small businesses and startups, Storefindy is the smart choice to start with.",
+        a: "Yes — and it's free where they are not. Stockist starts at $15/month and Storemapper at $25/month. Storefindy offers comparable core features including multiple locators, CSV import, customization, and embedding — free for stores with 20 locations and below. For small businesses and startups, Storefindy is the smart choice to start with.",
     },
 ];
 
 export default function Home() {
     const [openFaq, setOpenFaq] = useState(null);
 
-    return (
+    return (<>
         <div className='wrap'>
             <section className={styles.hero}>
                 <h1>Store Locator for Your Website — Beautiful and Fast at the Cheapest Cost</h1>
@@ -116,22 +116,24 @@ export default function Home() {
                     <a href="#" className="buttonBox">Create Store Locator</a>
                 </div>
             </section>
+        </div>
 
-            {/* LOGOS */}
-            <div className={styles.logos}>
-                <p>Trusted by businesses across every industry</p>
-                <div className={styles.logosRow}>
-                    {industries.map(({ icon: Icon, label }) => (
-                        <div className={styles.logoPill} key={label}>
-                            <Icon aria-hidden="true" /> {label}
-                        </div>
-                    ))}
-                </div>
+        {/* LOGOS */}
+        <div className={styles.logos}>
+            <p>Trusted by businesses across every industry</p>
+            <div className={styles.logosRow}>
+                {industries.map(({ icon: Icon, label }) => (
+                    <div className={styles.logoPill} key={label}>
+                        <Icon aria-hidden="true" /> {label}
+                    </div>
+                ))}
             </div>
-
+        </div>
+        
+        <div className='wrap'>
             {/* FEATURES */}
             <section className={styles.features} id="features">
-                <div style={{ maxWidth: 560 }}>
+                <div style={{ textAlign: 'center', maxWidth: 700, margin: '0 auto' }}>
                     <div className={styles.sectionLabel}>Features</div>
                     <div className={styles.sectionTitle}>Everything you need to help customers find your stores</div>
                     <div className={styles.sectionSub}>Storefindy gives you a powerful, customizable store locator widget — built for small businesses, with zero cost and zero complexity.</div>
@@ -146,9 +148,11 @@ export default function Home() {
                     ))}
                 </div>
             </section>
-
-            {/* HOW IT WORKS */}
-            <section className={styles.howitworks} id="how-it-works">
+        </div>
+        
+        {/* HOW IT WORKS */}
+        <section className={styles.howitworks} id="how-it-works">
+            <div className='wrap'>
                 <div style={{ textAlign: 'center' }}>
                     <div className={styles.sectionLabel}>How it works</div>
                     <div className={styles.sectionTitle} style={{ marginBottom: 8 }}>Up and running in minutes</div>
@@ -163,8 +167,10 @@ export default function Home() {
                         </div>
                     ))}
                 </div>
-            </section>
+            </div>
+        </section>
 
+        <div className='wrap'>
             {/* PRICING */}
             <section className={styles.pricing} id="pricing">
                 <div style={{ textAlign: 'center', maxWidth: 560, margin: '0 auto' }}>
@@ -192,9 +198,11 @@ export default function Home() {
                     ))}
                 </div>
             </section>
+        </div>
 
             {/* TESTIMONIALS */}
-            <section className={styles.testimonials} id="testimonials">
+        <section className={styles.testimonials} id="testimonials">
+            <div className='wrap'>
                 <div style={{ textAlign: 'center' }}>
                     <div className={styles.sectionLabel}>Testimonials</div>
                     <div className={styles.sectionTitle}>Businesses love Storefindy</div>
@@ -217,8 +225,10 @@ export default function Home() {
                         </div>
                     ))}
                 </div>
-            </section>
+            </div>
+        </section>
 
+        <div className='wrap'>
             {/* FAQ */}
             <section className={styles.faq} id="faq">
                 <div style={{ textAlign: 'center', maxWidth: 560, margin: '0 auto' }}>
@@ -256,5 +266,5 @@ export default function Home() {
                 </div>
             </div>
         </div>
-    );
+    </>);
 }

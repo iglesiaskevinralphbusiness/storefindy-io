@@ -660,6 +660,7 @@ Error generating stack: `+i.message+`
         display: block;
         padding: 12px;
         height: auto !important;
+        box-sizing: border-box;
     }
     .locator-sidebar {
         max-width: none;

@@ -399,7 +399,7 @@ export default function HelpAndSupportPage() {
                                 )}
 
                                 {/* SYSTEM STATUS */}
-                                <div className={styles.hsCard}>
+                                {/* <div className={styles.hsCard}>
                                     <div className={styles.hsCardHeader}>
                                         <div className={styles.hsCardTitle}><TbActivityHeartbeat /> System Status</div>
                                         <a
@@ -423,7 +423,7 @@ export default function HelpAndSupportPage() {
                                     <div className={styles.statusFoot}>
                                         Last checked: just now · <span>⚠ Analytics delays — team is investigating</span>
                                     </div>
-                                </div>
+                                </div> */}
 
                                 {/* POPULAR ARTICLES */}
                                 <div className={styles.hsCard}>

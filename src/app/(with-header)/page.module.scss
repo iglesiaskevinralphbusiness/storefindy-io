@@ -21,25 +21,25 @@
 
 /* Shared section headings */
 .sectionLabel {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 500;
     color: #171717;
     background: #ffe54c;
     padding: 3px 10px;
-    border-radius: 20px;
     display: inline-block;
     margin-bottom: 12px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
 }
 .sectionTitle {
-    font-size: 32px;
+    font-size: 40px;
     font-weight: 500;
     color: #171717;
     margin-bottom: 10px;
     line-height: 1.2;
 }
 .sectionSub {
+    margin: 0 auto;
     font-size: 16px;
     color: #666;
     line-height: 1.7;
@@ -54,7 +54,7 @@
     border-top: 0.5px solid #f0f0ee;
     border-bottom: 0.5px solid #f0f0ee;
     p {
-        font-size: 14px;
+        font-size: 18px;
         color: #171717;
         margin-bottom: 28px;
         text-transform: uppercase;
@@ -65,11 +65,11 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 40px;
+    gap: 70px;
     flex-wrap: wrap;
 }
 .logoPill {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 500;
     color: #171717;
     display: flex;
@@ -80,7 +80,7 @@
 
 /* FEATURES */
 .features {
-    padding: 72px 40px;
+    padding: 72px 0;
     background: #fff;
 }
 .featuresGrid {
@@ -109,20 +109,20 @@
     svg { font-size: 20px; color: #171717; }
 }
 .featureTitle {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 500;
     color: #171717;
-    margin-bottom: 6px;
+    margin-bottom: 12px;
 }
 .featureDesc {
-    font-size: 14px;
+    font-size: 16px;
     color: #666;
     line-height: 1.6;
 }
 
 /* HOW IT WORKS */
 .howitworks {
-    padding: 72px 40px;
+    padding: 72px 0;
     background: #f9f9f7;
     border-top: 0.5px solid #f0f0ee;
     border-bottom: 0.5px solid #f0f0ee;
@@ -164,20 +164,20 @@
     color: #171717;
 }
 .stepTitle {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 500;
     color: #171717;
     margin-bottom: 6px;
 }
 .stepDesc {
-    font-size: 14px;
+    font-size: 16px;
     color: #666;
     line-height: 1.6;
 }
 
 /* PRICING */
 .pricing {
-    padding: 72px 40px;
+    padding: 72px 0;
     background: #fff;
 }
 .pricingGrid {
@@ -294,7 +294,7 @@
 
 /* TESTIMONIALS */
 .testimonials {
-    padding: 72px 40px;
+    padding: 72px 0;
     background: #f9f9f7;
     border-top: 0.5px solid #f0f0ee;
 }
@@ -317,7 +317,7 @@
     svg { font-size: 13px; color: #ffe54c; }
 }
 .testimonialText {
-    font-size: 12px;
+    font-size: 16px;
     color: #444;
     line-height: 1.7;
     margin-bottom: 14px;
@@ -342,24 +342,23 @@
     flex-shrink: 0;
 }
 .authorName {
-    font-size: 12px;
+    font-size: 16px;
     font-weight: 500;
     color: #171717;
 }
 .authorRole {
-    font-size: 10px;
+    font-size: 12px;
     color: #aaa;
     margin-top: 1px;
 }
 
 /* FAQ */
 .faq {
-    padding: 72px 40px;
+    padding: 72px 0;
     background: #fff;
     border-top: 0.5px solid #f0f0ee;
 }
 .faqList {
-    max-width: 680px;
     margin: 40px auto 0;
     display: flex;
     flex-direction: column;
@@ -372,7 +371,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 0;
+    padding: 22px 0;
     cursor: pointer;
     gap: 12px;
     width: 100%;
@@ -381,7 +380,7 @@
     text-align: left;
 }
 .faqQText {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 500;
     color: #171717;
 }
@@ -396,7 +395,7 @@
     }
 }
 .faqA {
-    font-size: 14px;
+    font-size: 16px;
     color: #666;
     line-height: 1.7;
     padding-bottom: 16px;
@@ -404,7 +403,7 @@
 
 /* CTA BANNER */
 .ctaBanner {
-    margin: 0 40px 60px;
+    margin: 0 0 60px;
     background: #171717;
     border-radius: 16px;
     padding: 48px 40px;
