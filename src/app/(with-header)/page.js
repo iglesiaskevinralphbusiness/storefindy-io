@@ -115,6 +115,12 @@ export default function Home() {
                     <a href="#" className="buttonBox secondary">See Our Live Demo</a>
                     <a href="#" className="buttonBox">Create Store Locator</a>
                 </div>
+
+                <div className={styles.heroSample}>
+                    <div className={styles.heroSampleInner}>
+                        <img src="/images/hero-sample.png" alt="Store Locator" />
+                    </div>
+                </div>
             </section>
         </div>
 
