@@ -4,13 +4,14 @@ import styles from './DashboardSidebar.module.scss';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { FaAngleUp } from "react-icons/fa6";
-import { LuHouse, LuPlus, LuPalette, LuCodeXml, LuList, LuUpload, LuUser, LuBookUser, LuKeyRound, LuBell, LuAppWindow, LuFileQuestion, LuBug, LuBookOpen, LuCircleUser, LuMapPin, LuGlobe } from "react-icons/lu";
+import { LuChevronLeft, LuChevronRight, LuHouse, LuPlus, LuPalette, LuCodeXml, LuList, LuUpload, LuUser, LuBookUser, LuKeyRound, LuBell, LuAppWindow, LuFileQuestion, LuBug, LuBookOpen, LuCircleUser, LuMapPin, LuGlobe } from "react-icons/lu";
 import { VscGraphLine } from "react-icons/vsc";
 import { IoMapOutline } from "react-icons/io5";
 import { HiOutlineSquares2X2 } from "react-icons/hi2";
 import { useSelector } from 'react-redux';
 
 export default function Sidebar() {
+    const [isMinimized, setIsMinimized] = useState(false);
     const { email } = useSelector(state => state.user);
 
     const isRootLinkActive = (value) => {
@@ -31,7 +32,14 @@ export default function Sidebar() {
 
     return (
         <>
-            <div className={styles.sidebar}>
+            <div className={`${styles.sidebar} ${isMinimized ? styles.minimized : ''}`}>
+                <button
+                    type="button"
+                    className={styles.expandButton}
+                    onClick={() => setIsMinimized(!isMinimized)}
+                >
+                    { isMinimized ? <LuChevronRight /> : <LuChevronLeft /> }
+                </button>
                 <div className={styles.menus}>
                     <h2>MAIN</h2>
                     <ul className={styles.mainMenu}>
@@ -39,7 +47,7 @@ export default function Sidebar() {
                             <Link href="/dashboard">
                                 <div>
                                     <LuHouse />
-                                    Dashboard
+                                    <span>Dashboard</span>
                                 </div>
                             </Link>
                         </li>
@@ -47,7 +55,7 @@ export default function Sidebar() {
                             <Link href="/dashboard/analytics">
                                 <div>
                                     <VscGraphLine />
-                                    Analytics
+                                    <span>Analytics</span>
                                 </div>
                                 <span className={styles.badge}>New</span>
                             </Link>
@@ -64,7 +72,7 @@ export default function Sidebar() {
                             >
                                 <div>
                                     <IoMapOutline />
-                                    My Locators
+                                    <span>My Locators</span>
                                 </div>
                                 <FaAngleUp />
                             </div>
@@ -74,31 +82,31 @@ export default function Sidebar() {
                         <li className={isRootLinkActive('/dashboard/locators')}>
                             <Link href="/dashboard/locators">
                                 <HiOutlineSquares2X2 />
-                                All Locators
+                                <span>All Locators</span>
                             </Link>
                         </li>
                         <li className={isRootLinkActive('/dashboard/locators/create')}>
                             <Link href="/dashboard/locators/create">
                                 <LuPlus />
-                                Create Locator
+                                <span>Create Locator</span>
                             </Link>
                         </li>
                         <li className={isRootLinkParamsActive('/dashboard/locators/customize')}>
                             <Link href="/dashboard/locators/customize">
                                 <LuPalette />
-                                Customize Locator
+                                <span>Customize Locator</span>
                             </Link>
                         </li>
                         <li className={isRootLinkParamsActive('/dashboard/locators/embed')}>
                             <Link href="/dashboard/locators/embed">
                                 <LuCodeXml />
-                                Embed Locator
+                                <span>Embed Locator</span>
                             </Link>
                         </li>
                         <li className={isRootLinkParamsActive('/dashboard/locators/subdomains')}>
                             <Link href="/dashboard/locators/subdomains">
                                 <LuGlobe />
-                                Custom Subdomains
+                                <span>Custom Subdomains</span>
                             </Link>
                         </li>
                     </ul>
@@ -113,7 +121,7 @@ export default function Sidebar() {
                             >
                                 <div>
                                     <LuMapPin />
-                                    Locations
+                                    <span>Locations</span>
                                 </div>
                                 <FaAngleUp />
                             </div>
@@ -123,19 +131,19 @@ export default function Sidebar() {
                         <li className={isRootLinkActive('/dashboard/locations')}>
                             <Link href="/dashboard/locations">
                                 <LuList />
-                                All Locations
+                                <span>All Locations</span>
                             </Link>
                         </li>
                         <li className={isRootLinkActive('/dashboard/locations/add-location')}>
                             <Link href="/dashboard/locations/add-location">
                                 <LuPlus />
-                                Add Location
+                                <span>Add Location</span>
                             </Link>
                         </li>
                         <li className={isRootLinkActive('/dashboard/locations/import-csv')}>
                             <Link href="/dashboard/locations/import-csv">
                                 <LuUpload />
-                                Import CSV
+                                <span>Import CSV</span>
                             </Link>
                         </li>
                     </ul>
@@ -150,7 +158,7 @@ export default function Sidebar() {
                             >
                                 <div>
                                     <LuUser />
-                                    Account
+                                    <span>Account</span>
                                 </div>
                                 <FaAngleUp />
                             </div>
@@ -160,25 +168,25 @@ export default function Sidebar() {
                         <li className={isRootLinkActive('/dashboard/profile')}>
                             <Link href="/dashboard/profile">
                                 <LuBookUser />
-                                Profile
+                                <span>Profile</span>
                             </Link>
                         </li>
                         <li className={isRootLinkActive('/dashboard/api-access')}>
                             <Link href="/dashboard/api-access">
                                 <LuKeyRound />
-                                API Access
+                                <span>API Access</span>
                             </Link>
                         </li>
                         <li className={isRootLinkActive('/dashboard/billing')}>
                             <Link href="/dashboard/billing">
                                 <LuAppWindow />
-                                Billing
+                                <span>Billing</span>
                             </Link>
                         </li>
                         <li className={isRootLinkActive('/dashboard/notifications')}>
                             <Link href="/dashboard/notifications">
                                 <LuBell />
-                                Notifications
+                                <span>Notifications</span>
                             </Link>
                         </li>
                     </ul>
@@ -188,7 +196,7 @@ export default function Sidebar() {
                             <Link href="/dashboard/documentation">
                                 <div>
                                     <LuBookOpen />
-                                    Documentation
+                                    <span>Documentation</span>
                                 </div>
                             </Link>
                         </li>
@@ -196,7 +204,7 @@ export default function Sidebar() {
                             <Link href="/dashboard/help-and-support">
                                 <div>
                                     <LuFileQuestion />
-                                    Help and Support
+                                    <span>Help and Support</span>
                                 </div>
                             </Link>
                         </li>
@@ -204,7 +212,7 @@ export default function Sidebar() {
                             <Link href="/dashboard/report-bug">
                                 <div>
                                     <LuBug />
-                                    Report Bug
+                                    <span>Report Bug</span>
                                 </div>
                             </Link>
                         </li>
