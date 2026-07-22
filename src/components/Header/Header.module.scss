@@ -3,6 +3,9 @@
     height: 100px;
     background-color: #fff;
     border-bottom: 1px solid #f1f1f1;
+    @media (max-width: 959px) {
+        height: 68px;
+    }
     .headerContainer {
         display: flex;
         justify-content: space-between;
@@ -25,6 +28,9 @@
                 display: flex;
                 align-items: center;
                 gap: 20px;
+                @media (max-width: 959px) {
+                    display: none;
+                }
                 li {
                     position: relative;
                     list-style: none;
@@ -49,6 +55,20 @@
                         &:hover:after {
                             width: 100%;
                         }
+                        @media (max-width: 959px) {
+                            border-radius: unset;
+                            padding: 8px 0;
+                            justify-content: flex-start;
+                            font-size: 16px;
+                        }
+                    }
+                    @media (max-width: 959px) {
+                        padding: 8px 16px;
+                        background-color: #fff;
+                        border-bottom: 1px solid #f1f1f1;
+                        > a {
+                            display: inline-block;
+                        }
                     }
                     &.lang {
                         select {
@@ -67,6 +87,35 @@
                             }
                         }
                     }
+                }
+
+                @media (max-width: 959px) {
+                    &.mobileMenuOpen {
+                        display: block;
+                        position: absolute;
+                        top: 68px;
+                        left: 0;
+                        right: 0;
+                        z-index: 5;
+                        background: #000000b5;
+                        width: 100%;
+                        height: 100%;
+                    }
+                }
+            }
+
+            .mobileMenuButton {
+                display: none;
+                align-items: center;
+                justify-content: center;
+                color: #000;
+                border: 1px solid #f1f1f1;
+                border-radius: 8px;
+                width: 38px;
+                height: 38px;
+                font-size: 14px;
+                @media (max-width: 959px) {
+                    display: flex;
                 }
             }
         }

@@ -1,14 +1,25 @@
 'use client';
 import styles from './Header.module.scss';
+import { useState, useEffect } from 'react';
 import Link from "next/link";
 import { useTranslations } from 'next-intl';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useSelector } from 'react-redux';
 import { signOut } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
+import { GiHamburgerMenu } from "react-icons/gi";
 
 export default function Header() {
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const { email, isLoggedIn } = useSelector(state => state.user);
+
+    useEffect(() => {
+        if (mobileMenuOpen) {
+            document.body.classList.toggle("mobile-scroll-hidden");
+        } else {
+            document.body.classList.toggle("mobile-scroll-hidden");
+        }
+    }, [mobileMenuOpen]);
 
     return (
         <header className={styles.header}>
@@ -19,17 +30,20 @@ export default function Header() {
                     </Link>
                 </div>
                 <nav className={styles.headerRight}>
-                    { isLoggedIn ? <HeaderLoggedOut email={email} /> : <HeaderLoggedIn /> }
+                    <button type="button" className={styles.mobileMenuButton} onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+                        <GiHamburgerMenu />
+                    </button>
+                    { isLoggedIn ? <HeaderLoggedOut mobileMenuOpen={mobileMenuOpen} email={email} /> : <HeaderLoggedIn mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} /> }
                 </nav>
             </div>
         </header>
     );
 }
 
-const HeaderLoggedIn = () => {
+const HeaderLoggedIn = ({ mobileMenuOpen }) => {
     const t = useTranslations('header');
 
-    return <ul>
+    return <ul className={mobileMenuOpen ? styles.mobileMenuOpen : ''}>
         <li>
             <Link href="/" className={styles.menuItem}>{t('Demo')}</Link>
         </li>
@@ -48,14 +62,14 @@ const HeaderLoggedIn = () => {
     </ul>
 }
 
-const HeaderLoggedOut = ({ email }) => {
+const HeaderLoggedOut = ({ mobileMenuOpen, email }) => {
     const t = useTranslations('header');
 
     const handleSignOut = () => {
         signOut({ callbackUrl: '/' });
     };
 
-    return <ul>
+    return <ul className={mobileMenuOpen ? styles.mobileMenuOpen : ''}>
         {
             !usePathname().includes('/dashboard') && (
                 <li>

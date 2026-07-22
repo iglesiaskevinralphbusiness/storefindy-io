@@ -30,6 +30,12 @@ body {
   }
 }
 
+@media (max-width: 959px) {
+  .mobile-scroll-hidden {
+    overflow: hidden;
+  }
+}
+
 .main {
  
 }
