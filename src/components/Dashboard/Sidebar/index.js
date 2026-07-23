@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './DashboardSidebar.module.scss';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -11,8 +11,15 @@ import { HiOutlineSquares2X2 } from "react-icons/hi2";
 import { useSelector } from 'react-redux';
 
 export default function Sidebar() {
-    const [isMinimized, setIsMinimized] = useState(false);
+    const [isMinimized, setIsMinimized] = useState(() => {
+        if (typeof window === 'undefined') return false;
+        return window.localStorage.getItem('sidebarMinimized') === 'true';
+    });
     const { email } = useSelector(state => state.user);
+
+    useEffect(() => {
+        window.localStorage.setItem('sidebarMinimized', String(isMinimized));
+    }, [isMinimized]);
 
     const isRootLinkActive = (value) => {
         return usePathname() === value ? styles.active : '';

@@ -20,10 +20,12 @@
             justify-content: center;
             flex-direction: column;
             gap: 2px;
+            min-width: 326px;
             height: 62px;
             padding: 0 20px;
             background-color: #fff;
             border-bottom: 1px solid #f1f1f1;
+            overflow: hidden;
             h1 {
                 margin: 0;
                 padding: 0;
@@ -41,7 +43,9 @@
             }
         }
         .body {
+            min-width: 326px;
             padding: 20px;
+            overflow: hidden;
         }
     }
 }
