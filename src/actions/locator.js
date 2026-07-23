@@ -1238,7 +1238,7 @@ export async function getHomeData() {
         { $match: query },
         { $group: { _id: null, total: { $sum: "$visits" } } },
     ]);
-    const totalSubDomainVisits = subDomainStats.total ?? 0;
+    const totalSubDomainVisits = subDomainStats ? subDomainStats.total ?? 0 : 0;
 
     // Total Active Locators
     const activeLocators = await LocatorModel.countDocuments({ user_id: session.user.id });
