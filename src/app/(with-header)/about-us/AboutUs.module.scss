@@ -1,0 +1,345 @@
+/* ============ SHARED HEADINGS ============ */
+.sectionLabel {
+    font-size: 14px;
+    font-weight: 500;
+    color: #171717;
+    background: #ffe54c;
+    padding: 3px 10px;
+    display: inline-block;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+.sectionTitle {
+    font-size: 40px;
+    font-weight: 500;
+    color: #171717;
+    margin-bottom: 12px;
+    line-height: 1.2;
+    @media (max-width: 425px) {
+        font-size: 30px;
+    }
+}
+.sectionSub {
+    margin: 0 auto;
+    font-size: 16px;
+    color: #666;
+    line-height: 1.7;
+    max-width: 560px;
+}
+.sectionHead {
+    text-align: center;
+    max-width: 620px;
+    margin: 0 auto 48px;
+}
+
+/* ============ HERO ============ */
+.hero {
+    padding: 72px 0 56px;
+    text-align: center;
+    border-bottom: 0.5px solid #f0f0ee;
+    @media (max-width: 767px) {
+        padding: 48px 0 36px;
+    }
+}
+.label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #171717;
+    background: #ffe54c;
+    padding: 3px 10px;
+    display: inline-block;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+.title {
+    max-width: 860px;
+    margin: 0 auto 20px;
+    font-size: 56px;
+    font-weight: 500;
+    line-height: 1.1;
+    color: #171717;
+    @media (max-width: 767px) {
+        font-size: 40px;
+    }
+    @media (max-width: 425px) {
+        font-size: 30px;
+    }
+}
+.subtitle {
+    max-width: 680px;
+    margin: 0 auto 32px;
+    font-size: 18px;
+    color: #666;
+    line-height: 1.7;
+    @media (max-width: 425px) {
+        font-size: 16px;
+    }
+}
+.buttonBox {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    @media (max-width: 425px) {
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+    }
+}
+
+/* ============ STATS ============ */
+.statsBar {
+    background: #f9f9f7;
+    border-bottom: 0.5px solid #f0f0ee;
+    padding: 40px 0;
+}
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    @media (max-width: 767px) {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+    }
+}
+.statCard {
+    text-align: center;
+}
+.statValue {
+    font-size: 42px;
+    font-weight: 500;
+    color: #171717;
+    line-height: 1;
+    margin-bottom: 8px;
+    @media (max-width: 425px) {
+        font-size: 34px;
+    }
+}
+.statLabel {
+    font-size: 14px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+/* ============ MISSION ============ */
+.mission {
+    text-align: center;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 80px 0;
+    @media (max-width: 767px) {
+        padding: 56px 0;
+    }
+}
+.missionIcon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: #fffbe6;
+    border: 0.5px solid #ffe54c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    svg {
+        font-size: 28px;
+        color: #171717;
+    }
+}
+.missionText {
+    font-size: 26px;
+    font-weight: 400;
+    color: #444;
+    line-height: 1.5;
+    margin-top: 20px;
+    @media (max-width: 425px) {
+        font-size: 20px;
+    }
+    strong {
+        color: #171717;
+        font-weight: 500;
+    }
+}
+
+/* ============ STORY ============ */
+.story {
+    padding: 72px 0;
+    background: #f9f9f7;
+    border-top: 0.5px solid #f0f0ee;
+    border-bottom: 0.5px solid #f0f0ee;
+}
+.storyGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    @media (max-width: 767px) {
+        grid-template-columns: 1fr;
+    }
+}
+.storyCard {
+    background: #fff;
+    border: 0.5px solid #e5e5e3;
+    border-radius: 12px;
+    padding: 24px;
+    transition: border-color 0.15s;
+    &:hover {
+        border-color: #ffe54c;
+    }
+}
+.storyIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #fffbe6;
+    border: 0.5px solid #ffe54c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    svg {
+        font-size: 22px;
+        color: #171717;
+    }
+}
+.storyTitle {
+    font-size: 18px;
+    font-weight: 500;
+    color: #171717;
+    margin-bottom: 10px;
+}
+.storyDesc {
+    font-size: 15px;
+    color: #666;
+    line-height: 1.7;
+}
+
+/* ============ VALUES ============ */
+.values {
+    padding: 80px 0;
+    @media (max-width: 767px) {
+        padding: 56px 0;
+    }
+}
+.valuesGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    @media (max-width: 767px) {
+        grid-template-columns: 1fr;
+    }
+}
+.valueCard {
+    display: flex;
+    gap: 16px;
+    border: 0.5px solid #e5e5e3;
+    border-radius: 12px;
+    padding: 24px;
+    background: #fff;
+    transition: border-color 0.15s;
+    &:hover {
+        border-color: #ffe54c;
+    }
+}
+.valueIcon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #fffbe6;
+    border: 0.5px solid #ffe54c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    svg {
+        font-size: 24px;
+        color: #171717;
+    }
+}
+.valueTitle {
+    font-size: 17px;
+    font-weight: 500;
+    color: #171717;
+    margin-bottom: 8px;
+}
+.valueDesc {
+    font-size: 15px;
+    color: #666;
+    line-height: 1.7;
+}
+
+/* ============ CTA BANNER ============ */
+.ctaBanner {
+    margin: 0 0 64px;
+    background: #171717;
+    border-radius: 16px;
+    padding: 48px 40px;
+    text-align: center;
+    @media (max-width: 425px) {
+        padding: 36px 20px;
+    }
+    h2 {
+        font-size: 28px;
+        font-weight: 500;
+        color: #fff;
+        margin-bottom: 10px;
+        @media (max-width: 425px) {
+            font-size: 22px;
+        }
+    }
+    p {
+        max-width: 520px;
+        margin: 0 auto 28px;
+        font-size: 16px;
+        color: rgba(255, 255, 255, 0.6);
+        line-height: 1.6;
+    }
+}
+.ctaBannerActions {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    .ctaButtonBox {
+        font-size: 16px;
+        font-weight: 200;
+        padding: 13px 20px 13px;
+        outline: 0;
+        border: 1px solid #fff;
+        color: #000 !important;
+        cursor: pointer;
+        position: relative;
+        background-color: rgba(0, 0, 0, 0);
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: manipulation;
+        z-index: 1;
+
+        &:after {
+            content: "";
+            background-color: #ffe54c;
+            width: 100%;
+            z-index: -1;
+            position: absolute;
+            height: 100%;
+            top: 7px;
+            left: 7px;
+            transition: 0.2s;
+        }
+        &:hover:after {
+            top: 0px;
+            left: 0px;
+        }
+    }
+    .secondary {
+        &:after {
+            background-color: #fff;
+        }
+    }
+}
+
+/* CTA banner sits on a dark background — borders must be white there */
+.ctaBanner .ctaButtonBox {
+    border-color: #fff;
+    color: #fff;
+}
