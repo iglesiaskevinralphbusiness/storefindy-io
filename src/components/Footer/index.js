@@ -13,7 +13,8 @@ export default function Footer() {
                         <li><Link href="/">Home</Link></li>
                         <li><Link href="/">About Us</Link></li>
                         <li><Link href="/">Contact Us</Link></li>
-                        <li><Link href="/">Privacy Policy</Link></li>
+                        <li><Link href="/privacy-policy">Privacy Policy</Link></li>
+                        <li><Link href="/terms-of-service">Terms of Service</Link></li>
                         <li><Link href="/sitemap.xml">Sitemap</Link></li>
                     </ul>
                 </div>
