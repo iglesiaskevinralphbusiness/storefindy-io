@@ -268,8 +268,8 @@ export default function Home() {
                 <h2>Start finding your customers more stores — free</h2>
                 <p>Join hundreds of businesses already using Storefindy to help customers find their nearest store, branch, or outlet.</p>
                 <div className={styles.ctaBannerActions}>
-                    <a href="https://demo.storefindy.com" className={`${styles.ctaButtonBox} ${styles.secondary}`}>View live demo</a>
-                    <a href="/dashboard" className={styles.ctaButtonBox}>Create your free locator</a>
+                    <a href="https://demo.storefindy.com" className={`${styles.ctaButtonBox} ${styles.secondary}`}>See Our Live Demo</a>
+                    <a href="/dashboard" className={styles.ctaButtonBox}>Create Your Free Locator</a>
                 </div>
             </div>
         </div>
