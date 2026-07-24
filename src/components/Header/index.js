@@ -15,9 +15,9 @@ export default function Header() {
 
     useEffect(() => {
         if (mobileMenuOpen) {
-            document.body.classList.toggle("mobile-scroll-hidden");
+            document.body.classList.add("mobile-menu-open");
         } else {
-            document.body.classList.toggle("mobile-scroll-hidden");
+            document.body.classList.remove("mobile-menu-open");
         }
     }, [mobileMenuOpen]);
 
