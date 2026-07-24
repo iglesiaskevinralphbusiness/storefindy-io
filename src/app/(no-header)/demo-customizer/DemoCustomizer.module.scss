@@ -1,0 +1,36 @@
+.titleContainer {
+    h1 {
+        max-width: 1000px;
+        margin: 16px auto;
+        font-size: 27px;
+        text-align: center;
+    }
+    p {
+        max-width: 600px;
+        margin: 16px auto;
+        font-size: 16px;
+        text-align: center;
+    }
+    .cta-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        padding-bottom: 40px;
+        border-bottom: 1px solid #f6f6f6;
+    }
+    .cta-buttons a {
+        color: #5f5e5a;
+        cursor: pointer;
+        background-color: #fff;
+        border: 1px solid #bababa;
+        border-radius: 8px;
+        align-items: center;
+        gap: 5px;
+        padding: 9px 12px;
+        font-size: 14px;
+        display: flex;
+    }
+    .cta-buttons a:hover {
+        background-color: #f1f1f1;  
+    }
+}
