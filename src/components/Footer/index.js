@@ -14,7 +14,7 @@ const companyLinks = [
     { label: 'Home', href: '/' },
     { label: 'About Us', href: '/about-us' },
     { label: 'Testimonials', href: '/#testimonials' },
-    { label: 'Contact Us', href: '/contact' },
+    { label: 'Contact Us', href: '/contact-us' },
 ];
 
 const legalLinks = [

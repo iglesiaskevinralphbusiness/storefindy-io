@@ -1,0 +1,444 @@
+/* ============ SHARED HEADINGS ============ */
+.sectionLabel {
+    font-size: 14px;
+    font-weight: 500;
+    color: #171717;
+    background: #ffe54c;
+    padding: 3px 10px;
+    display: inline-block;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+.sectionTitle {
+    font-size: 40px;
+    font-weight: 500;
+    color: #171717;
+    margin-bottom: 12px;
+    line-height: 1.2;
+    @media (max-width: 425px) {
+        font-size: 30px;
+    }
+}
+.sectionSub {
+    margin: 0 auto;
+    font-size: 16px;
+    color: #666;
+    line-height: 1.7;
+    max-width: 560px;
+}
+.sectionHead {
+    text-align: center;
+    max-width: 620px;
+    margin: 0 auto 48px;
+}
+
+/* ============ HERO ============ */
+.hero {
+    padding: 72px 0 48px;
+    text-align: center;
+    @media (max-width: 767px) {
+        padding: 48px 0 32px;
+    }
+}
+.label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #171717;
+    background: #ffe54c;
+    padding: 3px 10px;
+    display: inline-block;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+.title {
+    max-width: 780px;
+    margin: 0 auto 20px;
+    font-size: 56px;
+    font-weight: 500;
+    line-height: 1.1;
+    color: #171717;
+    @media (max-width: 767px) {
+        font-size: 40px;
+    }
+    @media (max-width: 425px) {
+        font-size: 30px;
+    }
+}
+.subtitle {
+    max-width: 620px;
+    margin: 0 auto;
+    font-size: 18px;
+    color: #666;
+    line-height: 1.7;
+    @media (max-width: 425px) {
+        font-size: 16px;
+    }
+}
+
+/* ============ CONTACT METHODS ============ */
+.methods {
+    padding: 0 0 8px;
+}
+.methodsGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    @media (max-width: 900px) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    @media (max-width: 500px) {
+        grid-template-columns: 1fr;
+    }
+}
+.methodCard {
+    display: block;
+    background: #fff;
+    border: 0.5px solid #e5e5e3;
+    border-radius: 12px;
+    padding: 24px;
+    text-decoration: none;
+    transition: border-color 0.15s, transform 0.15s;
+    &:hover {
+        border-color: #ffe54c;
+        transform: translateY(-2px);
+    }
+}
+.methodIcon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #fffbe6;
+    border: 0.5px solid #ffe54c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    svg {
+        font-size: 24px;
+        color: #171717;
+    }
+}
+.methodTitle {
+    font-size: 17px;
+    font-weight: 500;
+    color: #171717;
+    margin-bottom: 8px;
+}
+.methodDesc {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 14px;
+}
+.methodAction {
+    font-size: 14px;
+    font-weight: 500;
+    color: #171717;
+    display: inline-flex;
+    align-items: center;
+    border-bottom: 1.5px solid #ffe54c;
+    padding-bottom: 1px;
+}
+
+/* ============ FORM SECTION ============ */
+.formSection {
+    padding: 64px 0;
+    @media (max-width: 767px) {
+        padding: 48px 0;
+    }
+}
+.formLayout {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 24px;
+    align-items: start;
+    @media (max-width: 900px) {
+        grid-template-columns: 1fr;
+    }
+}
+.formCard {
+    background: #fff;
+    border: 0.5px solid #e5e5e3;
+    border-radius: 16px;
+    padding: 36px;
+    @media (max-width: 425px) {
+        padding: 24px;
+    }
+}
+.formHeading {
+    font-size: 28px;
+    font-weight: 500;
+    color: #171717;
+    margin-bottom: 8px;
+    line-height: 1.2;
+    @media (max-width: 425px) {
+        font-size: 24px;
+    }
+}
+.formSub {
+    font-size: 15px;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 28px;
+}
+
+/* ---- form internals ---- */
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+.formRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    @media (max-width: 500px) {
+        grid-template-columns: 1fr;
+    }
+}
+.formActions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+}
+.formNote {
+    font-size: 13px;
+    color: #999;
+}
+.formError {
+    font-size: 14px;
+    color: #d32f2f;
+    background: #fdecea;
+    border: 0.5px solid #f5c6c2;
+    border-radius: 8px;
+    padding: 10px 14px;
+    line-height: 1.5;
+}
+
+/* ---- success state ---- */
+.success {
+    text-align: center;
+    padding: 32px 8px;
+    h3 {
+        font-size: 22px;
+        font-weight: 500;
+        color: #171717;
+        margin-bottom: 10px;
+    }
+    p {
+        font-size: 15px;
+        color: #666;
+        line-height: 1.7;
+        max-width: 420px;
+        margin: 0 auto 20px;
+    }
+}
+.successIcon {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    background: #fffbe6;
+    border: 0.5px solid #ffe54c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    svg {
+        font-size: 32px;
+        color: #171717;
+    }
+}
+.linkButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #171717;
+    border-bottom: 1.5px solid #ffe54c;
+    padding: 0 0 1px;
+}
+
+/* ============ SIDEBAR ============ */
+.sidebar {
+    background: #f9f9f7;
+    border: 0.5px solid #f0f0ee;
+    border-radius: 16px;
+    padding: 28px;
+    @media (max-width: 425px) {
+        padding: 22px;
+    }
+}
+.sidebarTitle {
+    font-size: 15px;
+    font-weight: 500;
+    color: #171717;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 20px;
+}
+.detailList {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+.detailItem {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+}
+.detailIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #fff;
+    border: 0.5px solid #e5e5e3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    svg {
+        font-size: 20px;
+        color: #171717;
+    }
+}
+.detailLabel {
+    font-size: 12px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 3px;
+}
+.detailValue {
+    font-size: 15px;
+    font-weight: 500;
+    color: #171717;
+}
+.sidebarNote {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.7;
+    border-top: 0.5px solid #e5e5e3;
+    padding-top: 20px;
+    a {
+        color: #171717;
+        font-weight: 500;
+        border-bottom: 1.5px solid #ffe54c;
+    }
+}
+
+/* ============ FAQ ============ */
+.faq {
+    padding: 72px 0;
+    background: #f9f9f7;
+    border-top: 0.5px solid #f0f0ee;
+    border-bottom: 0.5px solid #f0f0ee;
+    @media (max-width: 767px) {
+        padding: 56px 0;
+    }
+}
+.faqGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    @media (max-width: 767px) {
+        grid-template-columns: 1fr;
+    }
+}
+.faqCard {
+    background: #fff;
+    border: 0.5px solid #e5e5e3;
+    border-radius: 12px;
+    padding: 24px;
+    transition: border-color 0.15s;
+    &:hover {
+        border-color: #ffe54c;
+    }
+}
+.faqQuestion {
+    font-size: 17px;
+    font-weight: 500;
+    color: #171717;
+    margin-bottom: 10px;
+}
+.faqAnswer {
+    font-size: 15px;
+    color: #666;
+    line-height: 1.7;
+}
+
+/* ============ CTA BANNER ============ */
+.ctaBanner {
+    margin: 64px 0;
+    background: #171717;
+    border-radius: 16px;
+    padding: 48px 40px;
+    text-align: center;
+    @media (max-width: 425px) {
+        padding: 36px 20px;
+    }
+    h2 {
+        font-size: 28px;
+        font-weight: 500;
+        color: #fff;
+        margin-bottom: 10px;
+        @media (max-width: 425px) {
+            font-size: 22px;
+        }
+    }
+    p {
+        max-width: 520px;
+        margin: 0 auto 28px;
+        font-size: 16px;
+        color: rgba(255, 255, 255, 0.6);
+        line-height: 1.6;
+    }
+}
+.ctaBannerActions {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    .ctaButtonBox {
+        font-size: 16px;
+        font-weight: 200;
+        padding: 13px 20px 13px;
+        outline: 0;
+        border: 1px solid #fff;
+        color: #000 !important;
+        cursor: pointer;
+        position: relative;
+        background-color: rgba(0, 0, 0, 0);
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: manipulation;
+        z-index: 1;
+
+        &:after {
+            content: "";
+            background-color: #ffe54c;
+            width: 100%;
+            z-index: -1;
+            position: absolute;
+            height: 100%;
+            top: 7px;
+            left: 7px;
+            transition: 0.2s;
+        }
+        &:hover:after {
+            top: 0px;
+            left: 0px;
+        }
+    }
+    .secondary {
+        &:after {
+            background-color: #fff;
+        }
+    }
+}
