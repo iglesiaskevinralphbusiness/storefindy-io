@@ -75,7 +75,10 @@ export const MAXIMUM_RESULTS_SHOWN = [
 	{ code: '10', label: '10 results' },
 	{ code: '25', label: '25 results' },
 	{ code: '50', label: '50 results' },
-	{ code: '5000', label: 'All results' },
+    { code: '100', label: '100 results' },
+    { code: '200', label: '200 results' },
+    { code: '500', label: '500 results' },
+	{ code: '999999', label: 'All results' },
 ];
 
 export const SOCIAL_MEDIA_LINKS = [

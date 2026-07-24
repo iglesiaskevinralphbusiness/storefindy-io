@@ -45,7 +45,10 @@
         .body {
             min-width: 326px;
             padding: 20px;
-            overflow: hidden;
+            overflow: visible;
+            @media (max-width: 768px) {
+                overflow: hidden;
+            }
         }
     }
 }
