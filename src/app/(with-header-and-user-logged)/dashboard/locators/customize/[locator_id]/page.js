@@ -2,6 +2,11 @@ import { getLocatorById, getAvailableCountriesBasedOnLocations } from '@/actions
 import { notFound } from 'next/navigation';
 import CustomizeWrapper from '@/components/Dashboard/CustomizeWrapper';
 
+export const metadata = {
+    title: 'Customize Locator | Store Findy',
+    description: 'Customize the colors, map style, pins, and features of your store locator to match your brand with Store Findy.',
+};
+
 export default async function LocatorsCustomizePage({ params, searchParams }) {
     const { locator_id } = await params;
     const { preview } = await searchParams;

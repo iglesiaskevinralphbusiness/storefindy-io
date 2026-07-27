@@ -8,6 +8,11 @@ import Button from '@/components/Forms/Button';
 import { LuPlus, LuMap } from 'react-icons/lu';
 import { redirect } from 'next/navigation';
 
+export const metadata = {
+    title: 'Customize Locator | Store Findy',
+    description: 'Customize the colors, map style, pins, and features of your store locator to match your brand with Store Findy.',
+};
+
 export default async function LocatorsCustomizePage() {
     const locators = await getLocators();
 

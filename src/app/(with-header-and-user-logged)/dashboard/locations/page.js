@@ -10,6 +10,11 @@ import { getLocators } from '@/actions/locator';
 import Pagination from '@/components/Pagination';
 import CreateAndIndicator from '@/components/Dashboard/CreateAndIndicator';
 
+export const metadata = {
+    title: 'Locations | Store Findy',
+    description: 'Add, edit, and organize all of your store locations in one place with Store Findy.',
+};
+
 export default async function LocationsPage({ searchParams }) {
     const {
         page=1,

@@ -9,6 +9,11 @@ import SubDomainList from '@/components/Dashboard/SubDomainList';
 import Pagination from '@/components/Pagination';
 import Information from '@/components/Information';
 
+export const metadata = {
+    title: 'Subdomains | Store Findy',
+    description: 'Manage custom subdomains for your store locators and give customers a branded find-a-store experience with Store Findy.',
+};
+
 export default async function LocatorsSubdomainsPage({ searchParams }) {
     const { page, rows, sort, order } = await searchParams;
     const locators = await getLocators();

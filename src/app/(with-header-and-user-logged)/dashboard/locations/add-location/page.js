@@ -10,6 +10,13 @@ import { LuPlus } from 'react-icons/lu';
 import Link from 'next/link';
 import LimitReached from '@/components/LimitReached';
 
+export async function generateMetadata() {
+    return {
+        title: 'Add Location | Store Findy',
+        description: 'Add a new store location to your locator, complete with address, map pin, and details, on Store Findy.',
+    };
+}
+
 export default async function AddLocationPage() {
 
     const locators = await getLocators();

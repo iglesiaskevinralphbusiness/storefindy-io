@@ -5,6 +5,13 @@ import { RiArrowRightLine } from "react-icons/ri";
 import ProfilePageClient from './profile-client';
 import { getProfile } from '@/actions/profile';
 
+export async function generateMetadata() {
+    return {
+        title: 'Profile | Store Findy',
+        description: 'Manage your account details and personal information on Store Findy.',
+    };
+}
+
 export default async function ProfilePage() {
     const profile = await getProfile();
 

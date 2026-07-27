@@ -6,6 +6,11 @@ import { RiArrowRightLine } from "react-icons/ri";
 import { LuArrowLeft } from 'react-icons/lu';
 import LimitReached from '@/components/LimitReached';
 
+export const metadata = {
+    title: 'Edit Locator | Store Findy',
+    description: 'Update the settings, locations, and details of your store locator with Store Findy.',
+};
+
 export default async function LocatorsEditPage({ params }) {
     const { locator_id } = await params;
     const locator = await getLocatorById(locator_id);

@@ -4,6 +4,11 @@ import Link from 'next/link';
 import Script from 'next/script';
 import EmbedSnippet from '../../../components/EmbedSnippet';
 
+export const metadata = {
+    title: 'Text Diff Checker | Store Findy',
+    description: 'Compare two blocks of text and instantly highlight every difference with this free online diff checker from Store Findy.',
+};
+
 export default function TextDiffCheckerPage() {
     return (
         <div className={styles.toolpage}>

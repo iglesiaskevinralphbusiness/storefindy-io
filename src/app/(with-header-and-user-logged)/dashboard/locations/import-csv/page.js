@@ -6,6 +6,13 @@ import { getBillingStatus } from '@/actions/billing';
 import ImportCSVPageClient from './import-csv-client';
 import LimitReached from '@/components/LimitReached';
 
+export async function generateMetadata() {
+    return {
+        title: 'Import Locations via CSV | Store Findy',
+        description: 'Bulk import hundreds of store locations at once by uploading a CSV file to Store Findy.',
+    };
+}
+
 export default async function ImportCSVPage() {
     const billingStatus = await getBillingStatus();
     

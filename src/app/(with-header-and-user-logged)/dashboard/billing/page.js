@@ -5,6 +5,13 @@ import { RiArrowRightLine } from "react-icons/ri";
 import BillingPageClient from './billing-client';
 import { getBillingStatus } from '@/actions/billing';
 
+export async function generateMetadata() {
+    return {
+        title: 'Billing & Plans | Store Findy',
+        description: 'View your subscription, manage payment details, and upgrade your plan on Store Findy.',
+    };
+}
+
 export default async function BillingPage() {
     const billingStatus = await getBillingStatus();
 

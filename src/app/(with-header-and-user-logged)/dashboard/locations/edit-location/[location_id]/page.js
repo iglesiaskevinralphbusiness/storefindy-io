@@ -11,6 +11,13 @@ import Link from 'next/link';
 import { LuArrowLeft } from 'react-icons/lu';
 import LimitReached from '@/components/LimitReached';
 
+export async function generateMetadata() {
+    return {
+        title: 'Edit Location | Store Findy',
+        description: 'Update the address, map pin, and details of an existing store location on Store Findy.',
+    };
+}
+
 export default async function AddLocationPage({ params}) {
     const { location_id } = await params;
     const location = await getLocationById(location_id);

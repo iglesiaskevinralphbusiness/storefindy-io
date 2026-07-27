@@ -26,6 +26,11 @@ import {
 
 // Storefindy user documentation. Static content, so this stays a server
 // component — the in-page anchor links (#section-id) work without any JS.
+export const metadata = {
+    title: 'Documentation | Store Findy',
+    description: 'Step-by-step guides to help you set up, customize, and embed your Store Findy store locator on any website.',
+};
+
 export default function DocumentationPage() {
     return (
         <div className={styles.dashboard}>

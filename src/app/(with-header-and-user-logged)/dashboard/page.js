@@ -73,6 +73,11 @@ const THUMB_GRADIENTS = [
     'linear-gradient(135deg,#fdeede,#f7dcc0)',
 ];
 
+export const metadata = {
+    title: 'Dashboard | Store Findy',
+    description: 'Manage your store locators, locations, and account performance from your Store Findy dashboard.',
+};
+
 export default async function DashboardPage() {
     const locators = await getLocators();
 

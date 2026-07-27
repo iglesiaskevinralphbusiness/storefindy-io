@@ -7,6 +7,13 @@ import LimitReached from '@/components/LimitReached';
 import { getBillingStatus } from '@/actions/billing';
 import { getLocators } from '@/actions/locator';
 
+export async function generateMetadata() {
+    return {
+        title: 'Create a Subdomain | Store Findy',
+        description: 'Create a custom subdomain to host your store locator on a branded find-a-store page with Store Findy.',
+    };
+}
+
 export default async function SubdomainsCreatePage() {
     const billingStatus = await getBillingStatus();
     if(billingStatus.sub_domain_is_limit_reached) {

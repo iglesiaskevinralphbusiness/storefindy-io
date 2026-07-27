@@ -6,6 +6,13 @@ import LocatorsCreatePageClient from './create-client';
 import LimitReached from '@/components/LimitReached';
 import { getBillingStatus } from '@/actions/billing';
 
+export async function generateMetadata() {
+    return {
+        title: 'Create a Locator | Store Findy',
+        description: 'Set up a new store locator in minutes and start helping customers find your locations with Store Findy.',
+    };
+}
+
 export default async function LocatorsCreatePage() {
     const billingStatus = await getBillingStatus();
 

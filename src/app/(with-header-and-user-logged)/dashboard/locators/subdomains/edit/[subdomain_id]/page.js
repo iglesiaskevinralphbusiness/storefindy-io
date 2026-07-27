@@ -8,6 +8,13 @@ import { getBillingStatus } from '@/actions/billing';
 import { getLocators } from '@/actions/locator';
 import { getSubDomainById } from '@/actions/sub-domain';
 
+export async function generateMetadata() {
+    return {
+        title: 'Edit Subdomain | Store Findy',
+        description: 'Update the settings and branding of your store locator subdomain on Store Findy.',
+    };
+}
+
 export default async function SubdomainsEditPage({ params }) {
     const { subdomain_id } = await params;
     const billingStatus = await getBillingStatus();

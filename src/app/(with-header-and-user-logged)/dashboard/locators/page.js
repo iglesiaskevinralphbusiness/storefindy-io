@@ -4,6 +4,11 @@ import { RiArrowRightLine } from "react-icons/ri";
 import LocatorList from '@/components/Dashboard/LocatorList';
 import { getLocators } from '@/actions/locator';
 
+export const metadata = {
+    title: 'My Locators | Store Findy',
+    description: 'View and manage all of your store locators in one place with Store Findy.',
+};
+
 export default async function LocatorsPage() {
     const locators = await getLocators();
 

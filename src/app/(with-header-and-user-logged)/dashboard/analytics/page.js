@@ -72,6 +72,13 @@ const LimitCover = ({title='', message='', data }) => {
     }
 }
 
+export async function generateMetadata() {
+    return {
+        title: 'Analytics | Store Findy',
+        description: 'Track views, searches, and engagement across your store locators with Store Findy analytics.',
+    };
+}
+
 export default async function AnalyticsPage({ searchParams }) {
     const locators = await getLocators();
 
