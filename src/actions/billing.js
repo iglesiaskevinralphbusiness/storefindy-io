@@ -7,6 +7,7 @@ import { UserModel, LocatorModel, LocationModel, SubDomainModel } from '@/mongo'
 import { plans } from '@/utils/constant/pricing';
 import { reconcileUserSubscription } from '@/lib/lemonsqueezy';
 import { TbMap, TbMapPin, TbWorld } from 'react-icons/tb';
+import { getUserPlan } from '@/utils/helpers';
 
 export async function getBillingStatus() {
     const session = await getServerSession(authOptions);
@@ -28,11 +29,14 @@ export async function getBillingStatus() {
     await reconcileUserSubscription(userDoc);
     const user = userDoc.toObject();
 
+    // for demo and testing purposes, we need to set the user plan to admin, business, or pro
+    const user_plan = getUserPlan(user._id.toString());
+
     const locator = await LocatorModel.countDocuments({ user_id: session.user.id });
     const location = await LocationModel.countDocuments({ user_id: session.user.id });
     const sub_domain = await SubDomainModel.countDocuments({ user_id: session.user.id });
 
-    const plan = plans.find(p => p.id === user.plan) || plans[0];
+    const plan = plans.find(p => p.id === user_plan) || plans[0];
 
     const locator_used = locator > plan.max_locator ? plan.max_locator : locator;
     const locator_inactive = locator - plan.max_locator;
@@ -48,11 +52,11 @@ export async function getBillingStatus() {
 
     return {
         id: plan.id,
-        status: user.plan === 'free' ? 'free' : (user.status || 'active'),
+        status: user_plan === 'free' ? 'free' : (user.status || 'active'),
         planName: (plan.id).charAt(0).toUpperCase() + (plan.id).slice(1),
         billingEmail: user.email,
         planStarted: user.plan_started ? user.plan_started : '-',
-        planStartedLabel: user.plan === 'free' ? 'Plan started' : 'Subscribed since',
+        planStartedLabel: user_plan === 'free' ? 'Plan started' : 'Subscribed since',
         renewal: user.renewal_date ? user.renewal_date : '-',
 
         locator_max: plan.max_locator,

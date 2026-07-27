@@ -5,7 +5,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { dbConnect } from '@/config/mongo.config';
 import { UserModel, LocatorModel, LocationModel } from '@/mongo';
 import { sanitizeInput } from '@/utils/lib/input-sanitization';
-import { serializeForClient } from '@/utils/helpers';
+import { serializeForClient, getUserPlan } from '@/utils/helpers';
 import { plans } from '@/utils/constant/pricing';
 
 export async function getProfile() {
@@ -25,7 +25,9 @@ export async function getProfile() {
     const locator_count = await LocatorModel.countDocuments({ user_id: session.user.id });
     const location_count = await LocationModel.countDocuments({ user_id: session.user.id });
 
-    const plan = plans.find(p => p.id === user.plan) || plans[0];
+    const user_plan = getUserPlan(user._id.toString());
+
+    const plan = plans.find(p => p.id === user_plan) || plans[0];
 
     return {
         id: String(user._id),
@@ -39,7 +41,7 @@ export async function getProfile() {
         provider: user.provider || 'google',
         plan: plan.id,
         planName: plan.name,
-        status: user.plan === 'free' ? 'free' : (user.status || 'active'),
+        status: user_plan === 'free' ? 'free' : (user.status || 'active'),
         created_at: user.created_at || '',
         last_login_at: user.last_login_at || '',
         locator_count,

@@ -6,7 +6,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { dbConnect } from '@/config/mongo.config';
 import { LocationModel, LocatorModel, UserModel } from '@/mongo';
 import { sanitizeInput } from '@/utils/lib/input-sanitization';
-import { serializeForClient } from '@/utils/helpers';
+import { serializeForClient, getUserPlan } from '@/utils/helpers';
 import { isValidObjectId } from 'mongoose';
 import { plans } from '@/utils/constant/pricing';
 
@@ -278,7 +278,9 @@ export async function getLocationsInactiveIds(user_id){
         return [];
     }
 
-    const plan = plans.find(p => p.id === user.plan) || plan[0];
+    const user_plan = getUserPlan(user._id.toString());
+
+    const plan = plans.find(p => p.id === user_plan) || plan[0];
     const skip = plan.max_location;
 
     if(plan.id === 'business') {

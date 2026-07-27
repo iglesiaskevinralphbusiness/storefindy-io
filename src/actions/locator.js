@@ -5,7 +5,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { dbConnect } from '@/config/mongo.config';
 import { UserModel, LocatorModel, LocationModel, SubDomainModel } from '@/mongo';
 import { getLocationsInactiveIds } from '@/actions/locations';
-import { serializeForClient } from '@/utils/helpers';
+import { serializeForClient, getUserPlan } from '@/utils/helpers';
 import { isValidObjectId } from 'mongoose';
 import { plans } from '@/utils/constant/pricing';
 import mongoose from "mongoose";
@@ -163,7 +163,9 @@ export async function getLocatorInactiveIds(user_id) {
         return [];
     }
 
-    const plan = plans.find(p => p.id === user.plan) || plan[0];
+    const user_plan = getUserPlan(user_id);
+
+    const plan = plans.find(p => p.id === user_plan) || plan[0];
     const skip = plan.max_locator;
 
     const locators = (await LocatorModel.find({ user_id })
@@ -200,11 +202,13 @@ export async function getLocatorById(locator_id) {
         return null;
     }
 
+    const user_plan = getUserPlan(user._id.toString());
+
     // inactive ids - set inactive locators that are beyond the plan's limit
     const inactiveIds = await getLocatorInactiveIds(session.user.id);
     return serializeForClient({
         ...locator,
-        user_plan: user.plan,
+        user_plan: user_plan,
         status: inactiveIds.includes(String(locator._id)) ? 'inactive' : 'active',
     });
 }
@@ -302,8 +306,9 @@ export async function getAnalyticsData({ range = '30', locator = 'all' } = {}) {
     if (!user) {
         return null;
     }
-    const plan = plans.find(p => p.id === user.plan) || plan[0];
+    const user_plan = getUserPlan(session.user.id.toString());
 
+    const plan = plans.find(p => p.id === user_plan) || plan[0];
     if (plan.id === 'free') {
         return null;
     }

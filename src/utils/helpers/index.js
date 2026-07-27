@@ -134,3 +134,12 @@ export function getCurrentHourCode(tzOffsetMinutes = null) {
 
     return `${displayHour}${suffix}`;
 }
+
+export function getUserPlan(user_id) {
+    if(user_id.toString() === process.env.USER_ID_BUSINESS) {
+        return 'business';
+    } else if(user_id.toString() === process.env.USER_ID_PRO) {
+        return 'pro';
+    }
+    return 'free';
+}
