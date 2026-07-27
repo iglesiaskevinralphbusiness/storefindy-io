@@ -504,7 +504,7 @@ export default function Locator({
             <div className="actions">
                 {features.show_directions && (
                     <Link
-                        href={`https://www.google.com/maps/dir/?api=1&destination=${location.latitude},${location.longitude}`}
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(buildAddress(location) || `${location.latitude},${location.longitude}`)}`}
                         target="_blank"
                         style={{
                             backgroundColor: settings.getDirections.background,

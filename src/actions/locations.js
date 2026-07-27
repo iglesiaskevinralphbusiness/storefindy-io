@@ -492,8 +492,10 @@ export async function importCSV(locatorId, mode, records) {
         // Sanitize against NoSQL injection ($-prefixed keys) before validating.
         const clean = sanitizeInput({
             name: String(raw?.name ?? '').trim(),
+            street: String(raw?.street ?? '').trim(),
             city: String(raw?.city ?? '').trim(),
             state: String(raw?.state ?? '').trim(),
+            postal: String(raw?.postal ?? '').trim(),
             country: String(raw?.country ?? '').trim(),
             lat: String(raw?.lat ?? '').trim(),
             lng: String(raw?.lng ?? '').trim(),
@@ -522,10 +524,10 @@ export async function importCSV(locatorId, mode, records) {
             locator_id: locatorId,
             name: clean.name,
             description: '',
-            street: '',
+            street: clean.street,
             city: clean.city,
             state: clean.state,
-            postal: '',
+            postal: clean.postal,
             country: clean.country,
             latitude: parsed.data.latitude,
             longitude: parsed.data.longitude,
