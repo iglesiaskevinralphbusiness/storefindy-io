@@ -10,11 +10,26 @@ import {
     TbRocket,
 } from 'react-icons/tb';
 import styles from './AboutUs.module.scss';
+import { SITE_URL } from '@/utils/constant/jsonld';
 
 export const metadata = {
-    title: 'About Us | Storefindy',
+    title: 'About Us',
     description:
         'Storefindy is on a mission to give every business a beautiful, affordable store locator. Learn about the story, values, and people behind Storefindy.',
+};
+
+const aboutJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'AboutPage',
+    name: 'About Storefindy',
+    url: `${SITE_URL}/about-us`,
+    description:
+        'Storefindy is on a mission to give every business a beautiful, affordable store locator. Learn about the story, values, and people behind Storefindy.',
+    about: {
+        '@type': 'Organization',
+        name: 'Storefindy',
+        url: SITE_URL,
+    },
 };
 
 const stats = [
@@ -68,6 +83,10 @@ const story = [
 export default function AboutUs() {
     return (
         <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutJsonLd) }}
+            />
             {/* HERO */}
             <section className={styles.hero}>
                 <div className="wrap">

@@ -8,11 +8,31 @@ import {
 } from 'react-icons/tb';
 import ContactForm from './ContactForm';
 import styles from './ContactUs.module.scss';
+import { SITE_URL } from '@/utils/constant/jsonld';
 
 export const metadata = {
-    title: 'Contact Us | Storefindy',
+    title: 'Contact Us',
     description:
         'Questions about Storefindy? Reach out to our team for sales, support, billing, or partnerships. We typically reply within 1 business day.',
+};
+
+const contactJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ContactPage',
+    name: 'Contact Storefindy',
+    url: `${SITE_URL}/contact-us`,
+    description:
+        'Questions about Storefindy? Reach out to our team for sales, support, billing, or partnerships. We typically reply within 1 business day.',
+    mainEntity: {
+        '@type': 'Organization',
+        name: 'Storefindy',
+        url: SITE_URL,
+        contactPoint: {
+            '@type': 'ContactPoint',
+            contactType: 'customer support',
+            email: 'support@storefindy.com',
+        },
+    },
 };
 
 const methods = [
@@ -74,6 +94,10 @@ const faqs = [
 export default function ContactUs() {
     return (
         <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(contactJsonLd) }}
+            />
             {/* HERO */}
             <section className={styles.hero}>
                 <div className="wrap">

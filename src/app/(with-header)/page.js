@@ -22,11 +22,43 @@ import {
 } from 'react-icons/tb';
 import styles from './page.module.scss';
 import { plans } from '@/utils/constant/pricing';
+import { faqs } from '@/utils/constant/faqs';
 import FaqHome from '@/components/FaqHome';
 import Image from 'next/image';
 
+const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map(({ q, a }) => ({
+        '@type': 'Question',
+        name: q,
+        acceptedAnswer: {
+            '@type': 'Answer',
+            text: a,
+        },
+    })),
+};
+
+const softwareJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'Storefindy',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web',
+    description: 'Store locator widget for your website. Fast, map-based, mobile-friendly, and embeddable on any site.',
+    offers: plans.map((plan) => ({
+        '@type': 'Offer',
+        name: `${plan.name} plan`,
+        description: plan.desc,
+        price: Number(plan.price.replace(/[^0-9.]/g, '')),
+        priceCurrency: 'USD',
+        category: 'subscription',
+        url: 'https://www.storefindy.com/#pricing',
+    })),
+};
+
 export const metadata = {
-    title: 'Storefindy – Store Locator Widget for Your Website',
+    title: { absolute: 'Storefindy – Store Locator Widget for Your Website' },
     description: 'Create a store locator for your website in minutes. Fast, map-based, mobile-friendly. Free plan available — no credit card required.',
 };
 
@@ -82,6 +114,15 @@ const testimonials = [
 
 export default async function Home() {
     return (<>
+        <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+        <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareJsonLd) }}
+        />
+
         <div className='wrap'>
             <section className={styles.hero}>
                 <h1>Store Locator for Your Website — Beautiful and Fast at the Cheapest Cost</h1>
