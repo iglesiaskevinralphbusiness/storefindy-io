@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux';
 import { signOut } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 import { GiHamburgerMenu } from "react-icons/gi";
+import Image from 'next/image';
 
 export default function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -26,7 +27,7 @@ export default function Header() {
             <div className={styles.headerContainer}>
                 <div className={styles.headerLeft}>
                     <Link href="/">
-                        Storefindy.com
+                        <Image src="/images/logo-white.png" alt="Storefindy" width={170} height={31} loading='eager' />
                     </Link>
                 </div>
                 <nav className={styles.headerRight}>

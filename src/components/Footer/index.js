@@ -1,6 +1,6 @@
 import styles from './Footer.module.scss';
 import Link from 'next/link';
-import { TbMapPin } from 'react-icons/tb';
+import Image from 'next/image';
 
 const productLinks = [
     { label: 'Features', href: '/#features' },
@@ -30,8 +30,7 @@ export default function Footer() {
                 <div className={styles.footerTop}>
                     <div className={styles.footerBrand}>
                         <Link href="/" className={styles.brandLogo}>
-                            <span className={styles.brandMark}><TbMapPin aria-hidden="true" /></span>
-                            Storefindy
+                            <Image src="/images/logo-footer.png" alt="Storefindy" width={170} height={31} loading='eager' />
                         </Link>
                         <p className={styles.brandTagline}>
                             A beautiful, fast store locator widget for your website.
