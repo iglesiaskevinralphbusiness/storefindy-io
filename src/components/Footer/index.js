@@ -6,7 +6,7 @@ const productLinks = [
     { label: 'Features', href: '/#features' },
     { label: 'How it works', href: '/#how-it-works' },
     { label: 'Pricing', href: '/#pricing' },
-    { label: 'Live Demo', href: 'https://demo.storefindy.com' },
+    { label: 'Live Demo', href: '/demo' },
     { label: 'Create Locator', href: '/dashboard' },
 ];
 

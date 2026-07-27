@@ -326,7 +326,7 @@ export default function PrivacyPolicy() {
                     <h2>Ready to help customers find your stores?</h2>
                     <p>Create your free store locator in minutes — no credit card, no developer, no complexity.</p>
                     <div className={styles.ctaBannerActions}>
-                        <a href="https://demo.storefindy.com" className={`${styles.ctaButtonBox} ${styles.secondary}`}>See Our Live Demo</a>
+                        <a href="/demo" className={`${styles.ctaButtonBox} ${styles.secondary}`}>See Our Live Demo</a>
                         <a href="/dashboard" className={styles.ctaButtonBox}>Create Your Free Locator</a>
                     </div>
                 </div>

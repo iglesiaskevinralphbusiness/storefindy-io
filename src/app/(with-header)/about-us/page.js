@@ -80,7 +80,7 @@ export default function AboutUs() {
                         and putting a store locator online shouldn&apos;t be expensive for businesses.
                     </p>
                     <div className={styles.buttonBox}>
-                        <a href="https://demo.storefindy.com" className="buttonBox secondary">See Our Live Demo</a>
+                        <a href="/demo" className="buttonBox secondary">See Our Live Demo</a>
                         <a href="/dashboard" className="buttonBox">Create Store Locator</a>
                     </div>
                 </div>
@@ -175,7 +175,7 @@ export default function AboutUs() {
                         branch, or outlet — free to start.
                     </p>
                     <div className={styles.ctaBannerActions}>
-                        <a href="https://demo.storefindy.com" className={`${styles.ctaButtonBox} ${styles.secondary}`}>See Our Live Demo</a>
+                        <a href="/demo" className={`${styles.ctaButtonBox} ${styles.secondary}`}>See Our Live Demo</a>
                         <a href="/dashboard" className={styles.ctaButtonBox}>Create Your Free Locator</a>
                     </div>
                 </div>

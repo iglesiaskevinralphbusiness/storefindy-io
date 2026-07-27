@@ -28,7 +28,7 @@ const methods = [
         title: 'Sales & demos',
         desc: 'Want a walkthrough before you commit? Let’s talk.',
         action: 'See the live demo',
-        href: 'https://demo.storefindy.com',
+        href: '/demo',
     },
     {
         icon: TbBook2,
@@ -178,7 +178,7 @@ export default function ContactUs() {
                         free — no credit card required.
                     </p>
                     <div className={styles.ctaBannerActions}>
-                        <a href="https://demo.storefindy.com" className={`${styles.ctaButtonBox} ${styles.secondary}`}>See Our Live Demo</a>
+                        <a href="/demo" className={`${styles.ctaButtonBox} ${styles.secondary}`}>See Our Live Demo</a>
                         <a href="/dashboard" className={styles.ctaButtonBox}>Create Your Free Locator</a>
                     </div>
                 </div>

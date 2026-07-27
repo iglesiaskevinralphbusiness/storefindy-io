@@ -11,7 +11,7 @@ import { FaDesktop, FaMobileScreenButton } from "react-icons/fa6";
 import { generateSettingsDefault, generateFeaturesDefault } from '@/utils/helpers';
 import LimitReached from '@/components/LimitReached';
 
-export default function CustomizeWrapper({ data, available_countries, onPreview }) {
+export default function CustomizeWrapper({ data, available_countries, onPreview=false, demo=false }) {
     const { settings } = data;
 
     const [viewMode, setViewMode] = useState('desktop');
@@ -22,6 +22,9 @@ export default function CustomizeWrapper({ data, available_countries, onPreview 
     const [featuresData, setFeaturesData] = useState(featuresDefault);
 
     const handleClickSave = () => {
+        if(demo) {
+            return;
+        }
         functionSaveCustomizeLocator(data._id, settingsData, featuresData).then((res) => {
             if(res.status === 'success') {
                 setSettingsDefault(settingsData);
@@ -41,13 +44,14 @@ export default function CustomizeWrapper({ data, available_countries, onPreview 
         {
             !onPreview && (
                 <SidebarCustomize
-                    user_plan={data.user_plan}
+                    user_plan={demo ? 'business' : data.user_plan}
                     settings={settingsData}
                     setSettings={setSettingsData}
                     features={featuresData}
                     setFeatures={setFeaturesData}
                     handleSave={handleClickSave}
-                    isSaveDisabled={isEqual(settingsDefault, settingsData) && isEqual(featuresDefault, featuresData)}
+                    isSaveDisabled={demo ? true : isEqual(settingsDefault, settingsData) && isEqual(featuresDefault, featuresData)}
+                    demo={demo}
                 />
             )
         }
@@ -57,7 +61,7 @@ export default function CustomizeWrapper({ data, available_countries, onPreview 
                     <div className={styles.columnsTitle}>
                         <div className={styles.title}>
                             <h1>Customize Locator</h1>
-                            <p>Dashboard <RiArrowRightLine /> My Locators <RiArrowRightLine /> Customize Locator</p>
+                            { !demo && <p>Dashboard <RiArrowRightLine /> My Locators <RiArrowRightLine /> Customize Locator</p> }
                         </div>
                         <div className={styles.customizeViewButtons}>
                             <button className={viewMode === 'desktop' ? styles.active : ''} onClick={() => setViewMode('desktop')}><FaDesktop /></button>

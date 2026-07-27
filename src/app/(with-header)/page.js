@@ -87,7 +87,7 @@ export default async function Home() {
                 <h1>Store Locator for Your Website — Beautiful and Fast at the Cheapest Cost</h1>
                 <p>Customized to your brand. Live in minutes. No developer, zero complexity — just a store locator that works.</p>
                 <div className={styles.buttonBox}>
-                    <a href="https://demo.storefindy.com" className="buttonBox secondary">See Our Live Demo</a>
+                    <a href="/demo" className="buttonBox secondary">See Our Live Demo</a>
                     <a href="/dashboard" className="buttonBox">Create Store Locator</a>
                 </div>
 
@@ -219,7 +219,7 @@ export default async function Home() {
                 <h2>Start finding your customers more stores — free</h2>
                 <p>Join hundreds of businesses already using Storefindy to help customers find their nearest store, branch, or outlet.</p>
                 <div className={styles.ctaBannerActions}>
-                    <a href="https://demo.storefindy.com" className={`${styles.ctaButtonBox} ${styles.secondary}`}>See Our Live Demo</a>
+                    <a href="/demo" className={`${styles.ctaButtonBox} ${styles.secondary}`}>See Our Live Demo</a>
                     <a href="/dashboard" className={styles.ctaButtonBox}>Create Your Free Locator</a>
                 </div>
             </div>
