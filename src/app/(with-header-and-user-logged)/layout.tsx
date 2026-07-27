@@ -3,11 +3,13 @@ import { getLocale, getMessages } from 'next-intl/server';
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import { ToastContainer } from 'react-toastify';
+import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
 import '../../styles/globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import TopLoadingBar from '@/components/TopLoadingBar';
 import StoreProvider from '@/providers/StoreProvider';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
@@ -37,6 +39,9 @@ export default async function RootLayout({ children }: Props) {
 	return (
 		<html lang={locale}>
 			<body className="min-h-full flex flex-col">
+				<Suspense fallback={null}>
+					<TopLoadingBar />
+				</Suspense>
 				<StoreProvider>
 					<NextIntlClientProvider locale={locale} messages={messages}>
 						<Header />
