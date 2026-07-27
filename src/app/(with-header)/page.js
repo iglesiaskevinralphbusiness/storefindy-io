@@ -23,6 +23,7 @@ import {
 import styles from './page.module.scss';
 import { plans } from '@/utils/constant/pricing';
 import FaqHome from '@/components/FaqHome';
+import Image from 'next/image';
 
 export const metadata = {
     title: 'Storefindy – Store Locator Widget for Your Website',
@@ -92,7 +93,8 @@ export default async function Home() {
 
                 <div className={styles.heroSample}>
                     <div className={styles.heroSampleInner}>
-                        <img src="/images/hero-sample.png" alt="Store Locator" />
+                        <Image src="/images/hero-demo.png" alt="Store Locator" width={1000} height={1000} loading='eager' />
+                        <Image src="/images/hero-demo-mobile.png" alt="Store Locator" width={375} height={667} loading='eager' />
                     </div>
                 </div>
             </section>

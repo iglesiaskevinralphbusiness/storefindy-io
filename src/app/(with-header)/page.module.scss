@@ -74,6 +74,24 @@
             width: 100%;
             z-index: 1;
             background: #fff;
+            img {
+                width: 100%;
+                height: auto;
+                &:first-child {
+                    display: block;
+                }
+                &:last-child {
+                    display: none;
+                }
+                @media (max-width: 425px) {
+                    &:first-child {
+                        display: none;
+                    }
+                    &:last-child {
+                        display: block;
+                    }
+                }
+            }
         }
     }
 }

@@ -186,7 +186,7 @@ export default function LocationsTable({ data=[], sort, order }) {
                                     }
                                 </td>
                                 <td className={styles.views}>{l.views > 0 ? l.views.toLocaleString() : '—'}</td>
-                                <td className={styles.dateModified}>{l.updatedAt ? mongooseFormatTimeAgo(l.updatedAt) : '—'}</td>
+                                <td className={styles.dateModified}>{mongooseFormatTimeAgo(l.createdAt, l.updatedAt)}</td>
                                 <td>
                                     <div className={styles.actions}>
                                         <button
