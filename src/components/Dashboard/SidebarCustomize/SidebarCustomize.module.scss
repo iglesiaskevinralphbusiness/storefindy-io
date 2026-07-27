@@ -1,6 +1,27 @@
 .sidebar {
+    position: relative;
     width: 309px;
     border-right: 1px solid #f1f1f1;
+    transition: margin-left 0.5s ease;
+
+    .resize {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: #ffe54c;
+        width: 30px;
+        height: 30px;
+        position: absolute;
+        top: 16px;
+        right: -31px;
+        border-top-right-radius: 8px;
+        border-bottom-right-radius: 8px;
+        font-size: 20px;
+        z-index: 99;
+        @media (max-width: 768px) {
+            display: flex;
+        }
+    }
 
     .header {
         display: flex;
@@ -49,6 +70,12 @@
                 font-size: 14px;
                 font-weight: 600;
             }
+        }
+    }
+
+    &.resizeOpen {
+        @media (max-width: 768px) {
+            margin-left: -309px;
         }
     }
 }

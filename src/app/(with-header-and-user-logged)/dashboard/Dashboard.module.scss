@@ -1221,6 +1221,9 @@
                 border: 1px solid #d0d0d0;
             }
         }
+        @media screen and (max-width: 768px) {
+            display: none;
+        }
     }
     .locatorWrapper {
         &.desktop {

@@ -1,7 +1,8 @@
 'use client';
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { LuChevronLeft,
+import {
+    LuChevronLeft,
     LuSettings,
     LuPalette,
     LuArrowLeft,
@@ -88,6 +89,7 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
     const fileInputRef = useRef(null);
 
     const [isBackModalOpen, setIsBackModalOpen] = useState(false);
+    const [isResizeOpen, setIsResizeOpen] = useState(false);
 
     // Toggles the sliding panel: false shows the tools list, true slides it out
     // to the left and brings the settings panel in from the right.
@@ -159,7 +161,11 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
 
     return (
         <>
-            <div className={styles.sidebar}>
+            <div className={`${styles.sidebar} ${isResizeOpen ? styles.resizeOpen : ''}`}>
+                <div className={styles.resize} onClick={() => setIsResizeOpen(!isResizeOpen)}>
+                    {!isResizeOpen ? <LuChevronLeft /> : <LuPalette />}
+                </div>
+                
                 <div className={styles.header}>
                     <Button
                         icon={showSettings ? <LuPalette /> : <LuSettings />}
