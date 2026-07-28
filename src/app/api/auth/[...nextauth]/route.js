@@ -48,9 +48,14 @@ export const authOptions = {
 			return true;
 		},
 		async jwt({ token, user }) {
-			if (user?.email) {
+			// Backfill the account id whenever it is missing — on initial
+			// sign-in (`user` present) and for older cookies whose token was
+			// issued before this callback set `id`, so they self-heal instead
+			// of leaving `session.user.id` undefined forever.
+			const email = user?.email || token.email;
+			if (email && !token.id) {
 				await dbConnect();
-				const dbUser = await UserModel.findOne({ email: user.email });
+				const dbUser = await UserModel.findOne({ email });
 				if (dbUser) {
 					token.id = dbUser._id.toString();
 					token.email = dbUser.email;

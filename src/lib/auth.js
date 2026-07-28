@@ -10,8 +10,19 @@ import { UserModel } from '@/mongo';
  */
 export async function getSessionUser() {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) return null;
+    if (!session?.user) return null;
 
     await dbConnect();
-    return UserModel.findById(session.user.id);
+
+    // Prefer the account id baked into the JWT. Older session cookies (issued
+    // before the jwt/session callbacks set `id`) only carry the email, so fall
+    // back to that instead of failing the request with a 401.
+    if (session.user.id) {
+        const byId = await UserModel.findById(session.user.id);
+        if (byId) return byId;
+    }
+    if (session.user.email) {
+        return UserModel.findOne({ email: session.user.email });
+    }
+    return null;
 }
