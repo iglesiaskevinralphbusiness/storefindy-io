@@ -27,7 +27,7 @@ export default function Header() {
             <div className={styles.headerContainer}>
                 <div className={styles.headerLeft}>
                     <Link href="/">
-                        <Image src="/images/logo-white.png" alt="Storefindy" width={170} height={31} loading='eager' />
+                        <Image src="/images/logo-white.png" alt="Storefindy" width={172} height={31} loading='eager' />
                     </Link>
                 </div>
                 <nav className={styles.headerRight}>

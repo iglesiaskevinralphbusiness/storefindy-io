@@ -112,7 +112,6 @@ export default async function DashboardPage() {
 
     const homeData = await getHomeData();
     const billingData = await getBillingStatus();
-    console.log(billingData, 'billingData');
 
     // ── Stat cards (built from homeData.statistics) ──
     // Icon + colors are presentation-only, keyed by stat name; label/value/trend
