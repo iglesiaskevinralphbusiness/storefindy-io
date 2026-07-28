@@ -22,12 +22,13 @@ import {
     TbChartBar,
     TbWorld,
     TbChartLine,
-    TbActivity,
     TbCrown,
     TbRocket,
-    TbMapPinOff,
     TbCreditCard,
     TbArrowRight,
+    TbBook,
+    TbLifebuoy,
+    TbChevronRight,
 } from 'react-icons/tb';
 import { mongooseFormatTimeAgo } from '@/utils/helpers';
 
@@ -96,15 +97,13 @@ export default async function DashboardPage() {
         { icon: <TbChartBar />, bg: '#f0f9ff', color: '#0284c7', text: 'Analytics', sub: 'View insights', href: '/dashboard/analytics' },
     ];
 
-    // ── Recent activity (dummy) ──
-    const ACTIVITY = [
-        { bg: '#EAF3DE', color: '#3B6D11', icon: <TbMapPinPlus />, text: <><strong>SM Mall of Asia</strong> added to Main Store Locator</>, time: '2 minutes ago' },
-        { bg: '#EBF4FF', color: '#185FA5', icon: <TbUpload />, text: <>CSV import completed — <strong>12 locations</strong> added to Branch Finder</>, time: '1 hour ago' },
-        { bg: '#f5f0ff', color: '#7c3aed', icon: <TbPalette />, text: <>Customizer updated for <strong>Main Store Locator</strong> — pin color changed</>, time: '3 hours ago' },
-        { bg: '#fffbe6', color: '#BA7517', icon: <TbWorld />, text: <>Subdomain <strong>mybrand.storefindy.com</strong> activated</>, time: 'Yesterday at 4:22 PM' },
-        { bg: '#EAF3DE', color: '#3B6D11', icon: <TbMapPlus />, text: <>New locator <strong>Pop-up Stores</strong> created</>, time: 'Yesterday at 2:10 PM' },
-        { bg: '#FCEBEB', color: '#A32D2D', icon: <TbMapPinOff />, text: <><strong>Rose Pharmacy Cebu</strong> removed from Branch Finder</>, time: '2 days ago' },
-        { bg: '#EBF4FF', color: '#185FA5', icon: <TbCreditCard />, text: <>Pro plan renewed — <strong>$10.00</strong> charged via Lemon Squeezy</>, time: 'Jun 1, 2026' },
+    // ── Documentation & help shortcuts (links into the docs page anchors) ──
+    const DOC_LINKS = [
+        { icon: <TbRocket />, tone: 'yellow', text: 'Getting Started', sub: 'Setup & first steps', href: '/dashboard/documentation#getting-started' },
+        { icon: <TbCode />, tone: 'purple', text: 'Embed & Subdomain', sub: 'Install on your website', href: '/dashboard/documentation#embed' },
+        { icon: <TbUpload />, tone: 'green', text: 'Import via CSV', sub: 'Bulk upload locations', href: '/dashboard/documentation#import-csv' },
+        { icon: <TbCreditCard />, tone: 'orange', text: 'Plans & Billing', sub: 'Payments & upgrades', href: '/dashboard/documentation#billing' },
+        { icon: <TbLifebuoy />, tone: 'blue', text: 'Help & Support', sub: 'Get in touch with us', href: '/dashboard/help-and-support' },
     ];
 
     const firstLocator = locators[0];
@@ -305,7 +304,7 @@ export default async function DashboardPage() {
                             </div>
                         </div>
 
-                        {/* VIEWS CHART + ACTIVITY */}
+                        {/* VIEWS CHART + DOCUMENTATION */}
                         <div className={styles.threeCol}>
 
                             {/* VIEWS OVER TIME CHART */}
@@ -326,20 +325,22 @@ export default async function DashboardPage() {
                                 </div>
                             </div>
 
-                            {/* RECENT ACTIVITY */}
+                            {/* DOCUMENTATION & HELP */}
                             <div className={styles.card}>
                                 <div className={styles.cardHeader}>
-                                    <div className={styles.cardTitle}><TbActivity /> Recent Activity</div>
+                                    <div className={styles.cardTitle}><TbBook /> Documentation & Help</div>
+                                    <Link className={styles.cardAction} href="/dashboard/documentation">All docs <TbArrowRight /></Link>
                                 </div>
-                                <div className={styles.activityList}>
-                                    {ACTIVITY.map((a, i) => (
-                                        <div className={styles.actItem} key={i}>
-                                            <div className={styles.actIcon} style={{ background: a.bg, color: a.color }}>{a.icon}</div>
-                                            <div className={styles.actBody}>
-                                                <div className={styles.actText}>{a.text}</div>
-                                                <div className={styles.actTime}>{a.time}</div>
+                                <div className={styles.topicGrid}>
+                                    {DOC_LINKS.map((t) => (
+                                        <Link className={styles.topicItem} href={t.href} key={t.text}>
+                                            <div className={`${styles.topicIcon} ${styles[t.tone]}`}>{t.icon}</div>
+                                            <div className={styles.topicInfo}>
+                                                <div className={styles.topicText}>{t.text}</div>
+                                                <div className={styles.topicSub}>{t.sub}</div>
                                             </div>
-                                        </div>
+                                            <TbChevronRight className={styles.topicArrow} />
+                                        </Link>
                                     ))}
                                 </div>
                             </div>
