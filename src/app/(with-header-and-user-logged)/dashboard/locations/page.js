@@ -42,7 +42,7 @@ export default async function LocationsPage({ searchParams }) {
                             buttonIcon={<LuPlus />}
                             buttonValue="Add Location"
                             buttonHref="/dashboard/locations/add-location"
-                            used="2 of 3 used"
+                            used={locationsData.used}
                         />
                         <LocationFilter locators={locatorsData} />
                         <LocationsTable data={locationsData.items} sort={sort} order={order} />

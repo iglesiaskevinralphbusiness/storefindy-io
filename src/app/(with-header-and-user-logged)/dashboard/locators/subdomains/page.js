@@ -34,7 +34,7 @@ export default async function LocatorsSubdomainsPage({ searchParams }) {
                             buttonIcon={<LuPlus />}
                             buttonValue="Create Subdomain"
                             buttonHref="/dashboard/locators/subdomains/create"
-                            used="2 of 3 used"
+                            used={subDomains.used}
                         />
                         <SubDomainList locators={locators} data={subDomains.items} />
                         <Pagination page={subDomains.page} pages={subDomains.pages} />

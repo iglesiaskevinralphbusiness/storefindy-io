@@ -314,11 +314,20 @@ export async function getSubDomains(page=1, rows=10, sort='createdAt', order='as
         status: inactiveIds.includes(String(subDomain._id)) ? "inactive" : "active"
     }));
 
+    // used counter
+    const user_plan = getUserPlan(session?.user?.id);
+    const plan = plans.find(p => p.id === user_plan) || plans[0];
+
+    const sub_domain = await SubDomainModel.countDocuments({ user_id: session.user.id });
+    const sub_domain_used = sub_domain > plan.max_sub_domain ? plan.max_sub_domain : sub_domain;
+    const sub_domain_max = plan.max_sub_domain;
+
     return {
         rows: currentRows,
         page: currentPage,
         pages: totalPages === 0 ? 1 : totalPages,
-        items: serializeForClient(subDomainsWithStatus)
+        items: serializeForClient(subDomainsWithStatus),
+        used: `${sub_domain_used} of ${sub_domain_max} used`
     }
 }
 

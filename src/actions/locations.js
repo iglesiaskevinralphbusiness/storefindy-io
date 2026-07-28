@@ -416,11 +416,20 @@ export async function getLocations(page=1, rows=10, sort='createdAt', order='asc
         status: inactiveIds.includes(String(location._id)) ? "inactive" : "active"
     }));
 
+    // used counter
+    const user_plan = getUserPlan(session?.user?.id);
+    const plan = plans.find(p => p.id === user_plan) || plans[0];
+
+    const location = await LocationModel.countDocuments({ user_id: session.user.id });
+    const location_used = plan.id === 'business' ? location : location > plan.max_location ? plan.max_location : location;
+    const location_max = plan.max_location;
+
     return {
         rows: currentRows,
         page: currentPage,
         pages: totalPages === 0 ? 1 : totalPages,
-        items: serializeForClient(locationsWithStatus)
+        items: serializeForClient(locationsWithStatus),
+        used: plan.id === 'business' ? `${location_used} used` : `${location_used} of ${location_max} used`
     }
 }
 

@@ -190,12 +190,12 @@ export default function Sidebar() {
                                 <span>Billing</span>
                             </Link>
                         </li>
-                        <li className={isRootLinkActive('/dashboard/notifications')}>
+                        {/* <li className={isRootLinkActive('/dashboard/notifications')}>
                             <Link href="/dashboard/notifications">
                                 <LuBell />
                                 <span>Notifications</span>
                             </Link>
-                        </li>
+                        </li> */}
                     </ul>
                     <h2>SUPPORT</h2>
                     <ul className={styles.mainMenu}>
