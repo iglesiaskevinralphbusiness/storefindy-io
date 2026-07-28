@@ -382,7 +382,7 @@ export default function AddLocationPage({ locators, data }) {
                         error={err("locator_id")}
                     />
                     <div>
-                        <label style={{ display: 'block', marginBottom: '5px', fontSize: '13px' }}>Filters / Category <HiddenField locatorId={locatorId} show={selectedLocator?.show_filters} /></label>
+                        <label style={{ display: 'block', marginBottom: '5px', fontSize: '13px' }}>Filters / Category <HiddenField locatorId={locatorId} show={!selectedLocator?.show_filters} /></label>
                         <div className={styles.tags}>
                             {selectedLocator && selectedLocator.filters.length > 0 ? selectedLocator.filters.map(category => (
                                 <span
@@ -500,7 +500,7 @@ export default function AddLocationPage({ locators, data }) {
 
             <div className={styles.columns}>
                 <div className={styles.block}>
-                    <h2><LuClock /> Business Hours <HiddenField locatorId={locatorId} show={selectedLocator?.show_filters} /></h2>
+                    <h2><LuClock /> Business Hours <HiddenField locatorId={locatorId} show={!selectedLocator?.show_filters} /></h2>
                     <Select
                         label="Location Status"
                         name="location_status"
@@ -548,7 +548,7 @@ export default function AddLocationPage({ locators, data }) {
                 </div>
 
                 <div className={styles.block}>
-                    <h2><LuClock /> Holiday / Special Hours <HiddenField locatorId={locatorId} show={selectedLocator?.show_filters} /></h2>
+                    <h2><LuClock /> Holiday / Special Hours <HiddenField locatorId={locatorId} show={!selectedLocator?.show_filters} /></h2>
                     <div className={styles.geocode}>
                         <div className={styles.holidayPicker}>
                             <label>From</label>

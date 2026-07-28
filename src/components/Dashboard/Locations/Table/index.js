@@ -112,6 +112,10 @@ export default function LocationsTable({ data=[], sort, order }) {
         }
     }
 
+    const handleClickViewMap = (location) => {
+        console.log('view on map:', location);
+    }
+
     return (
         <>
             {selected.size > 0 && (
@@ -201,7 +205,7 @@ export default function LocationsTable({ data=[], sort, order }) {
                                             aria-label="View on map"
                                             onMouseEnter={(e) => showTooltip(e, 'View on map')}
                                             onMouseLeave={hideTooltip}
-                                            onClick={() => console.log('view on map:', l.id)}
+                                            onClick={() => handleClickViewMap(l)}
                                         ><LuMap /></button>
                                         {
                                             l.published ? <>
