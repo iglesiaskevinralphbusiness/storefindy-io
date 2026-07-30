@@ -1,6 +1,7 @@
 import styles from './Footer.module.scss';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Logo } from '../Header';
 
 const productLinks = [
     { label: 'Features', href: '/#features' },
@@ -30,7 +31,7 @@ export default function Footer() {
                 <div className={styles.footerTop}>
                     <div className={styles.footerBrand}>
                         <Link href="/" className={styles.brandLogo}>
-                            <Image src="/images/logo-footer.png" alt="Storefindy" width={170} height={31} loading='eager' />
+                            <Logo type='light' />
                         </Link>
                         <p className={styles.brandTagline}>
                             A beautiful, fast store locator widget for your website.
