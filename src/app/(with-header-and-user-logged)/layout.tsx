@@ -20,6 +20,13 @@ export const metadata: Metadata = {
 		index: false,
 		follow: false,
 	},
+	icons: {
+		icon: [
+			{ url: '/images/favicon/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+			{ url: '/images/favicon/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+		],
+		apple: [{ url: '/images/favicon/favicon-180x180.png', sizes: '180x180' }],
+	},
 };
 
 type Props = {
