@@ -9,7 +9,7 @@ export default function QuickEmbed({ locatorName, locatorId }) {
     const [copied, setCopied] = useState(false);
 
     const display = `<locator-widget locator="${locatorId}"></locator-widget>`;
-    const full = `${display}\n<script src="https://storefindy.com/widgets.js"></script>`;
+    const full = `${display}\n<script src="https://www.storefindy.com/widgets.js"></script>`;
 
     const handleCopy = () => {
         navigator.clipboard.writeText(full).catch(() => {});

@@ -307,7 +307,7 @@ Walmart Supercenter,New York,NY,US,40.7128,-74.0060,+1-212-000-0000,store@exampl
                                     <span className={styles.docCodeDots}><span></span><span></span><span></span></span>
                                 </div>
                                 <pre>{`<locator-widget locator="YOUR_LOCATOR_ID"></locator-widget>
-<script src="https://storefindy.com/widgets.js"></script>`}</pre>
+<script src="https://www.storefindy.com/widgets.js"></script>`}</pre>
                             </div>
                             <h4><TbInfoCircle /> Where to paste it</h4>
                             <ul>
