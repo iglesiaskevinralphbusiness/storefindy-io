@@ -4,6 +4,7 @@ import styles from './SignIn.module.scss';
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 import { FcGoogle } from 'react-icons/fc';
+import Image from 'next/image';
 
 export default function SignInPage() {
     const handleGoogleSignIn = () => {
@@ -31,7 +32,7 @@ export default function SignInPage() {
                 </div>
             </div>
             <div className={styles.colRight}>
-
+                <Image src="/images/sign-in/people-with-phone.jpg" alt="Sign in right" width={500} height={500} />
             </div>
         </div>
     );

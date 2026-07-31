@@ -1,9 +1,10 @@
 'use client';
 
-import styles from './SignUp.module.scss';
+import styles from '../sign-in/SignIn.module.scss';
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 import { FcGoogle } from 'react-icons/fc';
+import Image from 'next/image';
 
 export default function SignUpPage() {
     const handleGoogleSignUp = () => {
@@ -11,7 +12,7 @@ export default function SignUpPage() {
     };
 
     return (
-        <div className={styles.signUp}>
+        <div className={styles.signIn}>
             <div className={styles.colLeft}>
                 <div className={styles.content}>
                     <h1>Join<br />Storefindy</h1>
@@ -31,7 +32,7 @@ export default function SignUpPage() {
                 </div>
             </div>
             <div className={styles.colRight}>
-
+                <Image src="/images/sign-in/map-with-pin.jpg" alt="Sign up right" width={500} height={500} />
             </div>
         </div>
     );
