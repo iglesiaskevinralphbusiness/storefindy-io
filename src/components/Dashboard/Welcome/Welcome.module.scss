@@ -1,0 +1,366 @@
+/* Storefindy welcome modal — content/UI from storefindy_welcome_modal.html,
+   restyled to the site's own colors and default font scale. Rendered inside the
+   shared <Modal> body (which already provides overlay + padding), so the dark
+   banner is pulled flush with negative margins. */
+
+.wrap {
+    /* Cancel the Modal body's 20px padding so the banner spans edge-to-edge. */
+    margin: -20px;
+}
+
+/* ── TOP / DARK BANNER ── */
+.top {
+    background: #171717;
+    padding: 24px 24px 20px;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: '';
+        position: absolute;
+        right: -30px;
+        top: -30px;
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        background: #ffe54c;
+        opacity: 0.05;
+    }
+    &::after {
+        content: '';
+        position: absolute;
+        left: -20px;
+        bottom: -40px;
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        background: #ffe54c;
+        opacity: 0.04;
+    }
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+}
+
+.logoIcon {
+    width: 32px;
+    height: 32px;
+    background: #ffe54c;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    svg {
+        font-size: 18px;
+        color: #171717;
+    }
+}
+
+.logoText {
+    font-size: 15px;
+    font-weight: 500;
+    color: #fff;
+}
+
+.logoBadge {
+    font-size: 11px;
+    font-weight: 500;
+    background: rgba(255, 229, 76, 0.15);
+    color: #ffe54c;
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 0.5px solid rgba(255, 229, 76, 0.3);
+}
+
+.headline {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 6px;
+    line-height: 1.3;
+    position: relative;
+    z-index: 1;
+}
+
+.sub {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    line-height: 1.6;
+    position: relative;
+    z-index: 1;
+}
+
+/* ── BODY ── */
+.body {
+    padding: 20px 24px;
+}
+
+.stepsLabel {
+    font-size: 11px;
+    font-weight: 600;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 12px;
+}
+
+.steps {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.stepNum {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #171717;
+    color: #ffe54c;
+    font-size: 11px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.stepTitle {
+    font-size: 13px;
+    font-weight: 500;
+    color: #171717;
+    margin-bottom: 2px;
+}
+
+.stepDesc {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.5;
+}
+
+.divider {
+    height: 1px;
+    background: #f1f1f1;
+    margin: 20px 0;
+}
+
+/* ── POLICY BOX ── */
+.policyBox {
+    background: #fafafa;
+    border: 1px solid #f1f1f1;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+}
+
+.policyTitle {
+    font-size: 13px;
+    font-weight: 500;
+    color: #171717;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    svg {
+        font-size: 14px;
+        color: #999;
+    }
+}
+
+.policyText {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.6;
+
+    a {
+        color: #185FA5;
+        text-decoration: none;
+        cursor: pointer;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+/* ── AGREEMENT CHECKBOX ── */
+.checkboxRow {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 20px;
+    cursor: pointer;
+}
+
+.cbBox {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+    background: #fafafa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    transition: all 0.15s;
+
+    svg {
+        font-size: 12px;
+        color: #ffe54c;
+        opacity: 0;
+    }
+
+    &.checked {
+        background: #171717;
+        border-color: #171717;
+
+        svg {
+            opacity: 1;
+        }
+    }
+}
+
+.cbLabel {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.6;
+
+    a {
+        color: #185FA5;
+        text-decoration: none;
+        cursor: pointer;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+/* ── START BUTTON ── */
+.btnStart {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    background: #171717;
+    color: #ffe54c;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.15s;
+
+    svg {
+        font-size: 16px;
+    }
+
+    &:hover {
+        background: #2a2a2a;
+    }
+
+    &:disabled {
+        background: #fafafa;
+        color: #999;
+        cursor: not-allowed;
+    }
+}
+
+.footer {
+    text-align: center;
+    padding-top: 12px;
+    font-size: 11px;
+    color: #999;
+
+    a {
+        color: #185FA5;
+        text-decoration: none;
+        cursor: pointer;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+/* ── SUCCESS STATE ── */
+.success {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    text-align: center;
+}
+
+.successIcon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #EAF3DE;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+
+    svg {
+        font-size: 28px;
+        color: #3B6D11;
+    }
+}
+
+.successTitle {
+    font-size: 18px;
+    font-weight: 600;
+    color: #171717;
+    margin-bottom: 6px;
+}
+
+.successDesc {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 24px;
+}
+
+.btnDashboard {
+    padding: 11px 28px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    background: #171717;
+    color: #ffe54c;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    text-decoration: none;
+
+    svg {
+        font-size: 15px;
+    }
+
+    &:hover {
+        background: #2a2a2a;
+    }
+}

@@ -8,8 +8,6 @@ import { plans } from '@/utils/constant/pricing';
 import {
     TbMapPin,
     TbEye,
-    TbSearch,
-    TbNavigation,
     TbTrendingUp,
     TbMap,
     TbCalendar,
@@ -31,6 +29,7 @@ import {
     TbChevronRight,
 } from 'react-icons/tb';
 import { mongooseFormatTimeAgo } from '@/utils/helpers';
+import Welcome from '@/components/Dashboard/Welcome';
 
 // Build the SVG polyline for the "Views Over Time" chart. (Same technique as the
 // Analytics "Views Over Time" chart.)
@@ -365,6 +364,7 @@ export default async function DashboardPage() {
                     </div>
                 </div>
             </div>
+            <Welcome />
         </div>
     );
 }
