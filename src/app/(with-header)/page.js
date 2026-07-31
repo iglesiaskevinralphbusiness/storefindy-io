@@ -25,6 +25,7 @@ import { plans } from '@/utils/constant/pricing';
 import { faqs } from '@/utils/constant/faqs';
 import FaqHome from '@/components/FaqHome';
 import Image from 'next/image';
+import { buildSocialMetadata } from '@/utils/constant/seo';
 
 const faqJsonLd = {
     '@context': 'https://schema.org',
@@ -57,9 +58,14 @@ const softwareJsonLd = {
     })),
 };
 
+const homeTitle = 'Storefindy – Store Locator Widget for Your Website';
+const homeDescription =
+    'Create a store locator for your website in minutes. Fast, map-based, mobile-friendly. Free plan available — no credit card required.';
+
 export const metadata = {
-    title: { absolute: 'Storefindy – Store Locator Widget for Your Website' },
-    description: 'Create a store locator for your website in minutes. Fast, map-based, mobile-friendly. Free plan available — no credit card required.',
+    title: { absolute: homeTitle },
+    description: homeDescription,
+    ...buildSocialMetadata({ title: homeTitle, description: homeDescription, path: '/' }),
 };
 
 const industries = [

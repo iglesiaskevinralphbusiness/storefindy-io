@@ -1,9 +1,14 @@
 import styles from './TermsOfService.module.scss';
+import { buildSocialMetadata } from '@/utils/constant/seo';
+
+const pageTitle = 'Terms of Service';
+const pageDescription =
+    'The terms and conditions governing your use of Storefindy — the free, embeddable store locator widget for your website.';
 
 export const metadata = {
-    title: 'Terms of Service | Storefindy',
-    description:
-        'The terms and conditions governing your use of Storefindy — the free, embeddable store locator widget for your website.',
+    title: pageTitle,
+    description: pageDescription,
+    ...buildSocialMetadata({ title: `${pageTitle} | Storefindy`, description: pageDescription, path: '/terms-of-service' }),
 };
 
 const LAST_UPDATED = 'July 24, 2026';

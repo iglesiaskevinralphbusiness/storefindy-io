@@ -11,11 +11,16 @@ import {
 } from 'react-icons/tb';
 import styles from './AboutUs.module.scss';
 import { SITE_URL } from '@/utils/constant/jsonld';
+import { buildSocialMetadata } from '@/utils/constant/seo';
+
+const pageTitle = 'About Us';
+const pageDescription =
+    'Storefindy is on a mission to give every business a beautiful, affordable store locator. Learn about the story, values, and people behind Storefindy.';
 
 export const metadata = {
-    title: 'About Us',
-    description:
-        'Storefindy is on a mission to give every business a beautiful, affordable store locator. Learn about the story, values, and people behind Storefindy.',
+    title: pageTitle,
+    description: pageDescription,
+    ...buildSocialMetadata({ title: `${pageTitle} | Storefindy`, description: pageDescription, path: '/about-us' }),
 };
 
 const aboutJsonLd = {

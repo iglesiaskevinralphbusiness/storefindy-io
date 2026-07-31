@@ -9,11 +9,16 @@ import {
 import ContactForm from './ContactForm';
 import styles from './ContactUs.module.scss';
 import { SITE_URL } from '@/utils/constant/jsonld';
+import { buildSocialMetadata } from '@/utils/constant/seo';
+
+const pageTitle = 'Contact Us';
+const pageDescription =
+    'Questions about Storefindy? Reach out to our team for sales, support, billing, or partnerships. We typically reply within 1 business day.';
 
 export const metadata = {
-    title: 'Contact Us',
-    description:
-        'Questions about Storefindy? Reach out to our team for sales, support, billing, or partnerships. We typically reply within 1 business day.',
+    title: pageTitle,
+    description: pageDescription,
+    ...buildSocialMetadata({ title: `${pageTitle} | Storefindy`, description: pageDescription, path: '/contact-us' }),
 };
 
 const contactJsonLd = {

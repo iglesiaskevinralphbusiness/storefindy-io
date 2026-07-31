@@ -1,9 +1,14 @@
 import styles from './PrivacyPolicy.module.scss';
+import { buildSocialMetadata } from '@/utils/constant/seo';
+
+const pageTitle = 'Privacy Policy';
+const pageDescription =
+    'How Storefindy collects, uses, and protects your information — including our use of cookies for authentication and analytics.';
 
 export const metadata = {
-    title: 'Privacy Policy | Storefindy',
-    description:
-        'How Storefindy collects, uses, and protects your information — including our use of cookies for authentication and analytics.',
+    title: pageTitle,
+    description: pageDescription,
+    ...buildSocialMetadata({ title: `${pageTitle} | Storefindy`, description: pageDescription, path: '/privacy-policy' }),
 };
 
 const LAST_UPDATED = 'July 24, 2026';

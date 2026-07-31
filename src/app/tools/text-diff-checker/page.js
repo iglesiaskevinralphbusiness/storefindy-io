@@ -3,10 +3,20 @@ import { FaAngleLeft } from "react-icons/fa6";
 import Link from 'next/link';
 import Script from 'next/script';
 import EmbedSnippet from '../../../components/EmbedSnippet';
+import { SITE_URL } from '@/utils/constant/jsonld';
+import { buildSocialMetadata } from '@/utils/constant/seo';
+
+const pageTitle = 'Text Diff Checker | Store Findy';
+const pageDescription =
+    'Compare two blocks of text and instantly highlight every difference with this free online diff checker from Store Findy.';
 
 export const metadata = {
-    title: 'Text Diff Checker | Store Findy',
-    description: 'Compare two blocks of text and instantly highlight every difference with this free online diff checker from Store Findy.',
+    // This route is outside the (with-header) group, so it does not inherit that
+    // layout's metadataBase — set it here so the OG image resolves to an absolute URL.
+    metadataBase: new URL(SITE_URL),
+    title: pageTitle,
+    description: pageDescription,
+    ...buildSocialMetadata({ title: pageTitle, description: pageDescription, path: '/tools/text-diff-checker' }),
 };
 
 export default function TextDiffCheckerPage() {
