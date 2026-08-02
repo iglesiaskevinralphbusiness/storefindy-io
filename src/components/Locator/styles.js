@@ -612,3 +612,122 @@ export const userDefinedStyles = `
     height: 605px;
 }
 `;
+
+export const loadingStyles = `
+.loader-widget {
+  border: 0.5px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  max-width: 700px;
+  margin: 1.5rem auto;
+}
+.loader-wrap {
+  height: 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+  padding: 1.5rem;
+  background: var(--surface-2);
+}
+.loader-wrap:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 278px;
+    height: 170px;
+    margin: auto;
+    border: 1px solid #dbdbdb;
+    border-radius: 12px;
+}
+.logo-icon-pulse {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: logo-pulse 1.6s ease-in-out infinite;
+  margin-bottom: 10px;
+}
+@keyframes logo-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(0.93);
+  }
+}
+.logo-icon-pulse i {
+  font-size: 24px;
+  color: #ffe54c;
+}
+.prog-wrap {
+  width: 140px;
+  height: 3px;
+  background: var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.prog-fill {
+  height: 100%;
+  border-radius: 10px;
+  background: #ffe54c;
+  animation: prog 2.2s ease-in-out infinite;
+}
+@keyframes prog {
+  0% {
+    width: 0%;
+  }
+  65% {
+    width: 75%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+.loading-text {
+  font-family: Helvetica, Arial, sans-serif;
+  font-weight: 200;
+  font-size: 12px;
+}
+.powered-by {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  text-decoration: none;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+  position: absolute;
+  bottom: 42px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #888;
+  font-family: Helvetica, Arial, sans-serif;
+  font-weight: 200;
+  font-size: 10px;
+}
+.powered-by:hover {
+  opacity: 0.7;
+}
+.pb-icon {
+  width: 14px;
+  height: 14px;
+  background: #171717;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.pb-icon i {
+  font-size: 8px;
+  color: #ffe54c;
+}
+`;
