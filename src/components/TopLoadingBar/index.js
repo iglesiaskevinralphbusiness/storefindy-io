@@ -53,8 +53,19 @@ export default function TopLoadingBar() {
 			if (runningRef.current) return; // already running
 			runningRef.current = true;
 
-			setVisible(true);
-			setProgress(10);
+			// IMPORTANT: `start` can be invoked synchronously from inside React's
+			// commit / insertion-effect phase (Next.js's router calls the patched
+			// history.pushState there). Calling setState synchronously in that phase
+			// throws "useInsertionEffect must not schedule updates" and the update is
+			// dropped — which is also why the bar previously only appeared *after* the
+			// server page had loaded. Defer the state updates out of the current call
+			// stack so they land in a normal render and the bar shows immediately.
+			requestAnimationFrame(() => {
+				if (!runningRef.current) return; // finished before the frame ran
+				setVisible(true);
+				setProgress(10);
+			});
+
 			trickleRef.current = setInterval(() => {
 				setProgress((prev) => {
 					if (prev >= 90) return prev;
