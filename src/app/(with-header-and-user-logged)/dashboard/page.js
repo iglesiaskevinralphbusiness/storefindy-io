@@ -364,7 +364,7 @@ export default async function DashboardPage() {
                     </div>
                 </div>
             </div>
-            <Welcome />
+            <Welcome isAgreed={homeData.is_welcome_accepted} />
         </div>
     );
 }

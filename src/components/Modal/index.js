@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { LuX } from "react-icons/lu";
 import styles from './Modal.module.scss';
 
-export default function Modal({ isOpen, onClose, title, children, footer = null }) {
+export default function Modal({ isOpen, onClose, title, children, showHeader = true, footer = null }) {
     useEffect(() => {
         if (!isOpen) return;
 
@@ -25,7 +25,7 @@ export default function Modal({ isOpen, onClose, title, children, footer = null 
     return (
         <div
             className={styles.overlay}
-            onClick={onClose}
+            onClick={showHeader ? onClose : null}
             role="presentation"
         >
             <div
@@ -35,7 +35,7 @@ export default function Modal({ isOpen, onClose, title, children, footer = null 
                 aria-modal="true"
                 aria-label={title}
             >
-                <div className={styles.header}>
+                {showHeader && <div className={styles.header}>
                     {title && <h2>{title}</h2>}
                     <button
                         type="button"
@@ -45,7 +45,7 @@ export default function Modal({ isOpen, onClose, title, children, footer = null 
                     >
                         <LuX />
                     </button>
-                </div>
+                </div> }
                 <div className={styles.body}>
                     {children}
                 </div>

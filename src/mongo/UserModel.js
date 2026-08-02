@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema({
   created_at: { type: String, required: false },
   last_login_at: { type: String, required: false },
   user_level: { type: String, required: false, default: '' }, // user is empty | admin
+  is_welcome_accepted: { type: Boolean, required: false, default: false },
 
   // editable profile fields
   first_name: { type: String, required: false, default: '' },    // given name

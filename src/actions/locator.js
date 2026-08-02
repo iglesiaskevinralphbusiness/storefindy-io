@@ -1135,6 +1135,11 @@ export async function getHomeData() {
 
     await dbConnect();
 
+    const user = await UserModel.findOne({ email: session.user.email });
+    if (!user) {
+        redirect('/sign-in');
+    }
+
     const range = '30';
     const locator = 'all';
     const query = { user_id: session.user.id }
@@ -1286,5 +1291,6 @@ export async function getHomeData() {
             views_labels: [],
             views_data: [],
         },
+        is_welcome_accepted: user.is_welcome_accepted ? true : false,
     }
 }

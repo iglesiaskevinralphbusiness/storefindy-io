@@ -14,6 +14,8 @@
     padding: 24px 24px 20px;
     position: relative;
     overflow: hidden;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
 
     &::before {
         content: '';
@@ -272,6 +274,9 @@
 
     svg {
         font-size: 16px;
+        &.loading {
+            animation: spin 1s linear infinite;
+        }
     }
 
     &:hover {
@@ -362,5 +367,16 @@
 
     &:hover {
         background: #2a2a2a;
+    }
+}
+
+
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
     }
 }

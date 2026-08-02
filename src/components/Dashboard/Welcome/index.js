@@ -6,11 +6,11 @@ import {
     TbShieldCheck,
     TbCheck,
     TbRocket,
-    TbCircleCheck,
-    TbLayoutDashboard,
+    TbLoader2
 } from 'react-icons/tb';
 import styles from './Welcome.module.scss';
 import Modal from '@/components/Modal';
+import { postProfileWelcomeAccepted } from '@/actions/profile';
 
 const STEPS = [
     {
@@ -27,15 +27,27 @@ const STEPS = [
     },
 ];
 
-export default function Welcome() {
-    const [agreed, setAgreed] = useState(true);
+export default function Welcome({ isAgreed = false }) {
+    const [agreed, setAgreed] = useState(isAgreed ? false : true);
+    const [isLoading, setIsLoading] = useState(false);
 
+    const handleClickContinue = async () => {
+        setIsLoading(true);
+        const result = await postProfileWelcomeAccepted();
+        if (result.status === 'success') {
+            setAgreed(false);
+        } else {
+            toast.error(result.message);
+        }
+        setAgreed(false);
+    }
 
     return (
         <Modal
             isOpen={agreed}
             onClose={() => setAgreed(false)}
             title="Welcome to Storefindy!"
+            showHeader={false}
         >
             <div className={styles.wrap}>
                 {/* TOP */}
@@ -75,8 +87,8 @@ export default function Welcome() {
                         </div>
                         <div className={styles.policyText}>
                             By using Storefindy you agree to our{' '}
-                            <Link href="/terms-of-service">Terms of Service</Link> and{' '}
-                            <Link href="/privacy-policy">Privacy Policy</Link>. We never sell your
+                            <Link href="/terms-of-service" target="_blank">Terms of Service</Link> and{' '}
+                            <Link href="/privacy-policy" target="_blank">Privacy Policy</Link>. We never sell your
                             data or your customers&apos; data. Your store location data is yours —
                             export it anytime.
                         </div>
@@ -84,14 +96,16 @@ export default function Welcome() {
 
                     <div
                         className={styles.checkboxRow}
-                        onClick={() => setAgreed((v) => !v)}
+                        onClick={() => {
+                            // setAgreed((v) => !v)
+                        }}
                         role="checkbox"
                         aria-checked={agreed}
                         tabIndex={0}
                         onKeyDown={(e) => {
                             if (e.key === ' ' || e.key === 'Enter') {
                                 e.preventDefault();
-                                setAgreed((v) => !v);
+                                // setAgreed((v) => !v);
                             }
                         }}
                     >
@@ -100,11 +114,11 @@ export default function Welcome() {
                         </div>
                         <div className={styles.cbLabel}>
                             I agree to the{' '}
-                            <Link href="/terms-of-service" onClick={(e) => e.stopPropagation()}>
+                            <Link href="/terms-of-service" onClick={(e) => e.stopPropagation()} target="_blank">
                                 Terms of Service
                             </Link>{' '}
                             and{' '}
-                            <Link href="/privacy-policy" onClick={(e) => e.stopPropagation()}>
+                            <Link href="/privacy-policy" onClick={(e) => e.stopPropagation()} target="_blank">
                                 Privacy Policy
                             </Link>
                         </div>
@@ -113,10 +127,11 @@ export default function Welcome() {
                     <button
                         type="button"
                         className={styles.btnStart}
-                        disabled={!agreed}
-                        onClick={() => setDone(true)}
+                        disabled={isLoading}
+                        onClick={() => handleClickContinue()}
                     >
-                        <TbRocket /> Go to my dashboard
+                        {isLoading ? <TbLoader2 className={styles.loading} /> : <TbRocket />}
+                        Continue to my dashboard
                     </button>
 
                     <div className={styles.footer}>

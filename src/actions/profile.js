@@ -139,3 +139,24 @@ export async function deleteMyAccount() {
         return { status: "fatal", message: "Server error. Please try again." };
     }
 }
+
+export async function postProfileWelcomeAccepted() {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+    await dbConnect();
+
+    const user = await UserModel.findOne({ email: session.user.email });
+    if (!user) {
+        redirect('/sign-in');
+    }
+
+    // save
+    try {
+        await UserModel.findByIdAndUpdate(user._id, { is_welcome_accepted: true });
+        return { status: "success", message: 'Welcome accepted successfully' };
+    } catch (error) {
+        return { status: "fatal", message: "Server error. Please try again." };
+    }
+}
