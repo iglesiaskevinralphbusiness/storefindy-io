@@ -77,8 +77,12 @@ export default function TopLoadingBar() {
 		};
 
 		// 1. Intercept clicks on internal links.
+		// NOTE: this runs in the capture phase (see addEventListener below) so it
+		// fires *before* Next.js's <Link> handler calls event.preventDefault() to do
+		// client-side navigation. In the bubble phase the event is already
+		// defaultPrevented by the time we see it, so the bar would never start on
+		// click — it would only appear later when the router begins loading the page.
 		const onClick = (event) => {
-			if (event.defaultPrevented) return;
 			if (event.button !== 0) return; // only left click
 			if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
 
@@ -122,11 +126,11 @@ export default function TopLoadingBar() {
 		// 3. Browser back / forward.
 		const onPopState = () => start();
 
-		document.addEventListener('click', onClick);
+		document.addEventListener('click', onClick, true);
 		window.addEventListener('popstate', onPopState);
 
 		return () => {
-			document.removeEventListener('click', onClick);
+			document.removeEventListener('click', onClick, true);
 			window.removeEventListener('popstate', onPopState);
 			window.history.pushState = originalPushState;
 			window.history.replaceState = originalReplaceState;
