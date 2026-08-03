@@ -32,7 +32,7 @@ export default function SignInPage() {
                 </div>
             </div>
             <div className={styles.colRight}>
-                <Image src="/images/sign-in/people-with-phone.jpg" alt="Sign in right" width={500} height={500} />
+                <Image src="/images/sign-in/people-with-phone.jpg" alt="Sign in right" width={500} height={500} loading="eager" />
             </div>
         </div>
     );

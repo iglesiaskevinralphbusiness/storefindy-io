@@ -32,7 +32,7 @@ export default function SignUpPage() {
                 </div>
             </div>
             <div className={styles.colRight}>
-                <Image src="/images/sign-in/map-with-pin.jpg" alt="Sign up right" width={500} height={500} />
+                <Image src="/images/sign-in/map-with-pin.jpg" alt="Sign up right" width={500} height={500} loading="eager" />
             </div>
         </div>
     );
