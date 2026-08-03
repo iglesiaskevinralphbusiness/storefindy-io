@@ -110,6 +110,7 @@ export function generateFeaturesDefault(data) {
         show_store_list: data.show_store_list,
         show_directions: data.show_directions,
         show_store_hours: data.show_store_hours,
+        powered_by_storefindy: data.powered_by_storefindy,
     }
 }
 

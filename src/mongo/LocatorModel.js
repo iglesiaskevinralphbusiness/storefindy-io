@@ -83,6 +83,7 @@ const locatorSchema = new mongoose.Schema({
     show_directions: { type: Boolean, required: false, default: true },
     show_store_hours: { type: Boolean, required: false, default: false },
     powered_by_storefindy: { type: Boolean, required: false, default: true },
+    
     // customize settings
     show_map_radius_indicator: { type: Boolean, required: false, default: false },
     show_map_pin_number: { type: Boolean, required: false, default: true },

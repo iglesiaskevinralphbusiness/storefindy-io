@@ -824,7 +824,7 @@ export default function Locator({
                             renderPopup={(loc, index) => renderLocationCard(loc, index, { showStoreHoursToggle: false })}
                         />
                     </Suspense>
-                    {features.powered_by_storefindy !== false && (
+                    {features.powered_by_storefindy !== true && (
                         <div className="powered-by">Mapping Locator Powered by <a href="https://www.storefindy.com" target="_blank">Storefindy</a> Copyright © {new Date().getFullYear()}, All Rights Reserved.</div>
                     )}
                 </div>

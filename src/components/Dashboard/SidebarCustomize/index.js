@@ -692,9 +692,9 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                                 label="Powered by Storefindy"
                                 name="powered_by_storefindy"
                                 description="Show branding on your widget (free plan)"
-                                checked={features.powered_by_storefindy}
+                                checked={user_plan === 'business' ? features.powered_by_storefindy : false}
                                 onChange={(v) => updateFeatures('powered_by_storefindy', v)}
-                                disabled={true}
+                                disabled={user_plan === 'business' ? false : true}
                             />
                         </div>
                     </div>

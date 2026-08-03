@@ -705,9 +705,8 @@ export const loadingStyles = `
   transition: opacity 0.15s;
   white-space: nowrap;
   position: absolute;
-  bottom: 42px;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 5px;
+  right: 0;
   color: #888;
   font-family: Helvetica, Arial, sans-serif;
   font-weight: 200;

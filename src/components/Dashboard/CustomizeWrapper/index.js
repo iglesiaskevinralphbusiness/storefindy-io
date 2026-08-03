@@ -96,6 +96,7 @@ export default function CustomizeWrapper({ data, available_countries, onPreview=
                     show_radius={data.show_radius}
                     show_store_list={data.show_store_list}
                     show_store_hours={data.show_store_hours}
+                    powered_by_storefindy={data.user_plan === 'business' ? data.powered_by_storefindy : false}
                     show_directions={data.show_directions}
                     show_website_link={data.show_website_link}
 
