@@ -1,7 +1,11 @@
 import NextAuth from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+import GitHubProvider from 'next-auth/providers/github';
 import { dbConnect } from '@/config/mongo.config';
 import { UserModel } from '@/mongo';
+
+// Providers we allow to create/sign in accounts.
+const ALLOWED_PROVIDERS = new Set(['google', 'github']);
 
 /** @type {import('next-auth').AuthOptions} */
 export const authOptions = {
@@ -9,6 +13,13 @@ export const authOptions = {
 		GoogleProvider({
 			clientId: process.env.GOOGLE_CLIENT_ID,
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+		}),
+		GitHubProvider({
+			clientId: process.env.GITHUB_CLIENT_ID,
+			clientSecret: process.env.GITHUB_CLIENT_SECRET,
+			// Ask for the user's email even when it is set to private on GitHub,
+			// so the `signIn` callback below always has an email to key on.
+			authorization: { params: { scope: 'read:user user:email' } },
 		}),
 	],
 	secret: process.env.NEXTAUTH_SECRET,
@@ -20,7 +31,7 @@ export const authOptions = {
 	},
 	callbacks: {
 		async signIn({ user, account }) {
-			if (account?.provider !== 'google' || !user?.email) {
+			if (!account || !ALLOWED_PROVIDERS.has(account.provider) || !user?.email) {
 				return false;
 			}
 
@@ -38,7 +49,7 @@ export const authOptions = {
 			} else {
 				await UserModel.create({
 					email: user.email,
-					provider: 'google',
+					provider: account.provider,
 					provider_id: account.providerAccountId,
 					created_at: nowIso,
 					last_login_at: nowIso,

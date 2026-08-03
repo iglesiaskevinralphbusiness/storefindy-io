@@ -4,11 +4,16 @@ import styles from './SignIn.module.scss';
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 import { FcGoogle } from 'react-icons/fc';
+import { FaGithub } from 'react-icons/fa';
 import Image from 'next/image';
 
 export default function SignInPage() {
     const handleGoogleSignIn = () => {
         signIn('google', { callbackUrl: '/dashboard' });
+    };
+
+    const handleGithubSignIn = () => {
+        signIn('github', { callbackUrl: '/dashboard' });
     };
 
     return (
@@ -26,6 +31,15 @@ export default function SignInPage() {
                     >
                         <FcGoogle size={20} />
                         <span>Sign in with Google</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={handleGithubSignIn}
+                        className={styles.githubBtn}
+                    >
+                        <FaGithub size={20} />
+                        <span>Sign in with GitHub</span>
                     </button>
 
                     <p>Not a member yet? <Link href="/sign-up">Sign up</Link></p>
