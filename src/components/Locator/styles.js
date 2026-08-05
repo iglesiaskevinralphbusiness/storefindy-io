@@ -423,6 +423,54 @@ export const mapStyles = `
     font-size: 100%;
     margin: 0;
 }
+/* Live open/closed badge above the hours. Unscoped so the results list and the
+   map popup card share one definition. Tones follow Google's: green open, red
+   closed, amber within the hour of a transition, red for standing notices
+   (temporarily closed / coming soon). */
+.location-status {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+    font-size: 95%;
+    margin-bottom: 4px;
+}
+.location-status .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: currentColor;
+    flex-shrink: 0;
+}
+.location-status .status-label {
+    font-weight: 600;
+}
+.location-status .status-detail {
+    color: #444;
+    font-weight: 400;
+}
+.location-status .status-note {
+    font-size: 85%;
+    color: #666;
+    background-color: #f2f4f7;
+    border-radius: 7px;
+    padding: 1px 6px;
+}
+.location-status.open {
+    color: #188038;
+}
+.location-status.closed,
+.location-status.notice {
+    color: #d93025;
+}
+.location-status.soon {
+    color: #e37400;
+}
+/* A standing notice is the whole story — no transition time follows it, so the
+   dot would just be noise. */
+.location-status.notice .status-dot {
+    display: none;
+}
 .filters-checked {
     margin-bottom: 8px;
 }

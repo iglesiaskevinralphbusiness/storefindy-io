@@ -45,9 +45,175 @@ function buildAddress(loc) {
         .join(', ');
 }
 
-function todaysHours(loc) {
-    const day = loc.hours?.[DAY_KEYS[new Date().getDay()]];
-    if (!day || !day.enabled) return 'Closed';
+// Locations that aren't open keep their stored schedule in the DB, but it is
+// meaningless to a visitor — the status badge shows the standing notice instead
+// and the weekly breakdown is hidden entirely. Returns '' for open locations.
+function closedStatusLabel(loc) {
+    if (loc.location_status === 'temporarily_closed') return 'Temporarily Closed';
+    if (loc.location_status === 'coming_soon') return 'Coming Soon';
+    return '';
+}
+
+// ---------------------------------------------------------------------------
+// Open / closed indicator
+//
+// Mirrors how Google Maps summarises a place: a state word plus the next
+// transition — "Open ⋅ Closes 9 PM", "Closed ⋅ Opens 9 AM Mon".
+//
+// Everything is computed against the STORE's wall clock, not the visitor's:
+// `loc.timezone` is the IANA zone resolved from the pin coordinates when the
+// location is saved. Records written before that field existed have no zone, so
+// they fall back to visitor-local time — the same (wrong for far-away stores,
+// but harmless nearby) behaviour the widget had before.
+// ---------------------------------------------------------------------------
+
+// How far ahead of a transition Google switches to the amber "soon" wording.
+const SOON_MINUTES = 60;
+
+// "08:00" -> 480. Null for anything unparseable.
+function toMinutes(value) {
+    const [h, m] = String(value ?? '').split(':').map(Number);
+    if (Number.isNaN(h) || Number.isNaN(m)) return null;
+    return h * 60 + m;
+}
+
+// 1260 -> "9 PM", 1290 -> "9:30 PM". Google drops the ":00" on the hour.
+function formatClock(minutes) {
+    const mins = ((minutes % 1440) + 1440) % 1440;
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    const period = h >= 12 ? 'PM' : 'AM';
+    const hour12 = h % 12 === 0 ? 12 : h % 12;
+    return m === 0 ? `${hour12} ${period}` : `${hour12}:${String(m).padStart(2, '0')} ${period}`;
+}
+
+// The store's wall clock right now: which weekday it is there, minutes past
+// midnight, and the calendar date (used to match holiday ranges).
+function storeNow(loc, now) {
+    if (loc.timezone) {
+        try {
+            const parts = new Intl.DateTimeFormat('en-US', {
+                timeZone: loc.timezone,
+                hourCycle: 'h23',
+                weekday: 'short',
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit',
+            }).formatToParts(now).reduce((acc, p) => ({ ...acc, [p.type]: p.value }), {});
+            // en-US short weekdays ("Mon", "Tue", …) are exactly the schema's keys.
+            return {
+                dayIndex: DAY_KEYS.indexOf(parts.weekday),
+                minutes: Number(parts.hour) * 60 + Number(parts.minute),
+                date: `${parts.year}-${parts.month}-${parts.day}`,
+            };
+        } catch {
+            // Unknown zone string — fall through to visitor-local time.
+        }
+    }
+    const pad = (n) => String(n).padStart(2, '0');
+    return {
+        dayIndex: now.getDay(),
+        minutes: now.getHours() * 60 + now.getMinutes(),
+        date: `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`,
+    };
+}
+
+// Date-only arithmetic on a "YYYY-MM-DD" string. Done in UTC deliberately: these
+// are calendar labels for matching holiday ranges, never instants, so DST must
+// not shift them.
+function addDays(ymd, days) {
+    const d = new Date(`${ymd}T00:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + days);
+    return d.toISOString().slice(0, 10);
+}
+
+// The schedule in force on a given store-local date. A holiday range overrides
+// the weekly hours for every day it covers.
+function daySpec(loc, ymd, dayIndex) {
+    const holiday = (loc.holidays || []).find((h) => h.from <= ymd && ymd <= h.to);
+    if (holiday) return { ...holiday, isHoliday: true };
+    return { ...(loc.hours?.[DAY_KEYS[dayIndex]] || { enabled: false }), isHoliday: false };
+}
+
+// Every open span around today, expressed in minutes from today's store-local
+// midnight (so yesterday is negative). Starts a day early because an overnight
+// span may still be running, and looks a week ahead so a store closed for
+// several days can still answer "Opens 9 AM Mon". Touching spans are merged, so
+// a run of 24-hour days reads as one uninterrupted stretch.
+function openIntervals(loc, base) {
+    const spans = [];
+    for (let offset = -1; offset <= 7; offset++) {
+        const dayIndex = (base.dayIndex + offset + 7) % 7;
+        const spec = daySpec(loc, addDays(base.date, offset), dayIndex);
+        if (!spec.enabled) continue;
+        const open = toMinutes(spec.open);
+        const close = toMinutes(spec.close);
+        if (open === null || close === null) continue;
+        // A close time at or before the open time runs past midnight into the
+        // next day; equal times are the "open 24 hours" convention.
+        spans.push({
+            start: offset * 1440 + open,
+            end: offset * 1440 + close + (close <= open ? 1440 : 0),
+        });
+    }
+    spans.sort((a, b) => a.start - b.start);
+    return spans.reduce((merged, span) => {
+        const last = merged[merged.length - 1];
+        if (last && span.start <= last.end) {
+            last.end = Math.max(last.end, span.end);
+            return merged;
+        }
+        merged.push({ ...span });
+        return merged;
+    }, []);
+}
+
+// Google appends the weekday when a transition isn't today: "Closes 1 AM Sat".
+function daySuffix(base, minutes) {
+    const offset = Math.floor(minutes / 1440);
+    return offset > 0 ? ` ${DAY_KEYS[(base.dayIndex + offset) % 7]}` : '';
+}
+
+// The full indicator for one location: a state word, the next transition, and a
+// tone the UI colours by. Returns null when there's nothing meaningful to show.
+function locationStatus(loc, now) {
+    const notice = closedStatusLabel(loc);
+    if (notice) return { tone: 'notice', label: notice, detail: '', isHoliday: false };
+    if (!loc.hours) return null;
+
+    const base = storeNow(loc, now);
+    if (base.dayIndex < 0) return null;
+    const isHoliday = daySpec(loc, base.date, base.dayIndex).isHoliday;
+
+    const intervals = openIntervals(loc, base);
+    const current = intervals.find((i) => i.start <= base.minutes && base.minutes < i.end);
+
+    if (current) {
+        // A stretch of a full day or more has no meaningful closing time to
+        // quote — Google just says "Open 24 hours".
+        if (current.end - current.start >= 1440) {
+            return { tone: 'open', label: 'Open 24 hours', detail: '', isHoliday };
+        }
+        const at = `${formatClock(current.end)}${daySuffix(base, current.end)}`;
+        return current.end - base.minutes <= SOON_MINUTES
+            ? { tone: 'soon', label: 'Closing soon', detail: at, isHoliday }
+            : { tone: 'open', label: 'Open', detail: `Closes ${at}`, isHoliday };
+    }
+
+    const next = intervals.find((i) => i.start > base.minutes);
+    if (!next) return { tone: 'closed', label: 'Closed', detail: '', isHoliday };
+
+    const at = `${formatClock(next.start)}${daySuffix(base, next.start)}`;
+    return next.start - base.minutes <= SOON_MINUTES
+        ? { tone: 'soon', label: 'Opens soon', detail: at, isHoliday }
+        : { tone: 'closed', label: 'Closed', detail: `Opens ${at}`, isHoliday };
+}
+
+// Today's opening span, in the store's timezone and with holiday overrides applied.
+function todaysHours(loc, now) {
+    const base = storeNow(loc, now);
+    if (base.dayIndex < 0) return 'Closed';
+    const day = daySpec(loc, base.date, base.dayIndex);
+    if (!day.enabled) return 'Closed';
     return `${formatTime(day.open)} - ${formatTime(day.close)}`;
 }
 
@@ -161,6 +327,14 @@ export default function Locator({
     const [showFilters, setShowFilters] = useState(false);
     const [openHours, setOpenHours] = useState({});
     const [showListMap, setShowListMap] = useState('list');
+    // The open/closed indicator is time-sensitive, so it is re-stamped every
+    // minute rather than frozen at first render — a locator left open on a
+    // screen shouldn't still claim "Open" an hour after closing time.
+    const [now, setNow] = useState(() => new Date());
+    useEffect(() => {
+        const id = setInterval(() => setNow(new Date()), 60000);
+        return () => clearInterval(id);
+    }, []);
 
     // Result <li> nodes, keyed by location id, so the active one can be scrolled
     // to the top of the list when a map pin (or the item itself) is selected.
@@ -409,6 +583,56 @@ export default function Locator({
         return '';
     }
 
+    // Hours block for one location: the live open/closed badge, today's span,
+    // and the collapsible week. A location that is temporarily closed or coming
+    // soon says so in the badge and shows no hours at all — its stored schedule
+    // is still in the database, but quoting it to a visitor would be misleading.
+    const renderHours = (location, showStoreHoursToggle) => {
+        if (!features.show_store_hours) return null;
+        const info = locationStatus(location, now);
+        if (!info) return null;
+        const hideHours = info.tone === 'notice';
+        return (
+            <>
+                <div className={`location-status ${info.tone}`}>
+                    <span className="status-dot" aria-hidden="true"></span>
+                    <span className="status-label">{info.label}</span>
+                    {info.detail && <span className="status-detail">&middot; {info.detail}</span>}
+                    {info.isHoliday && <span className="status-note">Holiday hours</span>}
+                </div>
+                {!hideHours && (
+                    <div className="todays-hours">
+                        <p><LuClock /> Today&apos;s Hours:</p>
+                        <p>{todaysHours(location, now)}</p>
+                    </div>
+                )}
+                {!hideHours && showStoreHoursToggle && (
+                    <>
+                        <button
+                            type="button"
+                            className={`btn-store-hours${openHours[location._id] ? ' open' : ''}`}
+                            onClick={() => toggleHours(location._id)}
+                            aria-expanded={!!openHours[location._id]}
+                        >
+                            <LuClock /> Business Hours <FaAngleDown />
+                        </button>
+                        <ul className={`store-hours${openHours[location._id] ? ' open' : ''}`}>
+                            {WEEK.map(([key, label]) => {
+                                const d = location.hours?.[key];
+                                return (
+                                    <li key={key}>
+                                        <span>{label}</span>
+                                        <span>{d?.enabled ? `${formatTime(d.open)} - ${formatTime(d.close)}` : 'Closed'}</span>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </>
+                )}
+            </>
+        );
+    };
+
     // Inner content of a single result — shared by the list <li> and the map
     // popup so both render identical information and UI.
     const renderLocationCard = (location, index, { showStoreHoursToggle = true } = {}) => (
@@ -434,37 +658,7 @@ export default function Locator({
                         <Link href={location.website} target="_blank">{location.website}</Link>
                     </div>
                 )}
-                {features.show_store_hours && location.hours && (
-                    <>
-                        <div className="todays-hours">
-                            <p><LuClock /> Today&apos;s Hours:</p>
-                            <p>{todaysHours(location)}</p>
-                        </div>
-                        {showStoreHoursToggle && (
-                            <>
-                                <button
-                                    type="button"
-                                    className={`btn-store-hours${openHours[location._id] ? ' open' : ''}`}
-                                    onClick={() => toggleHours(location._id)}
-                                    aria-expanded={!!openHours[location._id]}
-                                >
-                                    <LuClock /> Business Hours <FaAngleDown />
-                                </button>
-                                <ul className={`store-hours${openHours[location._id] ? ' open' : ''}`}>
-                                    {WEEK.map(([key, label]) => {
-                                        const d = location.hours?.[key];
-                                        return (
-                                            <li key={key}>
-                                                <span>{label}</span>
-                                                <span>{d?.enabled ? `${formatTime(d.open)} - ${formatTime(d.close)}` : 'Closed'}</span>
-                                            </li>
-                                        );
-                                    })}
-                                </ul>
-                            </>
-                        )}
-                    </>
-                )}
+                {renderHours(location, showStoreHoursToggle)}
                 {location.filters?.length > 0 && (
                     <div className="filters-checked">
                         {location.filters.map((filter, index) => (
