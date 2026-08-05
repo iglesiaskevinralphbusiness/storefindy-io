@@ -118,16 +118,19 @@ function daySpec(loc, ymd, dayIndex) {
     return { ...(loc.hours?.[DAY_KEYS[dayIndex]] || { enabled: false }), isHoliday: false };
 }
 
-// The date each row of the week list stands for, keyed by schema day. The list
-// runs Mon-first, so this is the Mon–Sun week containing today. Special hours
-// are stored against dates, so a row can only know whether one applies to it
-// once it knows which date it represents — and an override dated outside this
-// week correctly leaves the week list alone.
-function currentWeekDates(base) {
-    // base.dayIndex is 0=Sun, but Sunday closes a Mon-first week, so it sits 6
-    // days after that week's Monday rather than 1 day before it.
-    const monday = addDays(base.date, -((base.dayIndex + 6) % 7));
-    return Object.fromEntries(WEEK.map(([key], i) => [key, addDays(monday, i)]));
+// The date each row of the week list stands for, keyed by schema day.
+//
+// The rows are always drawn Mon-first, but the dates behind them look FORWARD:
+// each weekday resolves to its next occurrence, with today at offset 0. So on
+// Tuesday the 4th, Wednesday means the 5th while Monday already means the 10th
+// — the 3rd has been and gone. Special hours are stored against real dates, so
+// this is what keeps a passed one from lingering in the list while an upcoming
+// one still shows.
+function upcomingWeekDates(base) {
+    return Object.fromEntries(WEEK.map(([key]) => [
+        key,
+        addDays(base.date, (DAY_KEYS.indexOf(key) - base.dayIndex + 7) % 7),
+    ]));
 }
 
 // Every open span around today, expressed in minutes from today's store-local
@@ -590,7 +593,7 @@ export default function Locator({
         // two can never disagree about what day it is.
         const base = clockNow(now);
         const todayKey = DAY_KEYS[base.dayIndex];
-        const weekDates = currentWeekDates(base);
+        const weekDates = upcomingWeekDates(base);
         return (
             <>
                 <div className={`location-status ${info.tone}`}>
