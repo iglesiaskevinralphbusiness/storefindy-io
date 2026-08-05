@@ -5,7 +5,6 @@ import { LocationModel } from '@/mongo/LocationsModel';
 import { LocatorModel } from '@/mongo/LocatorModel';
 import { UserModel } from '@/mongo/UserModel';
 import { serializeForClient, getCurrentHourCode } from '@/utils/helpers';
-import { resolveTimezone } from '@/utils/lib/timezone';
 import { plans } from '@/utils/constant/pricing';
 
 // This endpoint powers the public store-locator widget, which is embedded on
@@ -209,14 +208,7 @@ export async function GET(request) {
         match.country = countryParam;
     }
 
-    // Locations saved before the timezone field existed have none stored. Fill
-    // it in from the coordinates on the way out so the widget's open/closed
-    // indicator is correct for every location, not just recently-saved ones —
-    // this makes a backfill migration unnecessary.
-    const docs = (await LocationModel.find(match).lean())
-        .map((doc) => (doc.timezone
-            ? doc
-            : { ...doc, timezone: resolveTimezone(doc.latitude, doc.longitude) }));
+    const docs = await LocationModel.find(match).lean();
 
     let results = docs;
     if (center) {

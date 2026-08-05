@@ -423,6 +423,11 @@ export const mapStyles = `
     font-size: 100%;
     margin: 0;
 }
+/* Today's row in the expanded week, per the store's own clock. Unscoped so the
+   results list and the map popup card share one definition. */
+.store-hours li.today {
+    font-weight: 400;
+}
 /* Live open/closed badge above the hours. Unscoped so the results list and the
    map popup card share one definition. Tones follow Google's: green open, red
    closed, amber within the hour of a transition, red for standing notices
@@ -435,11 +440,9 @@ export const mapStyles = `
     font-size: 95%;
     margin-bottom: 4px;
 }
-.location-status .status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: currentColor;
+/* Leading clock, matching the "Today's Hours" line. Deliberately left at the
+   ambient text colour — the tone is carried by the state word alone. */
+.location-status svg {
     flex-shrink: 0;
 }
 .location-status .status-label {
@@ -456,20 +459,17 @@ export const mapStyles = `
     border-radius: 7px;
     padding: 1px 6px;
 }
-.location-status.open {
+/* Tone is applied to the state word only, never the row, so the clock icon and
+   the trailing detail keep the surrounding text colour. */
+.location-status.open .status-label {
     color: #188038;
 }
-.location-status.closed,
-.location-status.notice {
+.location-status.closed .status-label,
+.location-status.notice .status-label {
     color: #d93025;
 }
-.location-status.soon {
+.location-status.soon .status-label {
     color: #e37400;
-}
-/* A standing notice is the whole story — no transition time follows it, so the
-   dot would just be noise. */
-.location-status.notice .status-dot {
-    display: none;
 }
 .filters-checked {
     margin-bottom: 8px;

@@ -9,7 +9,6 @@ import { sanitizeInput } from '@/utils/lib/input-sanitization';
 import { serializeForClient, getUserPlan } from '@/utils/helpers';
 import { isValidObjectId } from 'mongoose';
 import { plans } from '@/utils/constant/pricing';
-import { resolveTimezone } from '@/utils/lib/timezone';
 
 // CSV imports don't collect business hours, so every imported location starts
 // with this default schedule (the model requires all seven days).
@@ -136,7 +135,6 @@ export async function postCreateLocation(categories, hours, holidays, socialMedi
     // Use the coerced number values from zod to match schema types
     form.latitude = parsed.data.latitude;
     form.longitude = parsed.data.longitude;
-    form.timezone = resolveTimezone(form.latitude, form.longitude);
 
     // save
     try {
@@ -261,7 +259,6 @@ export async function postEditLocation(location_id, categories, hours, holidays,
     // Use the coerced number values from zod to match schema types
     form.latitude = parsed.data.latitude;
     form.longitude = parsed.data.longitude;
-    form.timezone = resolveTimezone(form.latitude, form.longitude);
 
     // save
     try {
@@ -545,7 +542,6 @@ export async function importCSV(locatorId, mode, records) {
             country: clean.country,
             latitude: parsed.data.latitude,
             longitude: parsed.data.longitude,
-            timezone: resolveTimezone(parsed.data.latitude, parsed.data.longitude),
             location_status: 'open',
             hours: DEFAULT_IMPORT_HOURS,
             holidays: [],

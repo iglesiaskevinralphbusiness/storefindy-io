@@ -60,11 +60,11 @@ function closedStatusLabel(loc) {
 // Mirrors how Google Maps summarises a place: a state word plus the next
 // transition — "Open ⋅ Closes 9 PM", "Closed ⋅ Opens 9 AM Mon".
 //
-// Everything is computed against the STORE's wall clock, not the visitor's:
-// `loc.timezone` is the IANA zone resolved from the pin coordinates when the
-// location is saved. Records written before that field existed have no zone, so
-// they fall back to visitor-local time — the same (wrong for far-away stores,
-// but harmless nearby) behaviour the widget had before.
+// Everything is computed against the VISITOR's clock. A stored schedule of
+// 8 AM - 5 PM is read as 8 AM - 5 PM wherever the page is being viewed from —
+// the hours are taken at face value rather than being projected into the
+// store's own timezone. So a visitor whose machine says Wednesday 10 AM sees
+// "Open", no matter which side of the world the location sits on.
 // ---------------------------------------------------------------------------
 
 // How far ahead of a transition Google switches to the amber "soon" wording.
@@ -87,28 +87,9 @@ function formatClock(minutes) {
     return m === 0 ? `${hour12} ${period}` : `${hour12}:${String(m).padStart(2, '0')} ${period}`;
 }
 
-// The store's wall clock right now: which weekday it is there, minutes past
-// midnight, and the calendar date (used to match holiday ranges).
-function storeNow(loc, now) {
-    if (loc.timezone) {
-        try {
-            const parts = new Intl.DateTimeFormat('en-US', {
-                timeZone: loc.timezone,
-                hourCycle: 'h23',
-                weekday: 'short',
-                year: 'numeric', month: '2-digit', day: '2-digit',
-                hour: '2-digit', minute: '2-digit',
-            }).formatToParts(now).reduce((acc, p) => ({ ...acc, [p.type]: p.value }), {});
-            // en-US short weekdays ("Mon", "Tue", …) are exactly the schema's keys.
-            return {
-                dayIndex: DAY_KEYS.indexOf(parts.weekday),
-                minutes: Number(parts.hour) * 60 + Number(parts.minute),
-                date: `${parts.year}-${parts.month}-${parts.day}`,
-            };
-        } catch {
-            // Unknown zone string — fall through to visitor-local time.
-        }
-    }
+// The visitor's wall clock right now: weekday, minutes past midnight, and the
+// calendar date (used to match holiday ranges).
+function clockNow(now) {
     const pad = (n) => String(n).padStart(2, '0');
     return {
         dayIndex: now.getDay(),
@@ -180,8 +161,7 @@ function locationStatus(loc, now) {
     if (notice) return { tone: 'notice', label: notice, detail: '', isHoliday: false };
     if (!loc.hours) return null;
 
-    const base = storeNow(loc, now);
-    if (base.dayIndex < 0) return null;
+    const base = clockNow(now);
     const isHoliday = daySpec(loc, base.date, base.dayIndex).isHoliday;
 
     const intervals = openIntervals(loc, base);
@@ -208,10 +188,9 @@ function locationStatus(loc, now) {
         : { tone: 'closed', label: 'Closed', detail: `Opens ${at}`, isHoliday };
 }
 
-// Today's opening span, in the store's timezone and with holiday overrides applied.
+// Today's opening span, with holiday overrides applied.
 function todaysHours(loc, now) {
-    const base = storeNow(loc, now);
-    if (base.dayIndex < 0) return 'Closed';
+    const base = clockNow(now);
     const day = daySpec(loc, base.date, base.dayIndex);
     if (!day.enabled) return 'Closed';
     return `${formatTime(day.open)} - ${formatTime(day.close)}`;
@@ -592,10 +571,14 @@ export default function Locator({
         const info = locationStatus(location, now);
         if (!info) return null;
         const hideHours = info.tone === 'notice';
+        // Which row of the week to mark. Read from the visitor's clock, the
+        // same source the badge uses, so the two can never disagree about what
+        // day it is.
+        const todayKey = DAY_KEYS[clockNow(now).dayIndex];
         return (
             <>
                 <div className={`location-status ${info.tone}`}>
-                    <span className="status-dot" aria-hidden="true"></span>
+                    <LuClock />
                     <span className="status-label">{info.label}</span>
                     {info.detail && <span className="status-detail">&middot; {info.detail}</span>}
                     {info.isHoliday && <span className="status-note">Holiday hours</span>}
@@ -620,7 +603,7 @@ export default function Locator({
                             {WEEK.map(([key, label]) => {
                                 const d = location.hours?.[key];
                                 return (
-                                    <li key={key}>
+                                    <li key={key} className={key === todayKey ? 'today' : undefined}>
                                         <span>{label}</span>
                                         <span>{d?.enabled ? `${formatTime(d.open)} - ${formatTime(d.close)}` : 'Closed'}</span>
                                     </li>

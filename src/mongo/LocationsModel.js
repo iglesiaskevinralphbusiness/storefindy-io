@@ -44,11 +44,6 @@ const locationSchema = new mongoose.Schema({
     // Location on Map
     latitude: { type: Number, required: true },
     longitude: { type: Number, required: true },
-    // IANA zone (e.g. "America/New_York") derived from the coordinates on save.
-    // The locator widget runs in the visitor's browser, so the open/closed
-    // indicator needs the STORE's clock, not the visitor's. Empty on records
-    // saved before this field existed — the widget falls back to visitor time.
-    timezone: { type: String, required: false, default: '' },
     // Business Hours
     location_status: { type: String, required: true },
     hours: {
