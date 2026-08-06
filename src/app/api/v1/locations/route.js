@@ -29,6 +29,9 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
 
     return withServerError(async () => {
+        // Each of these is sanitized inside queryLocations() — `search` is
+        // regex-escaped, `sort` is whitelisted, `page`/`rows` are clamped and
+        // `locators` is parsed as an ObjectId list. See lib/api-sanitize.js.
         const result = await queryLocations({
             user_id: auth.user_id,
             page: searchParams.get('page') ?? 1,

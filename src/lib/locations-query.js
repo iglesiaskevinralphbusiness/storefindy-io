@@ -7,6 +7,29 @@ import { LocationModel, UserModel } from '@/mongo';
 import { serializeForClient, getUserPlan } from '@/utils/helpers';
 import { plans } from '@/utils/constant/pricing';
 import { redirect } from 'next/navigation';
+import {
+    LIMITS,
+    escapeRegex,
+    parseObjectIdList,
+    pickSortField,
+    pickSortOrder,
+    toBoundedInt,
+    toSearchTerm,
+} from '@/lib/api-sanitize';
+
+// Columns the locations table can be sorted by — the six sortable headers in
+// components/Dashboard/Locations/Table plus the default. `sort` ends up as a KEY
+// in `$sort`, where a value-level sanitizer can't help, so it must come from a
+// whitelist. See pickSortField().
+const SORTABLE_FIELDS = [
+    'name',
+    'address',
+    'locator',
+    'published',
+    'views',
+    'createdAt',
+    'updatedAt',
+];
 
 /**
  * IDs of the locations that fall outside the user's plan limit — the oldest
@@ -59,37 +82,51 @@ export async function queryLocations({
     locators = '',
 } = {}) {
     // build the query
+    //
+    // `user_id` comes from the session or the authenticated API key, never from
+    // the caller's input, so it is the one term here that isn't sanitized.
     const match = {
         user_id
     };
-    if (search) {
+
+    // Escaped: `search` is compiled as a regex, so an unescaped payload such as
+    // `(a+)+$` or `.*.*.*.*a` is a catastrophic-backtracking DoS against the
+    // database, and metacharacters would otherwise silently change the match.
+    const searchTerm = toSearchTerm(search);
+    if (searchTerm) {
+        const pattern = escapeRegex(searchTerm);
         match.$or = [
-            { name: { $regex: search, $options: "i" } },
-            { street: { $regex: search, $options: "i" } },
-            { city: { $regex: search, $options: "i" } },
-            { state: { $regex: search, $options: "i" } },
-            { country: { $regex: search, $options: "i" } },
-            { postal: { $regex: search, $options: "i" } }
+            { name: { $regex: pattern, $options: "i" } },
+            { street: { $regex: pattern, $options: "i" } },
+            { city: { $regex: pattern, $options: "i" } },
+            { state: { $regex: pattern, $options: "i" } },
+            { country: { $regex: pattern, $options: "i" } },
+            { postal: { $regex: pattern, $options: "i" } }
         ];
     }
-    if (locators) {
+
+    // Validated and capped: entries feed an `$in`, and `locator_id` is later
+    // passed to `$toObjectId`, which throws on a non-hex string.
+    const locatorIds = parseObjectIdList(locators);
+    if (locatorIds.length) {
         match.locator_id = {
-            $in: locators.split(",")
+            $in: locatorIds
         };
     }
 
     await dbConnect();
 
-    // pagination
-    const currentPage = Number(page) > 0 ? Number(page) : 1;
-    const currentRows = Number(rows) > 0 ? Number(rows) : 10;
+    // pagination — clamped so `$limit`/`$skip` can't be handed an arbitrary
+    // number of documents to scan or return.
+    const currentPage = toBoundedInt(page, { min: 1, max: LIMITS.page, fallback: 1 });
+    const currentRows = toBoundedInt(rows, { min: 1, max: LIMITS.pageSize, fallback: 10 });
 
     const totalCount = await LocationModel.countDocuments({ user_id });
     const totalPages = Math.ceil(totalCount / currentRows);
 
-    // sort
-    const sortField = sort || 'updatedAt';
-    const sortOrder = order === 'desc' ? 1 : -1;
+    // sort — whitelisted field, see SORTABLE_FIELDS
+    const sortField = pickSortField(sort, SORTABLE_FIELDS, 'createdAt');
+    const sortOrder = pickSortOrder(order) === 'desc' ? 1 : -1;
 
     const locations = serializeForClient(await LocationModel.aggregate([
         { $match: match },

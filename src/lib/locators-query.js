@@ -6,7 +6,7 @@ import { dbConnect } from '@/config/mongo.config';
 import { UserModel, LocatorModel } from '@/mongo';
 import { serializeForClient, getUserPlan } from '@/utils/helpers';
 import { plans } from '@/utils/constant/pricing';
-import { isValidObjectId } from 'mongoose';
+import { isObjectIdString } from '@/lib/api-sanitize';
 
 /**
  * IDs of the locators that fall outside the user's plan limit — the oldest ones
@@ -85,7 +85,9 @@ export async function queryLocators(user_id) {
  * status. Returns null when the ID is malformed or the locator is not theirs.
  */
 export async function queryLocatorById(user_id, locator_id) {
-    if (!isValidObjectId(locator_id)) {
+    // Rejects anything that isn't a 24-hex id, so a non-string or an operator
+    // object can never reach the `_id` term of the findOne() below.
+    if (!isObjectIdString(locator_id)) {
         return null;
     }
 

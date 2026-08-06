@@ -5,9 +5,133 @@
 // and responses are symmetric. Error shape matches the actions:
 // `{ status: 'error', errors: { field: message } }`.
 import { z } from 'zod';
-import { sanitizeInput } from '@/utils/lib/input-sanitization';
+import { isObjectIdString, readBoundedText, sanitizeMongoInput } from '@/lib/api-sanitize';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+// Per-field length caps. Mongoose enforces *types* but not sizes, so without
+// these a single request can write a multi-megabyte document — and every locator
+// read after it pays for that. Generous enough not to reject real content.
+const MAX_LENGTHS = {
+    name: 200,
+    description: 2000,
+    locator_id: 24,
+    street: 200,
+    city: 120,
+    state: 120,
+    postal: 40,
+    country: 80,
+    location_status: 60,
+    phone: 60,
+    email: 254, // RFC 5321
+    website: 2000,
+    view_location_url: 2000,
+    custom_notes: 5000,
+    default_language: 20,
+    default_country: 80,
+};
+const DEFAULT_MAX_LENGTH = 500;
+
+// Caps for the collection-valued fields.
+const MAX_FILTERS = 100;
+const MAX_FILTER_LENGTH = 120;
+const MAX_HOLIDAYS = 100;
+const MAX_SOCIAL_LINKS = 30;
+const MAX_TIME_LENGTH = 20;
+
+/** Trim a value to a string and report whether it busts the field's cap. */
+function boundedString(value, field) {
+    const max = MAX_LENGTHS[field] ?? DEFAULT_MAX_LENGTH;
+    const str = String(value ?? '').trim();
+    return { str, max, tooLong: str.length > max };
+}
+
+/**
+ * `filters` is `{ type: Array }` in both schemas — completely untyped, so
+ * mongoose casts nothing and whatever arrives is stored verbatim. The widget
+ * search route matches it with `$in` against plain strings, so that is what the
+ * API accepts.
+ */
+function validateFilters(value, label) {
+    if (!Array.isArray(value)) return { error: `${label} must be an array` };
+    if (value.length > MAX_FILTERS) return { error: `${label} cannot exceed ${MAX_FILTERS} items` };
+
+    const values = [];
+    for (const item of value) {
+        if (typeof item !== 'string') return { error: `${label} must contain only strings` };
+
+        const trimmed = item.trim();
+        if (trimmed === '') continue;
+        if (trimmed.length > MAX_FILTER_LENGTH) {
+            return { error: `${label} entries cannot exceed ${MAX_FILTER_LENGTH} characters` };
+        }
+        values.push(trimmed);
+    }
+    return { values };
+}
+
+/** A time string as the dashboard's time inputs produce — length-capped only. */
+function boundedTime(value) {
+    const str = String(value ?? '').trim();
+    return str.length > MAX_TIME_LENGTH ? null : str;
+}
+
+/**
+ * Rebuild `holidays` to exactly the fields holidaySchema declares. Mongoose
+ * would strip the extras anyway; doing it here keeps the stored shape and the
+ * validation errors predictable.
+ */
+function validateHolidays(value) {
+    if (!Array.isArray(value)) return { error: 'Holidays must be an array' };
+    if (value.length > MAX_HOLIDAYS) return { error: `Holidays cannot exceed ${MAX_HOLIDAYS} items` };
+
+    const values = [];
+    for (const item of value) {
+        if (!item || typeof item !== 'object' || Array.isArray(item)) {
+            return { error: 'Each holiday must be an object' };
+        }
+
+        const from = boundedTime(item.from);
+        const to = boundedTime(item.to);
+        const open = boundedTime(item.open);
+        const close = boundedTime(item.close);
+        if (from === null || to === null || open === null || close === null) {
+            return { error: 'Holiday date and time values are too long' };
+        }
+        if (!from || !to) return { error: 'Each holiday needs a from and to date' };
+
+        const enabled = Boolean(item.enabled);
+        if (enabled && (!open || !close)) {
+            return { error: 'Open and close times are required for enabled holidays' };
+        }
+        values.push({ from, to, enabled, open, close });
+    }
+    return { values };
+}
+
+/** Rebuild `hours` to the seven days, each with only enabled/open/close. */
+function validateHours(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        return { error: 'Business hours are required for every day' };
+    }
+
+    const hours = {};
+    for (const day of DAYS) {
+        const d = value[day];
+        if (!d || typeof d !== 'object' || typeof d.enabled !== 'boolean') {
+            return { error: 'Business hours are required for every day' };
+        }
+
+        const open = boundedTime(d.open);
+        const close = boundedTime(d.close);
+        if (open === null || close === null) return { error: 'Business hour values are too long' };
+        if (d.enabled && (!open || !close)) {
+            return { error: 'Open and close times are required for enabled days' };
+        }
+        hours[day] = { enabled: d.enabled, open, close };
+    }
+    return { values: hours };
+}
 
 // Locator fields the schema requires but the create form always supplies —
 // mirrors the defaults in dashboard/locators/create/create-client.js.
@@ -65,20 +189,33 @@ const optionalFormat = (format, message) =>
 
 /**
  * Read and parse a JSON request body.
- * Returns `{ body }` or `{ errors }` when the payload isn't a JSON object.
+ * Returns `{ body }` or `{ errors }` when the payload isn't a usable JSON object.
+ *
+ * Three gates, in order, before a validator ever sees the body:
+ *   1. size   — the stream is counted and cut off past the byte cap, so a
+ *              100MB body (which Vercel now accepts) is never buffered whole.
+ *   2. shape  — must be a JSON object, not an array or a scalar.
+ *   3. keys   — `$`-prefixed, dotted and prototype keys are dropped, and
+ *              depth/key-count/array/string limits are enforced.
  */
 export async function readJsonBody(request) {
-    let body;
+    const { text, error: sizeError } = await readBoundedText(request);
+    if (sizeError) return { errors: { body: sizeError } };
+
+    let parsed;
     try {
-        body = await request.json();
+        parsed = JSON.parse(text);
     } catch {
         return { errors: { body: 'Request body must be valid JSON' } };
     }
-    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
         return { errors: { body: 'Request body must be a JSON object' } };
     }
-    // Strip $-prefixed keys before anything reaches a Mongo query.
-    return { body: sanitizeInput(body) };
+
+    const { value, error } = sanitizeMongoInput(parsed);
+    if (error) return { errors: { body: error } };
+
+    return { body: value };
 }
 
 /**
@@ -95,19 +232,27 @@ export function validateLocatorPayload(body, { partial = false } = {}) {
 
     const nameProvided = body.name !== undefined;
     if (!partial || nameProvided) {
-        const name = String(body.name ?? '').trim();
+        const { str: name, max, tooLong } = boundedString(body.name, 'name');
         // Same rule the dashboard applies: a locator must have a name.
         if (name === '') {
             errors.name = 'Locator name is required';
+        } else if (tooLong) {
+            errors.name = `Locator name cannot exceed ${max} characters`;
         } else {
             form.name = name;
         }
     }
 
+    // Ranges match the dashboard's own dropdowns (ZOOM_LEVELS, SEARCH_RADII,
+    // MAXIMUM_RESULTS_SHOWN in utils/constant) — including 999999 for "All
+    // results". Bounding matters beyond tidiness: the public widget route reads
+    // `search_radius` as a geo radius and `maximum_results_shown` as its result
+    // limit, so an unbounded value written here becomes an expensive query for
+    // every unauthenticated visitor afterwards.
     const numeric = {
-        default_zoom_level: 'Default zoom level',
-        search_radius: 'Search radius',
-        maximum_results_shown: 'Maximum results shown',
+        default_zoom_level: { label: 'Default zoom level', min: 1, max: 20 },
+        search_radius: { label: 'Search radius', min: 1, max: 2000 },
+        maximum_results_shown: { label: 'Maximum results shown', min: 1, max: 999999 },
     };
 
     for (const field of LOCATOR_FIELDS) {
@@ -119,22 +264,33 @@ export function validateLocatorPayload(body, { partial = false } = {}) {
         }
 
         if (field in numeric) {
+            const { label, min, max } = numeric[field];
             const parsed = z.coerce.number().safeParse(body[field]);
-            if (!parsed.success) {
-                errors[field] = `${numeric[field]} must be a number`;
+            if (!parsed.success || !Number.isFinite(parsed.data)) {
+                errors[field] = `${label} must be a number`;
+                continue;
+            }
+            if (parsed.data < min || parsed.data > max) {
+                errors[field] = `${label} must be between ${min} and ${max}`;
                 continue;
             }
             form[field] = parsed.data;
         } else if (typeof LOCATOR_DEFAULTS[field] === 'boolean') {
             form[field] = Boolean(body[field]);
         } else if (field === 'filters') {
-            if (!Array.isArray(body.filters)) {
-                errors.filters = 'Filters must be an array';
+            const { values, error } = validateFilters(body.filters, 'Filters');
+            if (error) {
+                errors.filters = error;
                 continue;
             }
-            form.filters = body.filters;
+            form.filters = values;
         } else {
-            form[field] = String(body[field] ?? '').trim();
+            const { str, max, tooLong } = boundedString(body[field], field);
+            if (tooLong) {
+                errors[field] = `${field} cannot exceed ${max} characters`;
+                continue;
+            }
+            form[field] = str;
         }
     }
 
@@ -155,25 +311,47 @@ export function validateLocationPayload(body, { partial = false } = {}) {
     const form = {};
 
     for (const field of LOCATION_STRINGS) {
-        if (body[field] !== undefined) form[field] = String(body[field] ?? '').trim();
+        if (body[field] === undefined) continue;
+
+        const { str, max, tooLong } = boundedString(body[field], field);
+        if (tooLong) errors[field] = `${field} cannot exceed ${max} characters`;
+        else form[field] = str;
     }
     for (const field of LOCATION_BOOLEANS) {
         if (body[field] !== undefined) form[field] = Boolean(body[field]);
     }
+
+    // `locator_id` is checked for shape here so a malformed value fails as a
+    // validation error rather than reaching requireOwnedLocator() or, worse, the
+    // `$toObjectId` in queryLocations().
+    if (form.locator_id !== undefined && form.locator_id !== '' && !isObjectIdString(form.locator_id)) {
+        errors.locator_id = 'Locator ID must be a valid 24-character ID';
+        delete form.locator_id;
+    }
+
     if (body.filters !== undefined) {
-        if (!Array.isArray(body.filters)) errors.filters = 'Filters must be an array';
-        else form.filters = body.filters;
+        const { values, error } = validateFilters(body.filters, 'Filters');
+        if (error) errors.filters = error;
+        else form.filters = values;
     }
     if (body.holidays !== undefined) {
-        if (!Array.isArray(body.holidays)) errors.holidays = 'Holidays must be an array';
-        else form.holidays = body.holidays;
+        const { values, error } = validateHolidays(body.holidays);
+        if (error) errors.holidays = error;
+        else form.holidays = values;
     }
     if (body.social_media_links !== undefined) {
-        form.social_media_links = Array.isArray(body.social_media_links)
-            ? body.social_media_links
-                .map((item) => ({ code: String(item?.code ?? '').trim(), link: String(item?.link ?? '').trim() }))
-                .filter((item) => item.code && item.link)
-            : [];
+        if (!Array.isArray(body.social_media_links)) {
+            errors.social_media_links = 'Social media links must be an array';
+        } else if (body.social_media_links.length > MAX_SOCIAL_LINKS) {
+            errors.social_media_links = `Social media links cannot exceed ${MAX_SOCIAL_LINKS} items`;
+        } else {
+            form.social_media_links = body.social_media_links
+                .map((item) => ({
+                    code: String(item?.code ?? '').trim().slice(0, 40),
+                    link: String(item?.link ?? '').trim().slice(0, MAX_LENGTHS.website),
+                }))
+                .filter((item) => item.code && item.link);
+        }
     }
 
     // On create every required field must be present; on update only validate
@@ -218,20 +396,13 @@ export function validateLocationPayload(body, { partial = false } = {}) {
 
     // Hours: every day must be present with valid open/close when enabled.
     // Required on create; on update only checked when `hours` is supplied.
+    // validateHours() rebuilds the object from the seven known days, so unknown
+    // keys never reach the document.
     const hours = body.hours;
     if (!partial || hours !== undefined) {
-        for (const day of DAYS) {
-            const d = hours?.[day];
-            if (!d || typeof d.enabled !== 'boolean') {
-                errors.hours = 'Business hours are required for every day';
-                break;
-            }
-            if (d.enabled && (!d.open || !d.close)) {
-                errors.hours = 'Open and close times are required for enabled days';
-                break;
-            }
-        }
-        if (!errors.hours && hours !== undefined) form.hours = hours;
+        const { values, error } = validateHours(hours);
+        if (error) errors.hours = error;
+        else if (hours !== undefined) form.hours = values;
     }
 
     if (Object.keys(errors).length > 0) return { errors };

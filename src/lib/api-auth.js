@@ -2,9 +2,9 @@
 // Keys live on the user document (`api_auth_key.value`) and are issued from
 // the dashboard at /dashboard/api-access.
 import { NextResponse } from 'next/server';
-import { isValidObjectId } from 'mongoose';
 import { dbConnect } from '@/config/mongo.config';
 import { UserModel, LocatorModel, LocationModel } from '@/mongo';
+import { isObjectIdString } from '@/lib/api-sanitize';
 
 // Single source of truth for the key format — key generation lives in
 // postGenerateApiAuthKey() (src/actions/profile.js).
@@ -62,8 +62,11 @@ export async function authenticateApiKey(request) {
         };
     }
 
+    // `key` is always a string (it comes out of a header split), so it can't
+    // carry a Mongo operator into the lookup below. The length cap just keeps an
+    // oversized header from becoming a query term.
     const key = token.trim();
-    if (!key.startsWith(API_KEY_PREFIX)) {
+    if (!key.startsWith(API_KEY_PREFIX) || key.length > 200) {
         return { error: jsonError('Invalid API key.', 401) };
     }
 
@@ -90,7 +93,8 @@ export async function authenticateApiKey(request) {
  * key could read or modify another account's records by guessing IDs.
  */
 export async function requireOwnedLocator(user_id, locator_id) {
-    if (!isValidObjectId(locator_id)) {
+    // Strict 24-hex, not mongoose's isValidObjectId() — see isObjectIdString().
+    if (!isObjectIdString(locator_id)) {
         return { error: jsonError('Invalid locator ID.', 400) };
     }
 
@@ -106,7 +110,7 @@ export async function requireOwnedLocator(user_id, locator_id) {
 
 /** Authorization for a single location — see requireOwnedLocator(). */
 export async function requireOwnedLocation(user_id, location_id) {
-    if (!isValidObjectId(location_id)) {
+    if (!isObjectIdString(location_id)) {
         return { error: jsonError('Invalid location ID.', 400) };
     }
 
