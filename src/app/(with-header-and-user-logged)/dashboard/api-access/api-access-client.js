@@ -32,8 +32,8 @@ const API_KEY = {
 };
 const MASKED_KEY = 'sf_live_••••••••••••••••••••••••••••••••';
 
-const CURL_EXAMPLE = `# Example — get all your locators
-curl -X GET https://storefindy.com/api/v1/locators \\
+const CURL_EXAMPLE = `# Example — get your locations, 10 per page
+curl -X GET "https://storefindy.com/api/v1/locations?page=1&rows=10" \\
   -H "Authorization: Bearer sf_live_your_key_here" \\
   -H "Content-Type: application/json"`;
 
@@ -154,30 +154,40 @@ const ENDPOINT_GROUPS = [
                 method: 'GET',
                 tone: 'get',
                 path: '/locations',
-                desc: 'Returns all locations across all your locators, or filter by locator_id.',
+                desc: 'Returns a paginated list of your locations, each with its parent locator name, a concatenated address, and its plan-based status.',
                 params: [
-                    { name: 'locator_id', in: 'query', type: 'string', required: false, desc: 'Filter by locator e.g. ?locator_id=loc_abc123' },
                     { name: 'page', in: 'query', type: 'number', required: false, desc: 'Page number for pagination. Default 1' },
-                    { name: 'limit', in: 'query', type: 'number', required: false, desc: 'Results per page. Default 20, max 100' },
+                    { name: 'rows', in: 'query', type: 'number', required: false, desc: 'Results per page. Default 10' },
+                    { name: 'sort', in: 'query', type: 'string', required: false, desc: 'Field to sort by e.g. createdAt, updatedAt, name. Default createdAt' },
+                    { name: 'order', in: 'query', type: 'string', required: false, desc: 'asc or desc. Default asc' },
+                    { name: 'search', in: 'query', type: 'string', required: false, desc: 'Free text matched against name, street, city, state, country and postal' },
+                    { name: 'locators', in: 'query', type: 'string', required: false, desc: 'Comma-separated locator IDs to filter by e.g. ?locators=685f...,686a...' },
                 ],
                 response: `{
-  "success": true,
-  "data": [
+  "rows": 10,
+  "page": 1,
+  "pages": 6,
+  "items": [
     {
-      "id": "lct_001",
+      "_id": "6864f1c2a7b3e10d9c4f2a11",
+      "locator_id": "685fd0b41c9a2f8e5d7b3c22",
       "name": "SM Mall of Asia",
-      "city": "Pasay City",
-      "state": "Metro Manila",
-      "country": "Philippines",
-      "lat": 14.5353,
-      "lng": 120.9822,
-      "phone": "+63 2 8556 0100",
+      "published": true,
+      "views": [
+        {
+          "date_id": "2026-07-01",
+          "view_count": 128,
+          "click_count": 14
+        }
+      ],
+      "createdAt": "2026-06-01T08:00:00.000Z",
+      "updatedAt": "2026-07-01T12:00:00.000Z",
+      "locator": "Main Store Locator",
+      "address": "Seaside Blvd, Pasay City, Metro Manila, Philippines, 1300",
       "status": "active"
     }
   ],
-  "total": 52,
-  "page": 1,
-  "limit": 20
+  "used": "52 of 500 used"
 }`,
             },
             {
@@ -245,67 +255,6 @@ const ENDPOINT_GROUPS = [
                 response: `{
   "success": true,
   "message": "Location deleted successfully"
-}`,
-            },
-        ],
-    },
-    {
-        label: 'Subdomains',
-        endpoints: [
-            {
-                id: 'get-subdomains',
-                method: 'GET',
-                tone: 'get',
-                path: '/subdomains',
-                desc: 'Returns all custom subdomains in your account.',
-                response: `{
-  "success": true,
-  "data": [
-    {
-      "id": "sd_001",
-      "subdomain": "mybrand",
-      "url": "https://mybrand.storefindy.com",
-      "locator_id": "loc_abc123",
-      "status": "active"
-    }
-  ],
-  "total": 2
-}`,
-            },
-            {
-                id: 'post-subdomain',
-                method: 'POST',
-                tone: 'post',
-                path: '/subdomains',
-                desc: 'Creates a new custom subdomain and assigns it to a locator.',
-                payload: `{
-  "subdomain": "mybrand",       // required — letters, numbers, hyphens only
-  "locator_id": "loc_abc123"    // required
-}`,
-                response: `{
-  "success": true,
-  "data": {
-    "id": "sd_002",
-    "subdomain": "mybrand",
-    "url": "https://mybrand.storefindy.com",
-    "status": "active",
-    "created_at": "2026-07-01T10:00:00Z"
-  }
-}`,
-            },
-            {
-                id: 'del-subdomain',
-                method: 'DELETE',
-                tone: 'del',
-                label: 'DEL',
-                path: '/subdomains/:id',
-                desc: 'Permanently deletes a subdomain. The URL will stop working immediately.',
-                params: [
-                    { name: 'id', in: 'path', type: 'string', required: true, desc: 'The subdomain ID to delete' },
-                ],
-                response: `{
-  "success": true,
-  "message": "Subdomain deleted successfully"
 }`,
             },
         ],
@@ -410,7 +359,7 @@ export default function ApiAccessClient() {
                 <div className={styles.abInfo}>
                     <div className={styles.abTitle}>Storefindy REST API</div>
                     <div className={styles.abDesc}>
-                        Use your Bearer API key to manage locators, locations, and subdomains
+                        Use your Bearer API key to manage locators and locations
                         programmatically. One key per account — no expiration.
                     </div>
                 </div>

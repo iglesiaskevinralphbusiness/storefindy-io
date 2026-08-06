@@ -4,11 +4,11 @@ import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { dbConnect } from '@/config/mongo.config';
-import { LocationModel, LocatorModel, UserModel } from '@/mongo';
+import { LocationModel, LocatorModel } from '@/mongo';
 import { sanitizeInput } from '@/utils/lib/input-sanitization';
-import { serializeForClient, getUserPlan } from '@/utils/helpers';
+import { serializeForClient } from '@/utils/helpers';
 import { isValidObjectId } from 'mongoose';
-import { plans } from '@/utils/constant/pricing';
+import { queryLocations, getInactiveLocationIds } from '@/lib/locations-query';
 
 // CSV imports don't collect business hours, so every imported location starts
 // with this default schedule (the model requires all seven days).
@@ -271,31 +271,7 @@ export async function postEditLocation(location_id, categories, hours, holidays,
 }
 
 export async function getLocationsInactiveIds(user_id){
-    await dbConnect();
-    
-    const user = await UserModel.findOne({ _id: user_id }).lean();
-    if(!user) {
-        return [];
-    }
-
-    const user_plan = getUserPlan(user._id.toString());
-
-    const plan = plans.find(p => p.id === user_plan) || plan[0];
-    const skip = plan.max_location;
-
-    if(plan.id === 'business') {
-        return [];
-    }
-
-    const locations = (await LocationModel.find({ user_id })
-        .sort({ createdAt: 1 }) // oldest -> newest
-        .skip(skip)
-        .select('_id')
-        .lean()
-    ).map(({ _id }) => _id.toString());
-
-    return locations;
-
+    return getInactiveLocationIds(user_id);
 }
 
 export async function getLocations(page=1, rows=10, sort='createdAt', order='asc', search='', locators='') {
@@ -305,132 +281,16 @@ export async function getLocations(page=1, rows=10, sort='createdAt', order='asc
         redirect('/sign-in');
     }
 
-    // build the query
-    const match = {
-        user_id: session.user.id
-    };
-    if (search) {
-        match.$or = [
-            { name: { $regex: search, $options: "i" } },
-            { street: { $regex: search, $options: "i" } },
-            { city: { $regex: search, $options: "i" } },
-            { state: { $regex: search, $options: "i" } },
-            { country: { $regex: search, $options: "i" } },
-            { postal: { $regex: search, $options: "i" } }
-        ];
-    }
-    if (locators) {
-        match.locator_id = {
-            $in: locators.split(",")
-        };
-    }
-
-    await dbConnect();
-
-    // pagination
-    const currentPage = Number(page) > 0 ? Number(page) : 1;
-    const currentRows = Number(rows) > 0 ? Number(rows) : 10;
-
-    const totalCount = await LocationModel.countDocuments({ user_id: session.user.id });
-    const totalPages = Math.ceil(totalCount / currentRows);
-
-    // sort
-    const sortField = sort || 'updatedAt';
-    const sortOrder = order === 'desc' ? 1 : -1;
-    
-    const locations = serializeForClient(await LocationModel.aggregate([
-        { $match: match },
-
-        // add locator name
-        { $addFields: { locatorId: { "$toObjectId": "$locator_id" } } },
-        {
-            $lookup: {
-                from: "locatormodels",
-                localField: "locatorId",
-                foreignField: "_id",
-                as: "locator"
-            }
-        },
-        {
-            $addFields: {
-                locator: {
-                    $arrayElemAt: ["$locator.name", 0]
-                }
-            }
-        },
-
-        // concatenate address
-        {
-            $addFields: {
-                address: {
-                    $reduce: {
-                        input: {
-                            $filter: {
-                                input: ["$street", "$city", "$state", "$country", "$postal"],
-                                as: "part",
-                                cond: {
-                                    $and: [
-                                        { $ne: ["$$part", null] },
-                                        { $ne: ["$$part", ""] }
-                                    ]
-                                }
-                            }
-                        },
-                        initialValue: "",
-                        in: {
-                            $cond: {
-                                if: { $eq: ["$$value", ""] },
-                                then: "$$this",
-                                else: { $concat: ["$$value", ", ", "$$this"] }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-
-        {
-            $project: {
-                locator_id: 1,
-                _id: 1,
-                name: 1,
-                address: 1,
-                published: 1,
-                views: 1,
-                updatedAt: 1,
-                createdAt: 1,
-                locator: 1,
-            }
-        },
-        { $sort: { [sortField]: sortOrder } },
-        { $skip: (currentPage - 1) * currentRows },
-        { $limit: currentRows }
-    ]));
-    
-
-
-    // inactive ids - set inactive locations that are beyond the plan's limit
-    const inactiveIds = await getLocationsInactiveIds(session.user.id);
-    const locationsWithStatus = locations.map(location => ({
-        ...location,
-        status: inactiveIds.includes(String(location._id)) ? "inactive" : "active"
-    }));
-
-    // used counter
-    const user_plan = getUserPlan(session?.user?.id);
-    const plan = plans.find(p => p.id === user_plan) || plans[0];
-
-    const location = await LocationModel.countDocuments({ user_id: session.user.id });
-    const location_used = plan.id === 'business' ? location : location > plan.max_location ? plan.max_location : location;
-    const location_max = plan.max_location;
-
-    return {
-        rows: currentRows,
-        page: currentPage,
-        pages: totalPages === 0 ? 1 : totalPages,
-        items: serializeForClient(locationsWithStatus),
-        used: plan.id === 'business' ? `${location_used} used` : `${location_used} of ${location_max} used`
-    }
+    // Same query the REST endpoint GET /api/v1/locations serves.
+    return queryLocations({
+        user_id: session.user.id,
+        page,
+        rows,
+        sort,
+        order,
+        search,
+        locators,
+    });
 }
 
 export async function getLocationById(location_id) {
