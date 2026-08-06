@@ -6,6 +6,7 @@ import { dbConnect } from '@/config/mongo.config';
 import { LocationModel, UserModel } from '@/mongo';
 import { serializeForClient, getUserPlan } from '@/utils/helpers';
 import { plans } from '@/utils/constant/pricing';
+import { redirect } from 'next/navigation';
 
 /**
  * IDs of the locations that fall outside the user's plan limit — the oldest
@@ -20,7 +21,7 @@ export async function getInactiveLocationIds(user_id) {
         return [];
     }
 
-    const user_plan = getUserPlan(user._id.toString());
+    const user_plan = getUserPlan(user._id.toString(), user.plan);
     const plan = plans.find((p) => p.id === user_plan) || plans[0];
 
     if (plan.id === 'business') {
@@ -166,8 +167,14 @@ export async function queryLocations({
         status: inactiveIds.includes(String(location._id)) ? "inactive" : "active"
     }));
 
+    // user
+    const user = await UserModel.findOne({ _id: user_id }).lean();
+    if (!user) {
+        redirect('/sign-in');
+    }
+
     // used counter
-    const user_plan = getUserPlan(user_id);
+    const user_plan = getUserPlan(user_id, user.plan);
     const plan = plans.find(p => p.id === user_plan) || plans[0];
 
     const location = await LocationModel.countDocuments({ user_id });

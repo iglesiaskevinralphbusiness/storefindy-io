@@ -27,7 +27,7 @@ export async function getProfile() {
     const locator_count = await LocatorModel.countDocuments({ user_id: session.user.id });
     const location_count = await LocationModel.countDocuments({ user_id: session.user.id });
 
-    const user_plan = getUserPlan(user._id.toString());
+    const user_plan = getUserPlan(user._id.toString(), user.plan);
 
     const plan = plans.find(p => p.id === user_plan) || plans[0];
 

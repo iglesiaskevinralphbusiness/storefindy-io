@@ -20,7 +20,7 @@ export async function getInactiveLocatorIds(user_id) {
         return [];
     }
 
-    const user_plan = getUserPlan(user_id);
+    const user_plan = getUserPlan(user_id, user.plan);
     const plan = plans.find(p => p.id === user_plan) || plans[0];
     const skip = plan.max_locator;
 
@@ -101,7 +101,7 @@ export async function queryLocatorById(user_id, locator_id) {
         return null;
     }
 
-    const user_plan = getUserPlan(user._id.toString());
+    const user_plan = getUserPlan(user._id.toString(), user.plan);
 
     // inactive ids - set inactive locators that are beyond the plan's limit
     const inactiveIds = await getInactiveLocatorIds(user_id);

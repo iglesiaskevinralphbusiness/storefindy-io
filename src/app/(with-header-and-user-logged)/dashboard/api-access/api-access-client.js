@@ -6,10 +6,14 @@ import { toast } from 'react-toastify';
 import styles from '../Dashboard.module.scss';
 import Modal from '@/components/Modal';
 import { postGenerateApiAuthKey } from '@/actions/profile';
+import { plans } from '@/utils/constant/pricing';
 import {
     TbApi,
     TbBook,
     TbKey,
+    TbLock,
+    TbCrown,
+    TbRocket,
     TbEye,
     TbEyeOff,
     TbCopy,
@@ -26,6 +30,10 @@ import {
 } from 'react-icons/tb';
 
 const MASKED_KEY = 'sf_live_••••••••••••••••••••••••••••••••';
+
+// API access is a Business-plan feature. The price is read from the pricing
+// constant so the upgrade CTA can never drift from the billing page.
+const BUSINESS_PLAN = plans.find((p) => p.id === 'business');
 
 // `api_auth_key.created_at` is stored as an ISO string — render it as e.g. "Jun 1, 2026".
 function formatCreated(created_at) {
@@ -549,7 +557,7 @@ function CodeBlock({ lang, code }) {
     );
 }
 
-export default function ApiAccessClient({ api_auth_key={ value: '', created_at: '' } }) {
+export default function ApiAccessClient({ plan='free', api_auth_key={ value: '', created_at: '' } }) {
     const router = useRouter();
     const [keyVisible, setKeyVisible] = useState(false);
     const [activeEndpointId, setActiveEndpointId] = useState(ALL_ENDPOINTS[0].id);
@@ -564,9 +572,14 @@ export default function ApiAccessClient({ api_auth_key={ value: '', created_at: 
     const key = newKey || api_auth_key || { value: '', created_at: '' };
     const hasKey = Boolean(key.value);
 
+    // Only the Business plan can hold a working key, so anyone else sees the
+    // key card in its locked state — the endpoint reference stays browsable.
+    const isLocked = plan !== 'business';
+    const planLabel = plan ? plan.charAt(0).toUpperCase() + plan.slice(1) : 'Free';
+
     // The samples follow the show/hide toggle: the real key while it is revealed
     // (so the commands run as shown), the placeholder while it is masked.
-    const curlKey = hasKey && keyVisible ? key.value : SAMPLE_KEY;
+    const curlKey = !isLocked && hasKey && keyVisible ? key.value : SAMPLE_KEY;
 
     const copyKey = () => {
         if (!hasKey) return;
@@ -607,109 +620,161 @@ export default function ApiAccessClient({ api_auth_key={ value: '', created_at: 
 
     return (
         <>
-            {/* INFO BANNER */}
-            <div className={styles.apiBanner}>
-                <div className={styles.abIcon}><TbApi /></div>
-                <div className={styles.abInfo}>
-                    <div className={styles.abTitle}>Storefindy REST API</div>
-                    <div className={styles.abDesc}>
-                        Use your Bearer API key to manage locators and locations
-                        programmatically. One key per account — no expiration.
+            {/* INFO BANNER — becomes the upgrade prompt below the Business plan */}
+            {isLocked ? (
+                <div className={styles.apiBanner}>
+                    <div className={styles.abIcon}><TbCrown /></div>
+                    <div className={styles.abInfo}>
+                        <div className={styles.abTitle}>API Access requires the Business plan</div>
+                        <div className={styles.abDesc}>
+                            Upgrade to Business to generate your API key and manage locators and
+                            locations programmatically. Browse the endpoints below to see what&apos;s
+                            available.
+                        </div>
                     </div>
+                    <Link href="/dashboard/billing" className={styles.abBtn}>
+                        <TbRocket /> Upgrade to Business
+                    </Link>
                 </div>
-                <Link href="/dashboard/documentation" className={styles.abLink}>
-                    <TbBook /> View docs
-                </Link>
-            </div>
+            ) : (
+                <div className={styles.apiBanner}>
+                    <div className={styles.abIcon}><TbApi /></div>
+                    <div className={styles.abInfo}>
+                        <div className={styles.abTitle}>Storefindy REST API</div>
+                        <div className={styles.abDesc}>
+                            Use your Bearer API key to manage locators and locations
+                            programmatically. One key per account — no expiration.
+                        </div>
+                    </div>
+                    <Link href="/dashboard/documentation" className={styles.abLink}>
+                        <TbBook /> View docs
+                    </Link>
+                </div>
+            )}
 
             {/* API KEY */}
-            <div className={styles.apiCard}>
-                <div className={styles.apiCardHeader}>
-                    <div className={styles.apiCardTitle}><TbKey /> Your API Key</div>
-                    <div className={`${styles.statusPill} ${hasKey ? '' : styles.none}`}>
-                        <span className={styles.statusDot} /> {hasKey ? 'Active' : 'Not generated'}
-                    </div>
-                </div>
-
-                <div className={styles.keyBox}>
-                    <div className={styles.keyLabel}>
-                        Bearer Token
-                        {hasKey && <span className={styles.keySecure}><TbShieldCheck /> Secure</span>}
-                    </div>
-                    <div className={styles.keyValueRow}>
-                        <div className={`${styles.keyValue} ${hasKey && !keyVisible ? styles.masked : ''}`}>
-                            {!hasKey ? 'No key yet' : keyVisible ? key.value : MASKED_KEY}
+            {isLocked ? (
+                <div className={styles.apiCard}>
+                    <div className={styles.apiCardHeader}>
+                        <div className={styles.apiCardTitle}><TbKey /> Your API Key</div>
+                        <div className={`${styles.statusPill} ${styles.locked}`}>
+                            <TbLock /> Business only
                         </div>
-                        {hasKey && (
-                            <div className={styles.keyActions}>
-                                <button
-                                    type="button"
-                                    className={styles.keyBtn}
-                                    onClick={() => setKeyVisible((visible) => !visible)}
-                                    title={keyVisible ? 'Hide key' : 'Show key'}
-                                    aria-label={keyVisible ? 'Hide key' : 'Show key'}
-                                >
-                                    {keyVisible ? <TbEyeOff /> : <TbEye />}
-                                </button>
-                                <button
-                                    type="button"
-                                    className={styles.keyBtn}
-                                    onClick={copyKey}
-                                    title="Copy key"
-                                    aria-label="Copy key"
-                                >
-                                    <TbCopy />
-                                </button>
-                            </div>
-                        )}
                     </div>
-                    <div className={styles.keyMeta}>
-                        {hasKey ? (
-                            <>
-                                <div className={`${styles.keyMetaItem} ${styles.ok}`}><TbCircleCheck /> Active</div>
-                                <div className={styles.keyMetaItem}><TbCalendar /> Created {formatCreated(key.created_at)}</div>
-                                <div className={styles.keyMetaItem}><TbInfinity /> Never expires</div>
-                            </>
-                        ) : (
-                            <div className={styles.keyMetaItem}>
-                                <TbInfoCircle /> Generate a key to start making API requests
-                            </div>
-                        )}
+
+                    <div className={styles.lockedKey}>
+                        <div className={styles.lockIconLg}><TbLock /></div>
+                        <div className={styles.lockedTitle}>API key locked</div>
+                        <div className={styles.lockedDesc}>
+                            Generating and using an API key requires the Business plan. Upgrade to
+                            get your Bearer token and start making API requests.
+                        </div>
+                        <div className={styles.planCompare}>
+                            <span className={`${styles.planChip} ${styles.activePlan}`}>
+                                <TbCircleCheck /> You are on {planLabel}
+                            </span>
+                            <span className={styles.planArrow}>→</span>
+                            <span className={`${styles.planChip} ${styles.targetPlan}`}>
+                                <TbCrown /> Upgrade to Business
+                            </span>
+                        </div>
+                        <Link href="/dashboard/billing" className={styles.btnUpgradeLg}>
+                            <TbCrown /> Upgrade to Business — {BUSINESS_PLAN.price}/mo
+                        </Link>
+                        <div className={styles.lockedFine}>
+                            Cancel anytime · No contracts · Instant access
+                        </div>
                     </div>
                 </div>
-
-                <div className={styles.generateRow}>
-                    <div className={styles.genInfo}>
-                        <strong className={styles.genTitle}>
-                            {hasKey ? 'Regenerate your key' : 'Generate your key'}
-                        </strong>
-                        {hasKey
-                            ? 'Use this if your key is compromised. Your old key stops working immediately.'
-                            : 'Create a Bearer token to authenticate your requests to the Storefindy REST API.'}
+            ) : (
+                <div className={styles.apiCard}>
+                    <div className={styles.apiCardHeader}>
+                        <div className={styles.apiCardTitle}><TbKey /> Your API Key</div>
+                        <div className={`${styles.statusPill} ${hasKey ? '' : styles.none}`}>
+                            <span className={styles.statusDot} /> {hasKey ? 'Active' : 'Not generated'}
+                        </div>
                     </div>
-                    <button
-                        type="button"
-                        className={styles.btnGen}
-                        onClick={() => (hasKey ? setRegenOpen(true) : handleGenerateKey())}
-                        disabled={generating}
-                    >
-                        <TbRefresh />
-                        {generating
-                            ? 'Generating…'
-                            : hasKey ? 'Regenerate Key' : 'Generate Key'}
-                    </button>
+
+                    <div className={styles.keyBox}>
+                        <div className={styles.keyLabel}>
+                            Bearer Token
+                            {hasKey && <span className={styles.keySecure}><TbShieldCheck /> Secure</span>}
+                        </div>
+                        <div className={styles.keyValueRow}>
+                            <div className={`${styles.keyValue} ${hasKey && !keyVisible ? styles.masked : ''}`}>
+                                {!hasKey ? 'No key yet' : keyVisible ? key.value : MASKED_KEY}
+                            </div>
+                            {hasKey && (
+                                <div className={styles.keyActions}>
+                                    <button
+                                        type="button"
+                                        className={styles.keyBtn}
+                                        onClick={() => setKeyVisible((visible) => !visible)}
+                                        title={keyVisible ? 'Hide key' : 'Show key'}
+                                        aria-label={keyVisible ? 'Hide key' : 'Show key'}
+                                    >
+                                        {keyVisible ? <TbEyeOff /> : <TbEye />}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={styles.keyBtn}
+                                        onClick={copyKey}
+                                        title="Copy key"
+                                        aria-label="Copy key"
+                                    >
+                                        <TbCopy />
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                        <div className={styles.keyMeta}>
+                            {hasKey ? (
+                                <>
+                                    <div className={`${styles.keyMetaItem} ${styles.ok}`}><TbCircleCheck /> Active</div>
+                                    <div className={styles.keyMetaItem}><TbCalendar /> Created {formatCreated(key.created_at)}</div>
+                                    <div className={styles.keyMetaItem}><TbInfinity /> Never expires</div>
+                                </>
+                            ) : (
+                                <div className={styles.keyMetaItem}>
+                                    <TbInfoCircle /> Generate a key to start making API requests
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className={styles.generateRow}>
+                        <div className={styles.genInfo}>
+                            <strong className={styles.genTitle}>
+                                {hasKey ? 'Regenerate your key' : 'Generate your key'}
+                            </strong>
+                            {hasKey
+                                ? 'Use this if your key is compromised. Your old key stops working immediately.'
+                                : 'Create a Bearer token to authenticate your requests to the Storefindy REST API.'}
+                        </div>
+                        <button
+                            type="button"
+                            className={styles.btnGen}
+                            onClick={() => (hasKey ? setRegenOpen(true) : handleGenerateKey())}
+                            disabled={generating}
+                        >
+                            <TbRefresh />
+                            {generating
+                                ? 'Generating…'
+                                : hasKey ? 'Regenerate Key' : 'Generate Key'}
+                        </button>
+                    </div>
+
+                    {hasKey && (
+                        <div className={styles.warnBox}>
+                            <TbAlertTriangle />
+                            <p>
+                                Never expose your API key in client-side JavaScript, public repos, or frontend
+                                code. If compromised, regenerate it immediately.
+                            </p>
+                        </div>
+                    )}
                 </div>
-
-                {hasKey && (
-                    <div className={styles.warnBox}>
-                        <TbAlertTriangle />
-                        <p>
-                            Never expose your API key in client-side JavaScript, public repos, or frontend
-                            code. If compromised, regenerate it immediately.
-                        </p>
-                    </div>
-                )}
-            </div>
+            )}
 
             {/* USAGE EXAMPLE */}
             <div className={styles.apiCard}>
@@ -722,7 +787,7 @@ export default function ApiAccessClient({ api_auth_key={ value: '', created_at: 
                     Send <span className={styles.ic}>POST</span> and <span className={styles.ic}>PUT</span>{' '}
                     bodies as JSON. Every endpoint is scoped to your own account — records
                     belonging to anyone else respond <span className={styles.ic}>404</span>.
-                    {hasKey && !keyVisible && (
+                    {!isLocked && hasKey && !keyVisible && (
                         <> Reveal your key above to drop it straight into these examples.</>
                     )}
                 </div>

@@ -231,7 +231,7 @@ export async function getSubDomainInactiveIds(user_id){
         return [];
     }
 
-    const user_plan = getUserPlan(user._id.toString());
+    const user_plan = getUserPlan(user._id.toString(), user.plan);
 
     const plan = plans.find(p => p.id === user_plan) || plan[0];
     const skip = plan.max_sub_domain;
@@ -314,8 +314,14 @@ export async function getSubDomains(page=1, rows=10, sort='createdAt', order='as
         status: inactiveIds.includes(String(subDomain._id)) ? "inactive" : "active"
     }));
 
+    // user
+    const user = await UserModel.findOne({ _id: session.user.id }).lean();
+    if (!user) {
+        redirect('/sign-in');
+    }
+
     // used counter
-    const user_plan = getUserPlan(session?.user?.id);
+    const user_plan = getUserPlan(session?.user?.id, user.plan);
     const plan = plans.find(p => p.id === user_plan) || plans[0];
 
     const sub_domain = await SubDomainModel.countDocuments({ user_id: session.user.id });

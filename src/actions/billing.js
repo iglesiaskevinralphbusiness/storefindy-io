@@ -30,7 +30,7 @@ export async function getBillingStatus() {
     const user = userDoc.toObject();
 
     // for demo and testing purposes, we need to set the user plan to admin, business, or pro
-    const user_plan = getUserPlan(user._id.toString());
+    const user_plan = getUserPlan(user._id.toString(), user.plan);
 
     const locator = await LocatorModel.countDocuments({ user_id: session.user.id });
     const location = await LocationModel.countDocuments({ user_id: session.user.id });

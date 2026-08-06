@@ -4,6 +4,7 @@ import Sidebar from '@/components/Dashboard/Sidebar';
 import { RiArrowRightLine } from "react-icons/ri";
 import ApiAccessClient from './api-access-client';
 import { getProfile } from '@/actions/profile';
+import { getBillingStatus } from '@/actions/billing';
 
 export async function generateMetadata() {
     return {
@@ -13,6 +14,7 @@ export async function generateMetadata() {
 }
 
 export default async function APIAccessPage() {
+    const billingStatus = await getBillingStatus();
 
     const profile = await getProfile();
 
@@ -26,7 +28,10 @@ export default async function APIAccessPage() {
                 </div>
                 <div className={styles.body}>
                     <div className={styles.apiAccess}>
-                        <ApiAccessClient api_auth_key={profile.api_auth_key} />
+                        <ApiAccessClient
+                            plan={billingStatus.id}
+                            api_auth_key={profile.api_auth_key}
+                        />
                     </div>
                 </div>
             </div>

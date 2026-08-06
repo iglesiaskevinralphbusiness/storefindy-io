@@ -223,7 +223,7 @@ export async function getAnalyticsData({ range = '30', locator = 'all' } = {}) {
     if (!user) {
         return null;
     }
-    const user_plan = getUserPlan(session.user.id.toString());
+    const user_plan = getUserPlan(session.user.id.toString(), user.plan);
 
     const plan = plans.find(p => p.id === user_plan) || plan[0];
     if (plan.id === 'free') {
