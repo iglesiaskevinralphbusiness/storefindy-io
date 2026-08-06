@@ -35,10 +35,41 @@ function formatCreated(created_at) {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-const CURL_EXAMPLE = `# Example — get your locations, 10 per page
-curl -X GET "https://www.storefindy.com/api/v1/locations?page=1&rows=10" \\
-  -H "Authorization: Bearer sf_live_your_key_here" \\
-  -H "Content-Type: application/json"`;
+const API_BASE = 'https://www.storefindy.com/api/v1';
+const SAMPLE_KEY = 'sf_live_your_key_here';
+
+// IDs used in the samples, so the cURL for a /:id route is copy-paste shaped.
+const SAMPLE_LOCATOR_ID = '685fd0b41c9a2f8e5d7b3c22';
+const SAMPLE_LOCATION_ID = '6864f1c2a7b3e10d9c4f2a11';
+
+// Every cURL sample uses the account's real key once one has been generated, so
+// the commands are runnable as shown. Falls back to the placeholder otherwise.
+const buildUsageCurl = (apiKey = SAMPLE_KEY) => `# Example — get your locations, 10 per page
+curl -X GET "${API_BASE}/locations?page=1&rows=10" \\
+  -H "Authorization: Bearer ${apiKey}"`;
+
+/**
+ * Build a runnable cURL for one endpoint. `curlQuery` appends a query string,
+ * `curlBody` supplies a minimal valid JSON body — Content-Type is only sent
+ * when there is one.
+ */
+function buildCurl({ method, path, curlQuery = '', curlBody }, apiKey = SAMPLE_KEY) {
+    const id = path.startsWith('/locators') ? SAMPLE_LOCATOR_ID : SAMPLE_LOCATION_ID;
+    const url = `${API_BASE}${path.replace(':id', id)}${curlQuery}`;
+
+    const lines = [
+        `curl -X ${method} "${url}" \\`,
+        `  -H "Authorization: Bearer ${apiKey}"`,
+    ];
+
+    if (curlBody) {
+        lines[lines.length - 1] += ' \\';
+        lines.push('  -H "Content-Type: application/json" \\');
+        lines.push(`  -d '${curlBody}'`);
+    }
+
+    return lines.join('\n');
+}
 
 // Error shapes are identical across every endpoint, so they are documented once
 // here rather than repeated in each sample response.
@@ -72,7 +103,7 @@ const ENDPOINT_GROUPS = [
                 method: 'GET',
                 tone: 'get',
                 path: '/locators',
-                desc: 'Returns every locator in your account, each with its total location count and plan-based status. Responds with a plain array — there is no wrapper object.',
+                desc: 'Returns every locator in your account, each with its total location count and plan-based status. Responds with a plain array — there is no wrapper object. Map defaults, search settings, filters, widget display settings and the per-day analytics rows are all omitted from locator responses.',
                 response: `[
   {
     "_id": "685fd0b41c9a2f8e5d7b3c22",
@@ -80,25 +111,9 @@ const ENDPOINT_GROUPS = [
     "name": "Main Store Locator",
     "description": "All our retail branches",
     "default_language": "en",
-    "default_country": "ph",
-    "default_zoom_level": 10,
-    "search_radius": 10,
-    "maximum_results_shown": 10,
-    "filters": ["Pharmacy", "Drive-thru"],
-    "show_search_bar": true,
-    "detect_location": true,
-    "show_filters": false,
-    "show_radius": false,
-    "show_store_list": true,
-    "show_directions": true,
-    "show_store_hours": false,
-    "powered_by_storefindy": true,
-    "views": [],
     "views_count": 1280,
-    "settings": { "height": "large", "background": "#ffffff" },
     "createdAt": "2026-06-01T08:00:00.000Z",
     "updatedAt": "2026-07-01T12:00:00.000Z",
-    "locatorId": "685fd0b41c9a2f8e5d7b3c22",
     "total_locations": 52,
     "status": "active"
   }
@@ -109,32 +124,16 @@ const ENDPOINT_GROUPS = [
                 method: 'GET',
                 tone: 'get',
                 path: '/locators/:id',
-                desc: 'Returns a single locator by ID, plus the owning account plan. Responds 404 when the ID is malformed or the locator belongs to another account.',
+                desc: 'Returns a single locator by ID, plus the owning account plan. Responds 404 when the ID is malformed or the locator belongs to another account. Map defaults, search settings, filters, widget display settings, the per-day analytics rows and user_id are all omitted here.',
                 params: [
                     { name: 'id', in: 'path', type: 'string', required: true, desc: 'The locator ID e.g. 685fd0b41c9a2f8e5d7b3c22' },
                 ],
                 response: `{
   "_id": "685fd0b41c9a2f8e5d7b3c22",
-  "user_id": "6858b9e0f13c4a7d2e9f1b05",
   "name": "Main Store Locator",
   "description": "All our retail branches",
   "default_language": "en",
-  "default_country": "ph",
-  "default_zoom_level": 10,
-  "search_radius": 10,
-  "maximum_results_shown": 10,
-  "filters": ["Pharmacy", "Drive-thru"],
-  "show_search_bar": true,
-  "detect_location": true,
-  "show_filters": false,
-  "show_radius": false,
-  "show_store_list": true,
-  "show_directions": true,
-  "show_store_hours": false,
-  "powered_by_storefindy": true,
-  "views": [],
   "views_count": 1280,
-  "settings": { "height": "large", "background": "#ffffff" },
   "createdAt": "2026-06-01T08:00:00.000Z",
   "updatedAt": "2026-07-01T12:00:00.000Z",
   "user_plan": "pro",
@@ -146,11 +145,13 @@ const ENDPOINT_GROUPS = [
                 method: 'POST',
                 tone: 'post',
                 path: '/locators',
-                desc: 'Creates a new locator. Only name is required — every other field falls back to the default shown below. Locators beyond your plan limit are still created, but report status "inactive".',
+                desc: 'Creates a new locator. Only name is required — every other field falls back to the default shown below. The show_* and powered_by_storefindy flags are accepted but write-only: they are not echoed back in any locator response. Locators beyond your plan limit are still created, but report status "inactive".',
                 payload: `{
   "name": "My New Locator",         // required
   "description": "",                // optional
   "default_language": "en",         // optional — default "en"
+
+  // Everything below is write-only: accepted here, never echoed back.
   "default_country": "us",          // optional — ISO code, default "us"
   "default_zoom_level": 10,         // optional — default 10
   "search_radius": 10,              // optional — miles, default 10
@@ -165,6 +166,11 @@ const ENDPOINT_GROUPS = [
   "show_store_hours": false,        // optional — default false
   "powered_by_storefindy": true     // optional — default true
 }`,
+                curlBody: `{
+    "name": "My New Locator",
+    "default_country": "ph",
+    "search_radius": 25
+  }`,
                 response: `{
   "status": "success",
   "message": "Locator created successfully",
@@ -172,11 +178,8 @@ const ENDPOINT_GROUPS = [
     "_id": "686a1f33c2d4b90e7a1c5e44",
     "user_id": "6858b9e0f13c4a7d2e9f1b05",
     "name": "My New Locator",
+    "description": "",
     "default_language": "en",
-    "default_country": "us",
-    "default_zoom_level": 10,
-    "search_radius": 10,
-    "maximum_results_shown": 10,
     "createdAt": "2026-07-01T10:00:00.000Z",
     "updatedAt": "2026-07-01T10:00:00.000Z"
   }
@@ -193,19 +196,23 @@ const ENDPOINT_GROUPS = [
                 ],
                 payload: `{
   "name": "Updated Name",           // optional — cannot be empty if sent
-  "search_radius": 25,              // optional
-  "show_filters": true,             // optional
-  "filters": ["Pharmacy"]           // optional
+  "description": "Updated copy",    // optional
+  "search_radius": 25,              // optional — write-only, not echoed back
+  "show_filters": true,             // optional — write-only, not echoed back
+  "filters": ["Pharmacy"]           // optional — write-only, not echoed back
 }`,
+                curlBody: `{
+    "name": "Updated Name",
+    "search_radius": 25
+  }`,
                 response: `{
   "status": "success",
   "message": "Locator updated successfully",
   "data": {
     "_id": "685fd0b41c9a2f8e5d7b3c22",
     "name": "Updated Name",
-    "search_radius": 25,
-    "show_filters": true,
-    "filters": ["Pharmacy"],
+    "description": "Updated copy",
+    "default_language": "en",
     "updatedAt": "2026-07-01T11:00:00.000Z"
   }
 }`,
@@ -244,6 +251,7 @@ const ENDPOINT_GROUPS = [
                     { name: 'search', in: 'query', type: 'string', required: false, desc: 'Free text matched against name, street, city, state, country and postal' },
                     { name: 'locators', in: 'query', type: 'string', required: false, desc: 'Comma-separated locator IDs to filter by e.g. ?locators=685f...,686a...' },
                 ],
+                curlQuery: '?page=1&rows=10&sort=createdAt&order=desc',
                 response: `{
   "rows": 10,
   "page": 1,
@@ -276,7 +284,7 @@ const ENDPOINT_GROUPS = [
                 method: 'GET',
                 tone: 'get',
                 path: '/locations/:id',
-                desc: 'Returns one complete location by ID, including business hours, holidays and social links. Responds 404 when the ID is malformed or the location belongs to another account.',
+                desc: 'Returns the complete location document by ID — every stored field, including business hours, holidays, social links and per-day view counts. Nothing is hidden here, unlike the locator endpoints. Responds 404 when the ID is malformed or the location belongs to another account.',
                 params: [
                     { name: 'id', in: 'path', type: 'string', required: true, desc: 'The location ID e.g. 6864f1c2a7b3e10d9c4f2a11' },
                 ],
@@ -317,9 +325,18 @@ const ENDPOINT_GROUPS = [
   "published": true,
   "show_opening_hours": true,
   "custom_notes": "",
-  "views": [],
+  "views": [
+    {
+      "date_id": "2026-07-24",
+      "view_count": 128,
+      "click_count": 14,
+      "createdAt": "2026-07-24T03:31:01.914Z",
+      "updatedAt": "2026-07-24T03:31:01.914Z"
+    }
+  ],
   "createdAt": "2026-06-01T08:00:00.000Z",
-  "updatedAt": "2026-07-01T12:00:00.000Z"
+  "updatedAt": "2026-07-01T12:00:00.000Z",
+  "__v": 0
 }`,
             },
             {
@@ -362,6 +379,25 @@ const ENDPOINT_GROUPS = [
   "show_opening_hours": false,      // optional — default false
   "custom_notes": ""                // optional
 }`,
+                curlBody: `{
+    "name": "SM Mall of Asia",
+    "locator_id": "${SAMPLE_LOCATOR_ID}",
+    "city": "Pasay City",
+    "state": "Metro Manila",
+    "country": "ph",
+    "location_status": "open",
+    "latitude": 14.5353,
+    "longitude": 120.9822,
+    "hours": {
+      "Mon": { "enabled": true, "open": "08:00", "close": "17:00" },
+      "Tue": { "enabled": true, "open": "08:00", "close": "17:00" },
+      "Wed": { "enabled": true, "open": "08:00", "close": "17:00" },
+      "Thu": { "enabled": true, "open": "08:00", "close": "17:00" },
+      "Fri": { "enabled": true, "open": "08:00", "close": "17:00" },
+      "Sat": { "enabled": true, "open": "09:00", "close": "15:00" },
+      "Sun": { "enabled": false, "open": "08:00", "close": "17:00" }
+    }
+  }`,
                 response: `{
   "status": "success",
   "message": "Location added successfully",
@@ -399,6 +435,11 @@ const ENDPOINT_GROUPS = [
   "published": false,               // optional
   "locator_id": "686a1f33..."       // optional — moving is allowed within your account
 }`,
+                curlBody: `{
+    "name": "SM MOA Updated",
+    "phone": "+63 2 9999 0000",
+    "published": false
+  }`,
                 response: `{
   "status": "success",
   "message": "Location updated successfully",
@@ -518,6 +559,10 @@ export default function ApiAccessClient({ api_auth_key={ value: '', created_at: 
 
     const key = newKey || api_auth_key || { value: '', created_at: '' };
     const hasKey = Boolean(key.value);
+
+    // The samples follow the show/hide toggle: the real key while it is revealed
+    // (so the commands run as shown), the placeholder while it is masked.
+    const curlKey = hasKey && keyVisible ? key.value : SAMPLE_KEY;
 
     const copyKey = () => {
         if (!hasKey) return;
@@ -673,8 +718,11 @@ export default function ApiAccessClient({ api_auth_key={ value: '', created_at: 
                     Send <span className={styles.ic}>POST</span> and <span className={styles.ic}>PUT</span>{' '}
                     bodies as JSON. Every endpoint is scoped to your own account — records
                     belonging to anyone else respond <span className={styles.ic}>404</span>.
+                    {hasKey && !keyVisible && (
+                        <> Reveal your key above to drop it straight into these examples.</>
+                    )}
                 </div>
-                <CodeBlock lang="cURL" code={CURL_EXAMPLE} />
+                <CodeBlock lang="cURL" code={buildUsageCurl(curlKey)} />
 
                 <div className={styles.epSectionLabel}>Error responses</div>
                 <CodeBlock lang="JSON" code={ERROR_EXAMPLE} />
@@ -760,6 +808,9 @@ export default function ApiAccessClient({ api_auth_key={ value: '', created_at: 
 
                         <div className={styles.epSectionLabel}>Sample Response</div>
                         <CodeBlock lang="JSON" code={endpoint.response} />
+
+                        <div className={styles.epSectionLabel}>cURL</div>
+                        <CodeBlock lang="cURL" code={buildCurl(endpoint, curlKey)} />
                     </div>
                 </div>
             </div>

@@ -11,6 +11,7 @@ import {
 } from '@/lib/api-auth';
 import { queryLocatorById } from '@/lib/locators-query';
 import { readJsonBody, validateLocatorPayload } from '@/lib/api-payloads';
+import { toPublicLocator, toPublicLocatorDetail } from '@/lib/api-serializers';
 import { serializeForClient } from '@/utils/helpers';
 
 // REST equivalent of getLocatorById() — src/actions/locator.js
@@ -28,7 +29,7 @@ export async function GET(request, { params }) {
         // getLocatorById() returns null for a malformed ID or another user's locator.
         if (!locator) return jsonError('Locator not found.', 404);
 
-        return NextResponse.json(locator, { status: 200 });
+        return NextResponse.json(toPublicLocatorDetail(locator), { status: 200 });
     });
 }
 
@@ -61,7 +62,10 @@ export async function PUT(request, { params }) {
     return withServerError(async () => {
         await dbConnect();
         const locator = await LocatorModel.findByIdAndUpdate(id, form, { new: true }).lean();
-        return jsonSuccess('Locator updated successfully', serializeForClient(locator));
+        return jsonSuccess(
+            'Locator updated successfully',
+            toPublicLocator(serializeForClient(locator))
+        );
     });
 }
 

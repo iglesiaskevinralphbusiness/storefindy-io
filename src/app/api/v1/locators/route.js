@@ -9,6 +9,7 @@ import {
 } from '@/lib/api-auth';
 import { queryLocators } from '@/lib/locators-query';
 import { readJsonBody, validateLocatorPayload } from '@/lib/api-payloads';
+import { toPublicLocator } from '@/lib/api-serializers';
 import { serializeForClient } from '@/utils/helpers';
 
 // REST equivalent of getLocators() — src/actions/locator.js
@@ -21,7 +22,7 @@ export async function GET(request) {
 
     return withServerError(async () => {
         const locators = await queryLocators(auth.user_id);
-        return NextResponse.json(locators, { status: 200 });
+        return NextResponse.json(toPublicLocator(locators), { status: 200 });
     });
 }
 
@@ -44,7 +45,7 @@ export async function POST(request) {
         const locator = await LocatorModel.create({ ...form, user_id: auth.user_id });
         return jsonSuccess(
             'Locator created successfully',
-            serializeForClient(locator.toObject()),
+            toPublicLocator(serializeForClient(locator.toObject())),
             201
         );
     });
