@@ -46,10 +46,10 @@ const HeaderLoggedIn = ({ mobileMenuOpen }) => {
 
     return <ul className={mobileMenuOpen ? styles.mobileMenuOpen : ''}>
         <li>
-            <Link href="/" className={styles.menuItem}>{t('Demo')}</Link>
+            <Link href="/demo" className={styles.menuItem}>{t('Demo')}</Link>
         </li>
         <li>
-            <Link href="/" className={styles.menuItem}>{t('Features')}</Link>
+            <Link href="#features" className={styles.menuItem}>{t('Features')}</Link>
         </li>
         <li>
             <Link href="/sign-in" className={styles.menuItem}>{t('Sign In')}</Link>
