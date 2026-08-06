@@ -35,7 +35,11 @@ function formatCreated(created_at) {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-const API_BASE = 'https://www.storefindy.com/api/v1';
+// Host the samples point at. NEXT_PUBLIC_ROOT_URL is inlined at build time, so
+// the examples match wherever the app is running (localhost in dev, the real
+// domain in production). Trailing slashes are trimmed to avoid `//api/v1`.
+const ROOT_URL = (process.env.NEXT_PUBLIC_ROOT_URL || 'https://www.storefindy.com').replace(/\/+$/, '');
+const API_BASE = `${ROOT_URL}/api/v1`;
 const SAMPLE_KEY = 'sf_live_your_key_here';
 
 // IDs used in the samples, so the cURL for a /:id route is copy-paste shaped.
