@@ -3,6 +3,7 @@ import styles from '../Dashboard.module.scss';
 import Sidebar from '@/components/Dashboard/Sidebar';
 import { RiArrowRightLine } from "react-icons/ri";
 import ApiAccessClient from './api-access-client';
+import { getProfile } from '@/actions/profile';
 
 export async function generateMetadata() {
     return {
@@ -12,6 +13,9 @@ export async function generateMetadata() {
 }
 
 export default async function APIAccessPage() {
+
+    const profile = await getProfile();
+
     return (
         <div className={styles.dashboard}>
             <Sidebar />
@@ -22,7 +26,7 @@ export default async function APIAccessPage() {
                 </div>
                 <div className={styles.body}>
                     <div className={styles.apiAccess}>
-                        <ApiAccessClient />
+                        <ApiAccessClient api_auth_key={profile.api_auth_key} />
                     </div>
                 </div>
             </div>

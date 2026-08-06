@@ -5886,6 +5886,12 @@
             border-radius: 50%;
             background: #3B6D11;
         }
+        /* No key issued yet — neutral, so the card doesn't claim "Active". */
+        &.none {
+            background: #f0f0ee;
+            color: #777;
+            .statusDot { background: #aaa; }
+        }
     }
 
     /* API KEY BOX */

@@ -1,9 +1,11 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'react-toastify';
 import styles from '../Dashboard.module.scss';
 import Modal from '@/components/Modal';
+import { postGenerateApiAuthKey } from '@/actions/profile';
 import {
     TbApi,
     TbBook,
@@ -14,7 +16,7 @@ import {
     TbShieldCheck,
     TbCircleCheck,
     TbCalendar,
-    TbClock,
+    TbInfoCircle,
     TbInfinity,
     TbRefresh,
     TbAlertTriangle,
@@ -23,17 +25,18 @@ import {
     TbCircleX,
 } from 'react-icons/tb';
 
-// Placeholder key details — swap for the real values once the API key
-// endpoints exist server-side (see regenerate() below).
-const API_KEY = {
-    value: 'sf_live_k8x2mNpQ4rVwYhLzJ9aTbUcDeFgHiOsE',
-    created: 'Jun 1, 2026',
-    lastUsed: '2 hours ago',
-};
 const MASKED_KEY = 'sf_live_••••••••••••••••••••••••••••••••';
 
+// `api_auth_key.created_at` is stored as an ISO string — render it as e.g. "Jun 1, 2026".
+function formatCreated(created_at) {
+    if (!created_at) return '—';
+    const date = new Date(created_at);
+    if (Number.isNaN(date.getTime())) return created_at;
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 const CURL_EXAMPLE = `# Example — get your locations, 10 per page
-curl -X GET "https://storefindy.com/api/v1/locations?page=1&rows=10" \\
+curl -X GET "https://www.storefindy.com/api/v1/locations?page=1&rows=10" \\
   -H "Authorization: Bearer sf_live_your_key_here" \\
   -H "Content-Type: application/json"`;
 
@@ -333,22 +336,56 @@ function CodeBlock({ lang, code }) {
     );
 }
 
-export default function ApiAccessClient() {
+export default function ApiAccessClient({ api_auth_key={ value: '', created_at: '' } }) {
+    const router = useRouter();
     const [keyVisible, setKeyVisible] = useState(false);
     const [activeEndpointId, setActiveEndpointId] = useState(ALL_ENDPOINTS[0].id);
     const [regenOpen, setRegenOpen] = useState(false);
+    const [generating, setGenerating] = useState(false);
+    // Holds the freshly issued key so the card updates immediately, before the
+    // server-rendered `api_auth_key` prop comes back from router.refresh().
+    const [newKey, setNewKey] = useState(null);
 
     const endpoint = ALL_ENDPOINTS.find((ep) => ep.id === activeEndpointId);
 
+    const key = newKey || api_auth_key || { value: '', created_at: '' };
+    const hasKey = Boolean(key.value);
+
     const copyKey = () => {
-        navigator.clipboard.writeText(API_KEY.value).catch(() => {});
+        if (!hasKey) return;
+        navigator.clipboard.writeText(key.value).catch(() => {});
         toast.success('API key copied to clipboard');
     };
 
-    // TODO: call a server action to rotate the key once the API key backend lands.
-    const regenerate = () => {
+    // Issues a key on first use, or rotates the existing one. Both go through the
+    // same server action — the only difference is the confirmation step, which
+    // first-time creation skips because there is no old key to invalidate.
+    const handleGenerateKey = async () => {
+        if (generating) return;
+
+        setGenerating(true);
         setRegenOpen(false);
-        toast.success('New API key generated — copy it now and update your integrations');
+
+        try {
+            const result = await postGenerateApiAuthKey();
+
+            if (result?.status === 'success') {
+                setNewKey(result.api_auth_key);
+                setKeyVisible(true); // reveal it once — they need to copy it now
+                toast.success(
+                    hasKey
+                        ? 'New API key generated — copy it now and update your integrations'
+                        : 'API key generated — copy it and start making requests'
+                );
+                router.refresh();
+            } else {
+                toast.error(result?.message || 'Something went wrong. Please try again.');
+            }
+        } catch (error) {
+            toast.error('Something went wrong. Please try again.');
+        } finally {
+            setGenerating(false);
+        }
     };
 
     return (
@@ -372,66 +409,89 @@ export default function ApiAccessClient() {
             <div className={styles.apiCard}>
                 <div className={styles.apiCardHeader}>
                     <div className={styles.apiCardTitle}><TbKey /> Your API Key</div>
-                    <div className={styles.statusPill}>
-                        <span className={styles.statusDot} /> Active
+                    <div className={`${styles.statusPill} ${hasKey ? '' : styles.none}`}>
+                        <span className={styles.statusDot} /> {hasKey ? 'Active' : 'Not generated'}
                     </div>
                 </div>
 
                 <div className={styles.keyBox}>
                     <div className={styles.keyLabel}>
                         Bearer Token
-                        <span className={styles.keySecure}><TbShieldCheck /> Secure</span>
+                        {hasKey && <span className={styles.keySecure}><TbShieldCheck /> Secure</span>}
                     </div>
                     <div className={styles.keyValueRow}>
-                        <div className={`${styles.keyValue} ${keyVisible ? '' : styles.masked}`}>
-                            {keyVisible ? API_KEY.value : MASKED_KEY}
+                        <div className={`${styles.keyValue} ${hasKey && !keyVisible ? styles.masked : ''}`}>
+                            {!hasKey ? 'No key yet' : keyVisible ? key.value : MASKED_KEY}
                         </div>
-                        <div className={styles.keyActions}>
-                            <button
-                                type="button"
-                                className={styles.keyBtn}
-                                onClick={() => setKeyVisible((visible) => !visible)}
-                                title={keyVisible ? 'Hide key' : 'Show key'}
-                                aria-label={keyVisible ? 'Hide key' : 'Show key'}
-                            >
-                                {keyVisible ? <TbEyeOff /> : <TbEye />}
-                            </button>
-                            <button
-                                type="button"
-                                className={styles.keyBtn}
-                                onClick={copyKey}
-                                title="Copy key"
-                                aria-label="Copy key"
-                            >
-                                <TbCopy />
-                            </button>
-                        </div>
+                        {hasKey && (
+                            <div className={styles.keyActions}>
+                                <button
+                                    type="button"
+                                    className={styles.keyBtn}
+                                    onClick={() => setKeyVisible((visible) => !visible)}
+                                    title={keyVisible ? 'Hide key' : 'Show key'}
+                                    aria-label={keyVisible ? 'Hide key' : 'Show key'}
+                                >
+                                    {keyVisible ? <TbEyeOff /> : <TbEye />}
+                                </button>
+                                <button
+                                    type="button"
+                                    className={styles.keyBtn}
+                                    onClick={copyKey}
+                                    title="Copy key"
+                                    aria-label="Copy key"
+                                >
+                                    <TbCopy />
+                                </button>
+                            </div>
+                        )}
                     </div>
                     <div className={styles.keyMeta}>
-                        <div className={`${styles.keyMetaItem} ${styles.ok}`}><TbCircleCheck /> Active</div>
-                        <div className={styles.keyMetaItem}><TbCalendar /> Created {API_KEY.created}</div>
-                        <div className={styles.keyMetaItem}><TbClock /> Last used {API_KEY.lastUsed}</div>
-                        <div className={styles.keyMetaItem}><TbInfinity /> Never expires</div>
+                        {hasKey ? (
+                            <>
+                                <div className={`${styles.keyMetaItem} ${styles.ok}`}><TbCircleCheck /> Active</div>
+                                <div className={styles.keyMetaItem}><TbCalendar /> Created {formatCreated(key.created_at)}</div>
+                                <div className={styles.keyMetaItem}><TbInfinity /> Never expires</div>
+                            </>
+                        ) : (
+                            <div className={styles.keyMetaItem}>
+                                <TbInfoCircle /> Generate a key to start making API requests
+                            </div>
+                        )}
                     </div>
                 </div>
 
                 <div className={styles.generateRow}>
                     <div className={styles.genInfo}>
-                        <strong className={styles.genTitle}>Regenerate your key</strong>
-                        Use this if your key is compromised. Your old key stops working immediately.
+                        <strong className={styles.genTitle}>
+                            {hasKey ? 'Regenerate your key' : 'Generate your key'}
+                        </strong>
+                        {hasKey
+                            ? 'Use this if your key is compromised. Your old key stops working immediately.'
+                            : 'Create a Bearer token to authenticate your requests to the Storefindy REST API.'}
                     </div>
-                    <button type="button" className={styles.btnGen} onClick={() => setRegenOpen(true)}>
-                        <TbRefresh /> Regenerate Key
+                    <button
+                        type="button"
+                        className={styles.btnGen}
+                        onClick={() => (hasKey ? setRegenOpen(true) : handleGenerateKey())}
+                        disabled={generating}
+                    >
+                        <TbRefresh />
+                        {generating
+                            ? 'Generating…'
+                            : hasKey ? 'Regenerate Key' : 'Generate Key'}
                     </button>
                 </div>
 
-                <div className={styles.warnBox}>
-                    <TbAlertTriangle />
-                    <p>
-                        Never expose your API key in client-side JavaScript, public repos, or frontend
-                        code. If compromised, regenerate it immediately.
-                    </p>
-                </div>
+                {hasKey && (
+                    <div className={styles.warnBox}>
+                        <TbAlertTriangle />
+                        <p>
+                            Never expose your API key in client-side JavaScript, public repos, or frontend
+                            code. If compromised, regenerate it immediately.
+                        </p>
+                    </div>
+                )}
             </div>
 
             {/* USAGE EXAMPLE */}
@@ -543,8 +603,13 @@ export default function ApiAccessClient() {
                         >
                             Cancel
                         </button>
-                        <button type="button" className={styles.apiRegenBtnConfirm} onClick={regenerate}>
-                            <TbRefresh /> Regenerate Key
+                        <button
+                            type="button"
+                            className={styles.apiRegenBtnConfirm}
+                            onClick={handleGenerateKey}
+                            disabled={generating}
+                        >
+                            <TbRefresh /> {generating ? 'Regenerating…' : 'Regenerate Key'}
                         </button>
                     </>
                 }

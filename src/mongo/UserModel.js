@@ -8,12 +8,11 @@ const userSchema = new mongoose.Schema({
   last_login_at: { type: String, required: false },
   user_level: { type: String, required: false, default: '' }, // user is empty | admin
   is_welcome_accepted: { type: Boolean, required: false, default: false },
-  api_auth_key: { type: String, required: false, default: '' },
-
-  // REST API access (see /dashboard/api-access)
-  api_key: { type: String, required: false, default: '', index: true }, // Bearer token e.g. "sf_live_..."
-  api_key_created_at: { type: String, required: false, default: '' },   // ISO time the current key was generated
-  api_key_last_used_at: { type: String, required: false, default: '' }, // ISO time of the last authenticated request
+  // REST API access — Bearer token for /api/v1 (see /dashboard/api-access)
+  api_auth_key: {
+    value: { type: String, required: false, default: '', index: true }, // e.g. "sf_live_..."
+    created_at: { type: String, required: false, default: '' },         // ISO time the key was generated
+  },
 
   // editable profile fields
   first_name: { type: String, required: false, default: '' },    // given name

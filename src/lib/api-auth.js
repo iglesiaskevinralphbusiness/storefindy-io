@@ -1,11 +1,13 @@
 // Bearer API key authentication for the public REST API under /api/v1.
-// Keys live on the user document (`api_key`) and are issued from the
-// dashboard at /dashboard/api-access.
+// Keys live on the user document (`api_auth_key.value`) and are issued from
+// the dashboard at /dashboard/api-access.
 import { NextResponse } from 'next/server';
 import { dbConnect } from '@/config/mongo.config';
 import { UserModel } from '@/mongo';
 
-const KEY_PREFIX = 'sf_live_';
+// Single source of truth for the key format — key generation lives in
+// postGenerateApiAuthKey() (src/actions/profile.js).
+export const API_KEY_PREFIX = 'sf_live_';
 
 export function jsonError(message, status = 400, extra = {}) {
     return NextResponse.json({ success: false, error: message, ...extra }, { status });
@@ -31,22 +33,16 @@ export async function authenticateApiKey(request) {
     }
 
     const key = token.trim();
-    if (!key.startsWith(KEY_PREFIX)) {
+    if (!key.startsWith(API_KEY_PREFIX)) {
         return { error: jsonError('Invalid API key.', 401) };
     }
 
     await dbConnect();
 
-    const user = await UserModel.findOne({ api_key: key }).lean();
+    const user = await UserModel.findOne({ 'api_auth_key.value': key }).lean();
     if (!user) {
         return { error: jsonError('Invalid API key.', 401) };
     }
 
-    // Best-effort "last used" stamp — never block the response on it.
-    UserModel.updateOne(
-        { _id: user._id },
-        { $set: { api_key_last_used_at: new Date().toISOString() } }
-    ).catch(() => {});
-
-    return { user, user_id: user._id.toString() };
+    return { user, user_id: user._id.toString(), api_key: key };
 }

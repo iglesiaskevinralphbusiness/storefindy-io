@@ -1,4 +1,5 @@
 "use server";
+import { randomBytes } from 'crypto';
 import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
@@ -7,6 +8,7 @@ import { UserModel, LocatorModel, LocationModel } from '@/mongo';
 import { sanitizeInput } from '@/utils/lib/input-sanitization';
 import { serializeForClient, getUserPlan } from '@/utils/helpers';
 import { plans } from '@/utils/constant/pricing';
+import { API_KEY_PREFIX } from '@/lib/api-auth';
 
 export async function getProfile() {
     const session = await getServerSession(authOptions);
@@ -46,6 +48,10 @@ export async function getProfile() {
         last_login_at: user.last_login_at || '',
         locator_count,
         location_count,
+        api_auth_key: {
+            value: user.api_auth_key?.value || '',
+            created_at: user.api_auth_key?.created_at || '',
+        },
     };
 }
 
@@ -157,6 +163,40 @@ export async function postProfileWelcomeAccepted() {
         await UserModel.findByIdAndUpdate(user._id, { is_welcome_accepted: true });
         return { status: "success", message: 'Welcome accepted successfully' };
     } catch (error) {
+        return { status: "fatal", message: "Server error. Please try again." };
+    }
+}
+
+// Issues (or rotates) the user's REST API Bearer token. Any previous key stops
+// working the moment this returns, since authentication looks the caller up by
+// `api_auth_key.value` (see src/lib/api-auth.js).
+export async function postGenerateApiAuthKey() {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+    await dbConnect();
+
+    const user = await UserModel.findById(session.user.id);
+    if (!user) {
+        redirect('/sign-in');
+    }
+
+    // 24 random bytes -> 32 base64url chars, e.g. "sf_live_k8x2mNpQ...".
+    const api_auth_key = {
+        value: `${API_KEY_PREFIX}${randomBytes(24).toString('base64url')}`,
+        created_at: new Date().toISOString(),
+    };
+
+    try {
+        await UserModel.findByIdAndUpdate(user._id, { api_auth_key }, { new: true });
+        return {
+            status: "success",
+            message: 'API key generated successfully',
+            api_auth_key,
+        };
+    } catch (error) {
+        console.log(error);
         return { status: "fatal", message: "Server error. Please try again." };
     }
 }

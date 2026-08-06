@@ -20,7 +20,8 @@ export async function GET(request) {
 
     try {
         const result = await queryLocations({
-            user_id: user._id,
+            // authenticateApiKey() already resolved the owner from the Bearer key.
+            user_id: auth.user_id,
             page: searchParams.get('page') ?? 1,
             rows: searchParams.get('rows') ?? 10,
             sort: searchParams.get('sort') ?? 'createdAt',
