@@ -74,6 +74,10 @@ export async function authenticateApiKey(request) {
         return { error: jsonError('Invalid API key.', 401) };
     }
 
+    if(user.plan === 'free' && user._id.toString() !== process.env.USER_ID_BUSINESS && user._id.toString() !== process.env.USER_ID_PRO) {
+        return { error: jsonError('You are not authorized to access this resource. Please upgrade your plan to business to access this resource.', 401) };
+    }
+
     return { user, user_id: user._id.toString(), api_key: key };
 }
 
