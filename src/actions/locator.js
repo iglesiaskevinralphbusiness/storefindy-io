@@ -8,6 +8,7 @@ import { getLocationsInactiveIds } from '@/actions/locations';
 import { serializeForClient, getUserPlan } from '@/utils/helpers';
 import { isValidObjectId } from 'mongoose';
 import { plans } from '@/utils/constant/pricing';
+import { queryLocators, queryLocatorById, getInactiveLocatorIds } from '@/lib/locators-query';
 import mongoose from "mongoose";
 
 export async function postCreateLocator(filters, _prev, formData) {
@@ -111,71 +112,12 @@ export async function getLocators() {
         redirect('/sign-in');
     }
 
-    await dbConnect();
-
-    // const locators = await LocatorModel.find({ user_id: session.user.id }).lean();
-    const locators = await LocatorModel.aggregate([
-        {
-            $match: {
-                user_id: session.user.id,
-            },
-        },
-        {
-            $addFields: {
-                locatorId: { $toString: '$_id' },
-            }
-        },
-        {
-            $lookup: {
-                from: 'locationmodels', // collection name
-                localField: 'locatorId',
-                foreignField: 'locator_id',
-                as: 'locations',
-            },
-        },
-        {
-            $addFields: {
-                total_locations: { $size: '$locations' },
-            },
-        },
-        {
-            $project: {
-                locations: 0, // remove the joined array
-            },
-        },
-    ]);
-    const inactiveIds = await getLocatorInactiveIds(session.user.id);
-
-    const updatedLocators = locators.map(locator => ({
-        ...locator,
-        status: inactiveIds.includes(String(locator._id)) ? "inactive" : "active"
-    }));
-
-
-    return serializeForClient(updatedLocators);
+    // Same query the REST endpoint GET /api/v1/locators serves.
+    return queryLocators(session.user.id);
 }
 
 export async function getLocatorInactiveIds(user_id) {
-    await dbConnect();
-
-    const user = await UserModel.findOne({ _id: user_id }).lean();
-    if (!user) {
-        return [];
-    }
-
-    const user_plan = getUserPlan(user_id);
-
-    const plan = plans.find(p => p.id === user_plan) || plan[0];
-    const skip = plan.max_locator;
-
-    const locators = (await LocatorModel.find({ user_id })
-        .sort({ createdAt: 1 }) // oldest -> newest
-        .skip(skip)
-        .select('_id')
-        .lean()
-    ).map(({ _id }) => _id.toString());
-
-    return locators;
+    return getInactiveLocatorIds(user_id);
 }
 
 export async function getLocatorById(locator_id) {
@@ -184,33 +126,8 @@ export async function getLocatorById(locator_id) {
         redirect('/sign-in');
     }
 
-    // check if location_id is a valid ObjectId
-    if (!isValidObjectId(locator_id)) {
-        return null;
-    }
-
-    await dbConnect();
-
-    const locator = await LocatorModel.findOne({ _id: locator_id, user_id: session.user.id }).lean();
-    if (!locator) {
-        return null;
-    }
-
-    // user of the locator
-    const user = await UserModel.findOne({ _id: locator.user_id }).lean();
-    if (!user) {
-        return null;
-    }
-
-    const user_plan = getUserPlan(user._id.toString());
-
-    // inactive ids - set inactive locators that are beyond the plan's limit
-    const inactiveIds = await getLocatorInactiveIds(session.user.id);
-    return serializeForClient({
-        ...locator,
-        user_plan: user_plan,
-        status: inactiveIds.includes(String(locator._id)) ? 'inactive' : 'active',
-    });
+    // Same query the REST endpoint GET /api/v1/locators/:id serves.
+    return queryLocatorById(session.user.id, locator_id);
 }
 
 export async function getLocatorByName(locator_name, record_visit=false) {
