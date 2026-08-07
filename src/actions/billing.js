@@ -3,11 +3,10 @@ import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { dbConnect } from '@/config/mongo.config';
-import { UserModel, LocatorModel, LocationModel, SubDomainModel } from '@/mongo';
-import { plans } from '@/utils/constant/pricing';
+import { UserModel } from '@/mongo';
 import { reconcileUserSubscription } from '@/lib/lemonsqueezy';
 import { TbMap, TbMapPin, TbWorld } from 'react-icons/tb';
-import { getUserPlan } from '@/utils/helpers';
+import { queryBillingLimits } from '@/lib/billing-query';
 
 export async function getBillingStatus() {
     const session = await getServerSession(authOptions);
@@ -29,30 +28,22 @@ export async function getBillingStatus() {
     await reconcileUserSubscription(userDoc);
     const user = userDoc.toObject();
 
-    // for demo and testing purposes, we need to set the user plan to admin, business, or pro
-    const user_plan = getUserPlan(user._id.toString(), user.plan);
+    // Counts, caps and the demo/testing plan override all come from the shared
+    // calculation, so this page and GET /api/v1/billing-status can never disagree
+    // about whether a limit has been reached. See src/lib/billing-query.js.
+    const limits = await queryBillingLimits(session.user.id, user);
 
-    const locator = await LocatorModel.countDocuments({ user_id: session.user.id });
-    const location = await LocationModel.countDocuments({ user_id: session.user.id });
-    const sub_domain = await SubDomainModel.countDocuments({ user_id: session.user.id });
-
-    const plan = plans.find(p => p.id === user_plan) || plans[0];
-
-    const locator_used = locator > plan.max_locator ? plan.max_locator : locator;
-    const locator_inactive = locator - plan.max_locator;
-    const locator_percent = (locator_used / plan.max_locator) * 100;
-
-    const location_used = plan.id === 'business' ? location : location > plan.max_location ? plan.max_location : location;
-    const location_inactive = plan.id === 'business' ? 0 : location - plan.max_location;
-    const location_percent = plan.id === 'business' ? 100 : (location_used / plan.max_location) * 100;
-
-    const sub_domain_used = sub_domain > plan.max_sub_domain ? plan.max_sub_domain : sub_domain;
-    const sub_domain_inactive = sub_domain - plan.max_sub_domain;
-    const sub_domain_percent = (sub_domain_used / plan.max_sub_domain) * 100;
+    const {
+        plan,
+        user_plan,
+        locator_used, locator_inactive, locator_percent,
+        location_used, location_inactive, location_percent,
+        sub_domain_used, sub_domain_inactive, sub_domain_percent,
+    } = limits;
 
     return {
         id: plan.id,
-        status: user_plan === 'free' ? 'free' : (user.status || 'active'),
+        status: limits.status,
         planName: (plan.id).charAt(0).toUpperCase() + (plan.id).slice(1),
         billingEmail: user.email,
         planStarted: user.plan_started ? user.plan_started : '-',
@@ -60,16 +51,16 @@ export async function getBillingStatus() {
         renewal: user.renewal_date ? user.renewal_date : '-',
 
         locator_max: plan.max_locator,
-        locator_count: locator,
-        locator_is_limit_reached: locator >= plan.max_locator,
+        locator_count: limits.locator_count,
+        locator_is_limit_reached: limits.locator_is_limit_reached,
 
-        location_max: plan.id === 'business' ? 'Unlimited' : plan.max_location,
-        location_count: location,
-        location_is_limit_reached: plan.id === 'business' ? false : location >= plan.max_location,
+        location_max: limits.unlimited_locations ? 'Unlimited' : plan.max_location,
+        location_count: limits.location_count,
+        location_is_limit_reached: limits.location_is_limit_reached,
 
         sub_domain_max: plan.max_sub_domain,
-        sub_domain_count: sub_domain,
-        sub_domain_is_limit_reached: sub_domain >= plan.max_sub_domain,
+        sub_domain_count: limits.sub_domain_count,
+        sub_domain_is_limit_reached: limits.sub_domain_is_limit_reached,
 
         usage: [
             {
