@@ -88,6 +88,17 @@ function buildCurl({ method, path, curlQuery = '', curlBody }, apiKey = SAMPLE_K
 const ERROR_EXAMPLE = `// 401 — missing, malformed or unknown key
 { "success": false, "error": "Invalid API key." }
 
+// 429 — the plan's daily request quota is spent (resets 00:00 UTC).
+// Every response also carries X-RateLimit-Limit / -Remaining / -Reset,
+// and this one adds Retry-After with the seconds until the reset.
+{
+  "success": false,
+  "error": "Daily API request limit reached — 100 requests per day on the Free plan. The quota resets at 00:00 UTC. Upgrade your plan for a higher limit.",
+  "plan": "free",
+  "limit": 100,
+  "reset": "2026-08-09T00:00:00.000Z"
+}
+
 // 400 — one or more fields failed validation
 {
   "status": "error",
@@ -574,8 +585,14 @@ export default function ApiAccessClient({ plan='free', api_auth_key={ value: '',
 
     // Only the Business plan can hold a working key, so anyone else sees the
     // key card in its locked state — the endpoint reference stays browsable.
-    const isLocked = plan !== 'business';
+    // const isLocked = plan !== 'business';
+    const isLocked = false;
     const planLabel = plan ? plan.charAt(0).toUpperCase() + plan.slice(1) : 'Free';
+
+    // The daily /api/v1 quota for this account — same constant the route
+    // enforcement reads, so the banner can never quote a stale number.
+    const dailyRequestLimit =
+        (plans.find((p) => p.id === plan) || plans[0]).max_api_requests_per_day;
 
     // The samples follow the show/hide toggle: the real key while it is revealed
     // (so the commands run as shown), the placeholder while it is masked.
@@ -643,7 +660,9 @@ export default function ApiAccessClient({ plan='free', api_auth_key={ value: '',
                         <div className={styles.abTitle}>Storefindy REST API</div>
                         <div className={styles.abDesc}>
                             Use your Bearer API key to manage locators and locations
-                            programmatically. One key per account — no expiration.
+                            programmatically. One key per account — no expiration. Your{' '}
+                            {planLabel} plan includes {dailyRequestLimit.toLocaleString()} API
+                            requests per day, resetting at 00:00 UTC.
                         </div>
                     </div>
                     <Link href="/dashboard/documentation" className={styles.abLink}>

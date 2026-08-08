@@ -30,7 +30,7 @@ export async function GET(request, { params }) {
         if (!locator) return jsonError('Locator not found.', 404);
 
         return NextResponse.json(toPublicLocatorDetail(locator), { status: 200 });
-    });
+    }, auth);
 }
 
 // REST equivalent of postEditLocator() — src/actions/locator.js
@@ -66,7 +66,7 @@ export async function PUT(request, { params }) {
             'Locator updated successfully',
             toPublicLocator(serializeForClient(locator))
         );
-    });
+    }, auth);
 }
 
 // REST equivalent of postDeleteLocator() — src/actions/locator.js
@@ -90,5 +90,5 @@ export async function DELETE(request, { params }) {
         await LocationModel.deleteMany({ locator_id: id });
         await SubDomainModel.deleteMany({ locator_id: id });
         return jsonSuccess('Locator deleted successfully');
-    });
+    }, auth);
 }

@@ -43,7 +43,7 @@ export async function GET(request) {
         });
 
         return NextResponse.json(result, { status: 200 });
-    });
+    }, auth);
 }
 
 // REST equivalent of postCreateLocation() — src/actions/locations.js
@@ -72,5 +72,5 @@ export async function POST(request) {
             serializeForClient(location.toObject()),
             201
         );
-    });
+    }, auth);
 }

@@ -5,10 +5,18 @@ import { NextResponse } from 'next/server';
 import { dbConnect } from '@/config/mongo.config';
 import { UserModel, LocatorModel, LocationModel } from '@/mongo';
 import { isObjectIdString } from '@/lib/api-sanitize';
+import { consumeApiRequest, withRateLimitHeaders } from '@/lib/api-rate-limit';
+import { plans } from '@/utils/constant/pricing';
+import { getUserPlan } from '@/utils/helpers';
 
 // Single source of truth for the key format — key generation lives in
 // postGenerateApiAuthKey() (src/actions/profile.js).
 export const API_KEY_PREFIX = 'sf_live_';
+
+/** 'pro' -> 'Pro'. Only used to word the 429 message. */
+function planLabel(plan_id) {
+    return (plans.find((p) => p.id === plan_id) || plans[0]).name;
+}
 
 export function jsonError(message, status = 400, extra = {}) {
     return NextResponse.json({ success: false, error: message, ...extra }, { status });
@@ -30,26 +38,39 @@ export function jsonSuccess(message, data = undefined, status = 200) {
 /**
  * Wrap a route handler so an unexpected throw becomes a 500 instead of an
  * unhandled rejection. Mirrors the actions' `{ status: 'fatal' }` catch blocks.
+ *
+ * Pass the `authenticateApiKey()` result as the second argument and the quota
+ * headers are stamped on whatever the handler returns, so success and failure
+ * responses report the same X-RateLimit-* values.
  */
-export async function withServerError(handler) {
+export async function withServerError(handler, auth = null) {
     try {
-        return await handler();
+        return withRateLimitHeaders(await handler(), auth?.rate);
     } catch (error) {
         console.log(error);
-        return NextResponse.json(
-            { status: 'fatal', message: 'Server error. Please try again.' },
-            { status: 500 }
+        return withRateLimitHeaders(
+            NextResponse.json(
+                { status: 'fatal', message: 'Server error. Please try again.' },
+                { status: 500 }
+            ),
+            auth?.rate
         );
     }
 }
 
 /**
- * Resolve the caller from the `Authorization: Bearer <key>` header.
+ * Resolve the caller from the `Authorization: Bearer <key>` header, then charge
+ * the request against their plan's daily quota.
  *
- * Returns `{ user }` on success, or `{ error }` holding a ready-to-return
- * NextResponse when the header is missing, malformed, or the key is unknown.
+ * Returns `{ user, user_id, api_key, plan, rate }` on success, or `{ error }`
+ * holding a ready-to-return NextResponse when the header is missing, malformed,
+ * the key is unknown, or the daily quota is exhausted (429).
+ *
+ * @param {Request} request
+ * @param {{ rate_limit?: boolean }} options  Set `rate_limit: false` to
+ *   authenticate without consuming quota — used by internal routes.
  */
-export async function authenticateApiKey(request) {
+export async function authenticateApiKey(request, { rate_limit = true } = {}) {
     const header = request.headers.get('authorization') || '';
     const [scheme, token] = header.split(' ');
 
@@ -77,11 +98,33 @@ export async function authenticateApiKey(request) {
         return { error: jsonError('Invalid API key.', 401) };
     }
 
-    if(user.plan === 'free' && user._id.toString() !== process.env.USER_ID_BUSINESS && user._id.toString() !== process.env.USER_ID_PRO) {
-        return { error: jsonError('You are not authorized to access this resource. Please upgrade your plan to business to access this resource.', 401) };
+    // API access is available on every plan — the per-plan daily request quota is
+    // what differentiates them, not the ability to hold a working key.
+    const user_id = user._id.toString();
+    // Demo/testing overrides live in getUserPlan(), so the stored plan is never
+    // read directly — same as billing-query.js.
+    const plan = getUserPlan(user_id, user.plan);
+
+    if (!rate_limit) {
+        return { user, user_id, api_key: key, plan, rate: null };
     }
 
-    return { user, user_id: user._id.toString(), api_key: key };
+    const rate = await consumeApiRequest(user_id, plan);
+    if (!rate.allowed) {
+        const upgrade =
+            plan === 'business'
+                ? ''
+                : ' Upgrade your plan for a higher limit.';
+        const response = jsonError(
+            `Daily API request limit reached — ${rate.limit} requests per day on the ${planLabel(plan)} plan. The quota resets at 00:00 UTC.${upgrade}`,
+            429,
+            { plan, limit: rate.limit, reset: rate.reset.toISOString() }
+        );
+        response.headers.set('Retry-After', String(rate.retry_after));
+        return { error: withRateLimitHeaders(response, rate) };
+    }
+
+    return { user, user_id, api_key: key, plan, rate };
 }
 
 /**

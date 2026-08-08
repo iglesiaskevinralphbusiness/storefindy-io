@@ -21,7 +21,10 @@ import { queryBillingLimits } from '@/lib/billing-query';
 // email, subscription dates and the `usage` meters — the first two are personal
 // data the caller does not need, and the third is JSX.
 export async function GET(request) {
-    const auth = await authenticateApiKey(request);
+    // Exempt from the daily quota: the plugin calls this as a pre-flight before
+    // it renders a create form, and those checks should not eat the request
+    // budget the account bought for actual locator/location work.
+    const auth = await authenticateApiKey(request, { rate_limit: false });
     if (auth.error) return auth.error;
 
     return withServerError(async () => {

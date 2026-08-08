@@ -9,6 +9,7 @@ import {
     requireOwnedLocator,
     withServerError,
 } from '@/lib/api-auth';
+import { withRateLimitHeaders } from '@/lib/api-rate-limit';
 import { readJsonBody, validateLocationPayload } from '@/lib/api-payloads';
 import { serializeForClient } from '@/utils/helpers';
 
@@ -26,7 +27,12 @@ export async function GET(request, { params }) {
     const owned = await requireOwnedLocation(auth.user_id, id);
     if (owned.error) return owned.error;
 
-    return NextResponse.json(serializeForClient(owned.location), { status: 200 });
+    // Stamped by hand — this is the one success path that does not go through
+    // withServerError(), which applies the quota headers for every other route.
+    return withRateLimitHeaders(
+        NextResponse.json(serializeForClient(owned.location), { status: 200 }),
+        auth.rate
+    );
 }
 
 // REST equivalent of postEditLocation() — src/actions/locations.js
@@ -65,7 +71,7 @@ export async function PUT(request, { params }) {
         await dbConnect();
         const location = await LocationModel.findByIdAndUpdate(id, form, { new: true }).lean();
         return jsonSuccess('Location updated successfully', serializeForClient(location));
-    });
+    }, auth);
 }
 
 // REST equivalent of postDeleteLocation() — src/actions/locations.js
@@ -85,5 +91,5 @@ export async function DELETE(request, { params }) {
         await dbConnect();
         await LocationModel.findByIdAndDelete(id);
         return jsonSuccess('Location deleted successfully');
-    });
+    }, auth);
 }

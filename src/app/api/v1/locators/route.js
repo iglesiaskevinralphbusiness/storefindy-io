@@ -23,7 +23,7 @@ export async function GET(request) {
     return withServerError(async () => {
         const locators = await queryLocators(auth.user_id);
         return NextResponse.json(toPublicLocator(locators), { status: 200 });
-    });
+    }, auth);
 }
 
 // REST equivalent of postCreateLocator() — src/actions/locator.js
@@ -48,5 +48,5 @@ export async function POST(request) {
             toPublicLocator(serializeForClient(locator.toObject())),
             201
         );
-    });
+    }, auth);
 }
