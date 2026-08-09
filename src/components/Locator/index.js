@@ -99,20 +99,35 @@ function clockNow(now) {
 }
 
 // Date-only arithmetic on a "YYYY-MM-DD" string. Done in UTC deliberately: these
-// are calendar labels for matching holiday ranges, never instants, so DST must
-// not shift them.
+// are calendar labels for matching special-hours ranges, never instants, so DST
+// must not shift them.
 function addDays(ymd, days) {
     const d = new Date(`${ymd}T00:00:00Z`);
     d.setUTCDate(d.getUTCDate() + days);
     return d.toISOString().slice(0, 10);
 }
 
-// The schedule in force on a given store-local date. A holiday range overrides
-// the weekly hours for every day it covers.
+// The schedule actually in force on a given date. Special hours (`loc.holidays`
+// — holidays and one-off events, stored against real date ranges) override the
+// weekly schedule for every day they cover. This is the single source of truth
+// for the status badge, today's hours, and the week list, so all three stay in
+// agreement by construction.
 function daySpec(loc, ymd, dayIndex) {
-    const holiday = (loc.holidays || []).find((h) => h.from <= ymd && ymd <= h.to);
-    if (holiday) return { ...holiday, isHoliday: true };
+    const special = (loc.holidays || []).find((h) => h.from <= ymd && ymd <= h.to);
+    if (special) return { ...special, isHoliday: true };
     return { ...(loc.hours?.[DAY_KEYS[dayIndex]] || { enabled: false }), isHoliday: false };
+}
+
+// The date each row of the week list stands for, keyed by schema day. The list
+// runs Mon-first, so this is the Mon–Sun week containing today. Special hours
+// are stored against dates, so a row can only know whether one applies to it
+// once it knows which date it represents — and an override dated outside this
+// week correctly leaves the week list alone.
+function currentWeekDates(base) {
+    // base.dayIndex is 0=Sun, but Sunday closes a Mon-first week, so it sits 6
+    // days after that week's Monday rather than 1 day before it.
+    const monday = addDays(base.date, -((base.dayIndex + 6) % 7));
+    return Object.fromEntries(WEEK.map(([key], i) => [key, addDays(monday, i)]));
 }
 
 // Every open span around today, expressed in minutes from today's store-local
@@ -571,10 +586,11 @@ export default function Locator({
         const info = locationStatus(location, now);
         if (!info) return null;
         const hideHours = info.tone === 'notice';
-        // Which row of the week to mark. Read from the visitor's clock, the
-        // same source the badge uses, so the two can never disagree about what
-        // day it is.
-        const todayKey = DAY_KEYS[clockNow(now).dayIndex];
+        // Read from the visitor's clock, the same source the badge uses, so the
+        // two can never disagree about what day it is.
+        const base = clockNow(now);
+        const todayKey = DAY_KEYS[base.dayIndex];
+        const weekDates = currentWeekDates(base);
         return (
             <>
                 <div className={`location-status ${info.tone}`}>
@@ -601,11 +617,14 @@ export default function Locator({
                         </button>
                         <ul className={`store-hours${openHours[location._id] ? ' open' : ''}`}>
                             {WEEK.map(([key, label]) => {
-                                const d = location.hours?.[key];
+                                // Resolved against this row's actual date, so a
+                                // special-hours entry landing in this week
+                                // replaces the regular schedule for that day.
+                                const d = daySpec(location, weekDates[key], DAY_KEYS.indexOf(key));
                                 return (
                                     <li key={key} className={key === todayKey ? 'today' : undefined}>
                                         <span>{label}</span>
-                                        <span>{d?.enabled ? `${formatTime(d.open)} - ${formatTime(d.close)}` : 'Closed'}</span>
+                                        <span>{d.enabled ? `${formatTime(d.open)} - ${formatTime(d.close)}` : 'Closed'}</span>
                                     </li>
                                 );
                             })}
