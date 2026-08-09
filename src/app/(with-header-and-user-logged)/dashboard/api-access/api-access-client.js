@@ -7,6 +7,9 @@ import styles from '../Dashboard.module.scss';
 import Modal from '@/components/Modal';
 import { postGenerateApiAuthKey } from '@/actions/profile';
 import { plans } from '@/utils/constant/pricing';
+// The bulk endpoints' ID cap is read from the same constant the routes enforce,
+// so the documented number can never drift from the one that rejects a request.
+import { LIMITS } from '@/lib/api-sanitize';
 import {
     TbApi,
     TbBook,
@@ -478,6 +481,24 @@ const ENDPOINT_GROUPS = [
 }`,
             },
             {
+                id: 'publish-location',
+                method: 'POST',
+                tone: 'post',
+                path: '/locations/:id/publish',
+                desc: 'Publishes or unpublishes a single location. A shortcut for flipping published without sending a full update — everything else on the location is left untouched.',
+                params: [
+                    { name: 'id', in: 'path', type: 'string', required: true, desc: 'The location ID to publish or unpublish' },
+                ],
+                payload: `{
+  "action": "publish"               // required — publish|unpublish
+}`,
+                curlBody: `{ "action": "publish" }`,
+                response: `{
+  "status": "success",
+  "message": "Location published successfully"
+}`,
+            },
+            {
                 id: 'del-location',
                 method: 'DELETE',
                 tone: 'del',
@@ -490,6 +511,56 @@ const ENDPOINT_GROUPS = [
                 response: `{
   "status": "success",
   "message": "Location deleted successfully"
+}`,
+            },
+            {
+                id: 'bulk-publish-locations',
+                method: 'POST',
+                tone: 'post',
+                path: '/locations/bulk-publish',
+                desc: `Publishes or unpublishes up to ${LIMITS.idList} locations in one request. Locations that are already in the requested state are skipped, and the count reported back is what actually changed. IDs belonging to another account are ignored — when none of them match, the response is 404.`,
+                payload: `{
+  "location_ids": [                 // required — 1 to ${LIMITS.idList} location IDs
+    "6864f1c2a7b3e10d9c4f2a11",
+    "6864f1c2a7b3e10d9c4f2a12"
+  ],
+  "action": "publish"               // required — publish|unpublish
+}`,
+                curlBody: `{
+    "location_ids": ["${SAMPLE_LOCATION_ID}"],
+    "action": "publish"
+  }`,
+                response: `{
+  "status": "success",
+  "message": "2 locations published successfully",
+  "data": { "modifiedCount": 2 }
+}
+
+// 400 — every selected location was already in that state
+{
+  "success": false,
+  "error": "The selected locations are already published."
+}`,
+            },
+            {
+                id: 'bulk-delete-locations',
+                method: 'POST',
+                tone: 'post',
+                path: '/locations/bulk-delete',
+                desc: `Permanently deletes up to ${LIMITS.idList} locations in one request. This cannot be undone. IDs belonging to another account are ignored — when none of them match, the response is 404. Sent as POST rather than DELETE because the ID list travels in the body.`,
+                payload: `{
+  "location_ids": [                 // required — 1 to ${LIMITS.idList} location IDs
+    "6864f1c2a7b3e10d9c4f2a11",
+    "6864f1c2a7b3e10d9c4f2a12"
+  ]
+}`,
+                curlBody: `{
+    "location_ids": ["${SAMPLE_LOCATION_ID}"]
+  }`,
+                response: `{
+  "status": "success",
+  "message": "2 locations deleted successfully",
+  "data": { "deletedCount": 2 }
 }`,
             },
         ],

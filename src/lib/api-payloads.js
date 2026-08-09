@@ -5,7 +5,7 @@
 // and responses are symmetric. Error shape matches the actions:
 // `{ status: 'error', errors: { field: message } }`.
 import { z } from 'zod';
-import { isObjectIdString, readBoundedText, sanitizeMongoInput } from '@/lib/api-sanitize';
+import { isObjectIdString, readBoundedText, sanitizeMongoInput, LIMITS } from '@/lib/api-sanitize';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -407,4 +407,56 @@ export function validateLocationPayload(body, { partial = false } = {}) {
 
     if (Object.keys(errors).length > 0) return { errors };
     return { form };
+}
+
+/**
+ * The `action` field shared by the publish endpoints — the JSON equivalent of
+ * the `action` argument on postPublishLocation()/postBulkPublishLocations().
+ *
+ * The actions treat anything that isn't the string 'publish' as an unpublish,
+ * so a typo there silently hides a location. Here it is a whitelist instead:
+ * those two spellings are the only accepted values.
+ *
+ * Returns `{ action, published }` or `{ errors }`.
+ */
+export function validatePublishAction(body) {
+    const action = typeof body.action === 'string' ? body.action.trim().toLowerCase() : '';
+
+    if (action !== 'publish' && action !== 'unpublish') {
+        return { errors: { action: 'Action must be either "publish" or "unpublish"' } };
+    }
+
+    return { action, published: action === 'publish' };
+}
+
+/**
+ * The `location_ids` field shared by the bulk endpoints.
+ *
+ * Every entry is checked against the strict 24-hex form rather than mongoose's
+ * isValidObjectId() — see isObjectIdString() — and the list is capped, because
+ * these become the terms of an `$in` filter. The dashboard actions reject the
+ * whole request on the first bad ID, and so does this.
+ *
+ * Returns `{ location_ids }` or `{ errors }`.
+ */
+export function validateLocationIdList(body) {
+    const ids = body.location_ids;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+        return { errors: { location_ids: 'No locations selected' } };
+    }
+    if (ids.length > LIMITS.idList) {
+        return {
+            errors: {
+                location_ids: `Cannot process more than ${LIMITS.idList} locations in one request`,
+            },
+        };
+    }
+    if (!ids.every(isObjectIdString)) {
+        return { errors: { location_ids: 'Invalid selected location' } };
+    }
+
+    // Duplicates would inflate the "N locations" arithmetic in the response
+    // without changing what the query touches, so they are collapsed here.
+    return { location_ids: Array.from(new Set(ids)) };
 }
