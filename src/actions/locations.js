@@ -9,18 +9,7 @@ import { sanitizeInput } from '@/utils/lib/input-sanitization';
 import { serializeForClient } from '@/utils/helpers';
 import { isValidObjectId } from 'mongoose';
 import { queryLocations, getInactiveLocationIds } from '@/lib/locations-query';
-
-// CSV imports don't collect business hours, so every imported location starts
-// with this default schedule (the model requires all seven days).
-const DEFAULT_IMPORT_HOURS = {
-    Mon: { enabled: true, open: '08:00', close: '17:00' },
-    Tue: { enabled: true, open: '08:00', close: '17:00' },
-    Wed: { enabled: true, open: '08:00', close: '17:00' },
-    Thu: { enabled: true, open: '08:00', close: '17:00' },
-    Fri: { enabled: true, open: '08:00', close: '17:00' },
-    Sat: { enabled: true, open: '08:00', close: '17:00' },
-    Sun: { enabled: false, open: '08:00', close: '17:00' },
-};
+import { IMPORT_MODES, buildImportDocs, writeImportDocs } from '@/lib/import-csv';
 
 export async function postCreateLocation(categories, hours, holidays, socialMediaLinks, _prev, formData) {
     const session = await getServerSession(authOptions);
@@ -311,10 +300,9 @@ export async function getLocationById(location_id) {
 
 // Bulk-import locations from a parsed CSV into a single locator.
 // `records` is the client-mapped rows: { name, city, state, country, lat, lng, phone?, email?, website? }.
-// `mode` controls how the rows are applied to the locator's existing locations:
-//   - 'append'  : insert every valid row (nothing is removed)
-//   - 'replace' : delete all existing locations in the locator, then insert the valid rows
-//   - 'update'  : upsert by name within the locator (existing names are updated, new names inserted)
+// `mode` controls how the rows are applied to the locator's existing locations —
+// see IMPORT_MODES in src/lib/import-csv.js, which also holds the row validation
+// and the writes, shared with POST /api/v1/locations/import-csv.
 export async function importCSV(locatorId, mode, records) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -327,7 +315,7 @@ export async function importCSV(locatorId, mode, records) {
     if (!locatorId || typeof locatorId !== 'string') {
         return { status: "error", message: "Please select a locator." };
     }
-    if (!['append', 'replace', 'update'].includes(mode)) {
+    if (!IMPORT_MODES.includes(mode)) {
         return { status: "error", message: "Invalid import mode." };
     }
     if (!Array.isArray(records) || records.length === 0) {
@@ -340,110 +328,23 @@ export async function importCSV(locatorId, mode, records) {
         return { status: "error", message: "Locator not found." };
     }
 
-    // Required coordinate: coerced to number and range-checked.
-    const coordinate = (min, max) =>
-        z.preprocess(
-            (v) => (v == null || (typeof v === 'string' && v.trim() === '') ? undefined : v),
-            z.coerce.number().min(min).max(max)
-        );
-
-    const rowSchema = z.object({
-        name: z.string().trim().min(1),
-        city: z.string().trim().min(1),
-        state: z.string().trim().min(1),
-        country: z.string().trim().min(1),
-        latitude: coordinate(-90, 90),
-        longitude: coordinate(-180, 180),
-    });
-
     // Re-validate every row server-side; build full location docs for the valid ones.
-    const docs = [];
-    let skipped = 0;
-    for (const raw of records) {
-        // Sanitize against NoSQL injection ($-prefixed keys) before validating.
-        const clean = sanitizeInput({
-            name: String(raw?.name ?? '').trim(),
-            street: String(raw?.street ?? '').trim(),
-            city: String(raw?.city ?? '').trim(),
-            state: String(raw?.state ?? '').trim(),
-            postal: String(raw?.postal ?? '').trim(),
-            country: String(raw?.country ?? '').trim(),
-            lat: String(raw?.lat ?? '').trim(),
-            lng: String(raw?.lng ?? '').trim(),
-            phone: String(raw?.phone ?? '').trim(),
-            email: String(raw?.email ?? '').trim(),
-            website: String(raw?.website ?? '').trim(),
-            view_location_url: String(raw?.view_location_url ?? '').trim(),
-        });
-
-        const parsed = rowSchema.safeParse({
-            name: clean.name,
-            city: clean.city,
-            state: clean.state,
-            country: clean.country,
-            latitude: clean.lat,
-            longitude: clean.lng,
-        });
-
-        if (!parsed.success) {
-            skipped++;
-            continue;
-        }
-
-        docs.push({
-            user_id: session.user.id,
-            locator_id: locatorId,
-            name: clean.name,
-            description: '',
-            street: clean.street,
-            city: clean.city,
-            state: clean.state,
-            postal: clean.postal,
-            country: clean.country,
-            latitude: parsed.data.latitude,
-            longitude: parsed.data.longitude,
-            location_status: 'open',
-            hours: DEFAULT_IMPORT_HOURS,
-            holidays: [],
-            phone: clean.phone,
-            email: clean.email,
-            website: clean.website,
-            view_location_url: clean.view_location_url,
-            published: true,
-            show_opening_hours: false,
-            custom_notes: '',
-        });
-    }
+    const { docs, skipped } = buildImportDocs(records, {
+        user_id: session.user.id,
+        locator_id: locatorId,
+    });
 
     if (docs.length === 0) {
         return { status: "error", message: "No valid rows to import. Check that required fields are filled and coordinates are valid numbers." };
     }
 
     try {
-        let imported = 0;
-        let updated = 0;
-
-        if (mode === 'replace') {
-            // Wipe the locator's existing locations, then insert the new set.
-            await LocationModel.deleteMany({ user_id: session.user.id, locator_id: locatorId });
-            await LocationModel.insertMany(docs);
-            imported = docs.length;
-        } else if (mode === 'update') {
-            // Upsert by name within this locator: matching names are updated, new names inserted.
-            for (const doc of docs) {
-                const res = await LocationModel.updateOne(
-                    { user_id: session.user.id, locator_id: locatorId, name: doc.name },
-                    { $set: doc },
-                    { upsert: true }
-                );
-                if (res.upsertedCount > 0) imported++;
-                else updated++;
-            }
-        } else {
-            // append
-            await LocationModel.insertMany(docs);
-            imported = docs.length;
-        }
+        const { imported, updated } = await writeImportDocs({
+            user_id: session.user.id,
+            locator_id: locatorId,
+            mode,
+            docs,
+        });
 
         return {
             status: "success",

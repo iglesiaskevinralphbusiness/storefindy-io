@@ -17,9 +17,14 @@ import { queryBillingLimits } from '@/lib/billing-query';
 // would invite integrations to depend on a shape meant for one internal caller.
 //
 // The response is the plan-limit half of getBillingStatus(): plan, caps, counts
-// and the three `*_is_limit_reached` flags. It deliberately omits the billing
-// email, subscription dates and the `usage` meters — the first two are personal
-// data the caller does not need, and the third is JSX.
+// and the three `*_is_limit_reached` flags, plus the account `email` so an
+// integration can show *which* Storefindy account a saved key belongs to. It
+// still omits the subscription dates and the `usage` meters — the first are
+// personal data the caller does not need, and the second is JSX.
+//
+// Returning the email is safe here because the key already authenticates as that
+// account: anyone holding it can read and write every locator and location on it,
+// so the address identifies the key's own owner to its own owner, and nothing more.
 export async function GET(request) {
     // Exempt from the daily quota: the plugin calls this as a pre-flight before
     // it renders a create form, and those checks should not eat the request
@@ -52,6 +57,10 @@ export async function GET(request) {
                 id: plan.id,
                 planName: plan.name,
                 status: limits.status,
+
+                // The account the Bearer key belongs to — what the WordPress
+                // plugin shows under Store Locator → Settings → Connection.
+                email: userDoc.email || '',
 
                 locator_max: plan.max_locator,
                 locator_count: limits.locator_count,

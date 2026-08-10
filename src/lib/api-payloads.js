@@ -197,9 +197,14 @@ const optionalFormat = (format, message) =>
  *   2. shape  — must be a JSON object, not an array or a scalar.
  *   3. keys   — `$`-prefixed, dotted and prototype keys are dropped, and
  *              depth/key-count/array/string limits are enforced.
+ *
+ * @param {Request} request
+ * @param {{ maxBytes?: number }} options `maxBytes` raises the size gate for a
+ *   route that legitimately carries more than one record — see the CSV import.
+ *   The structural limits in sanitizeMongoInput() still apply either way.
  */
-export async function readJsonBody(request) {
-    const { text, error: sizeError } = await readBoundedText(request);
+export async function readJsonBody(request, { maxBytes = LIMITS.bodyBytes } = {}) {
+    const { text, error: sizeError } = await readBoundedText(request, maxBytes);
     if (sizeError) return { errors: { body: sizeError } };
 
     let parsed;
