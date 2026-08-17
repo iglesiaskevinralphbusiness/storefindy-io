@@ -16,6 +16,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://storefindy.com/wordpress-store-locator-plugin</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>https://storefindy.com/privacy-policy</loc>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>

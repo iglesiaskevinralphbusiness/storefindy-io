@@ -19,6 +19,13 @@ import {
     TbCircleCheck,
     TbCircleX,
     TbStarFilled,
+    TbBrandWordpress,
+    TbBrandHtml5,
+    TbBrandReact,
+    TbArrowRight,
+    TbBell,
+    TbStar,
+    TbWorld,
 } from 'react-icons/tb';
 import styles from './page.module.scss';
 import { plans } from '@/utils/constant/pricing';
@@ -56,6 +63,20 @@ const softwareJsonLd = {
         category: 'subscription',
         url: 'https://www.storefindy.com/#pricing',
     })),
+};
+
+const wordpressPluginJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'Storefindy Store Locator for WordPress',
+    operatingSystem: 'WordPress',
+    applicationCategory: 'BusinessApplication',
+    offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'USD',
+    },
+    url: 'https://wordpress.org/plugins/storefindy-store-locator/',
 };
 
 const homeTitle = 'Storefindy – Store Locator Widget for Your Website';
@@ -96,6 +117,94 @@ const steps = [
     { num: '4', title: 'Paste the embed code', desc: 'Copy one script tag and paste it into your website. Your store locator is live instantly.' },
 ];
 
+const platforms = [
+    {
+        key: 'wordpress',
+        icon: TbBrandWordpress,
+        title: 'WordPress',
+        badge: { label: 'Plugin available', className: 'badgeNew' },
+        desc: 'Install the official Storefindy plugin from the WordPress Plugin Directory. Add your store locator using the Gutenberg block or shortcode — no coding required.',
+        features: [
+            'Gutenberg block + shortcode',
+            'Works with Elementor & Classic Editor',
+            'No Google Maps API key needed',
+            'Free to install',
+        ],
+        note: 'Listed on wordpress.org/plugins/storefindy-store-locator',
+        cta: 'Learn more about the WordPress plugin',
+        href: '/wordpress-store-locator-plugin',
+        featured: true,
+    },
+    {
+        key: 'shopify',
+        icon: TbShoppingBag,
+        title: 'Shopify',
+        badge: { label: 'Coming soon', className: 'badgeSoon' },
+        desc: 'Add a store locator to your Shopify store from the Shopify App Store. Help customers find your nearest stockist, retailer, or pickup location — directly from your shop.',
+        features: [
+            'One-click install from Shopify App Store',
+            'Theme section block support',
+            'Syncs with your Storefindy dashboard',
+            'No Google Maps API key needed',
+        ],
+        cta: "Notify me when it's available",
+        ctaIcon: TbBell,
+        href: '/contact-us',
+        featured: true,
+        comingSoon: true,
+    },
+    {
+        key: 'html',
+        icon: TbBrandHtml5,
+        title: 'Plain HTML — any website',
+        badge: { label: 'All plans', className: 'badgeFree' },
+        desc: 'Paste two lines of code into any website and your store locator is live. Works on Wix, Squarespace, Webflow, or any static site — no plugin or framework needed.',
+        code: (
+            <>
+                <span className={styles.codeComment}>{'<!-- Paste where you want the map -->'}</span>
+                {'\n'}
+                <span className={styles.codeTag}>{'<div'}</span> <span className={styles.codeAttr}>id</span>=
+                <span className={styles.codeStr}>&quot;storefindy-widget&quot;</span>
+                <span className={styles.codeTag}>{'></div>'}</span>
+                {'\n'}
+                <span className={styles.codeTag}>{'<script'}</span> <span className={styles.codeAttr}>src</span>=
+                <span className={styles.codeStr}>&quot;storefindy.com/widget.js&quot;</span>
+                {'\n  '}
+                <span className={styles.codeAttr}>data-locator-id</span>=
+                <span className={styles.codeStr}>&quot;YOUR_ID&quot;</span>
+                <span className={styles.codeTag}>{'></script>'}</span>
+            </>
+        ),
+        cta: 'View embed guide',
+        href: '/dashboard/locators/embed',
+        featured: true,
+    },
+    {
+        key: 'react',
+        icon: TbBrandReact,
+        title: 'React / Next.js',
+        badge: { label: 'All plans', className: 'badgeFree' },
+        desc: 'Use the Storefindy React component to embed a store locator in your Next.js, Vite, or React application. Drop it in as a component with your locator ID as a prop.',
+        code: (
+            <>
+                <span className={styles.codeTag}>import</span> StoreLocator{' '}
+                <span className={styles.codeTag}>from</span>{' '}
+                <span className={styles.codeStr}>&apos;@storefindy/react&apos;</span>
+                {'\n\n'}
+                <span className={styles.codeTag}>{'<StoreLocator'}</span>
+                {'\n  '}
+                <span className={styles.codeAttr}>locatorId</span>=
+                <span className={styles.codeStr}>&quot;YOUR_LOCATOR_ID&quot;</span>
+                {'\n'}
+                <span className={styles.codeTag}>{'/>'}</span>
+            </>
+        ),
+        cta: 'View React guide',
+        href: '/dashboard/locators/embed',
+        featured: true,
+    },
+];
+
 const testimonials = [
     {
         initials: 'MR',
@@ -127,6 +236,10 @@ export default async function Home() {
         <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareJsonLd) }}
+        />
+        <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(wordpressPluginJsonLd) }}
         />
 
         <div className='wrap'>
@@ -195,6 +308,69 @@ export default async function Home() {
                             <div className={styles.stepDesc}>{desc}</div>
                         </div>
                     ))}
+                </div>
+            </div>
+        </section>
+
+        {/* INTEGRATIONS / PLATFORMS */}
+        <section className={styles.platforms} id="integrations">
+            <div className='wrap'>
+                <div style={{ textAlign: 'center', maxWidth: 640, margin: '0 auto' }}>
+                    <div className={styles.sectionLabel}>Integrations</div>
+                    <div className={styles.sectionTitle} style={{ marginBottom: 8 }}>Works with your platform — no developer needed</div>
+                    <div className={styles.sectionSub} style={{ margin: '0 auto' }}>Storefindy embeds on any website in minutes. Choose the method that works best for you — a WordPress plugin, a script tag, a React component, or a custom branded subdomain.</div>
+                </div>
+                <div className={styles.platformsGrid}>
+                    {platforms.map(({ key, icon: Icon, title, badge, desc, features, note, code, cta, ctaIcon, href, featured, comingSoon }) => {
+                        const CtaIcon = ctaIcon || TbArrowRight;
+                        return (
+                            <div
+                                className={`${styles.platformCard} ${featured ? styles.featured : ''} ${comingSoon ? styles.comingSoon : ''}`}
+                                key={key}
+                            >
+                                <div className={styles.platformTop}>
+                                    <div className={styles.platformIcon}><Icon aria-hidden="true" /></div>
+                                    <span className={`${styles.platformBadge} ${styles[badge.className]}`}>{badge.label}</span>
+                                </div>
+                                <div className={styles.platformTitle}>{title}</div>
+                                <div className={styles.platformDesc}>{desc}</div>
+                                {features && (
+                                    <div className={styles.platformFeatures}>
+                                        {features.map((f) => (
+                                            <div className={styles.platformFeature} key={f}>
+                                                <TbCircleCheck aria-hidden="true" /> {f}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                {code && <pre className={styles.platformCode}>{code}</pre>}
+                                {note && (
+                                    <div className={styles.platformNote}>
+                                        <TbStar aria-hidden="true" /> {note}
+                                    </div>
+                                )}
+                                <Link
+                                    href={href}
+                                    className={`${styles.platformLink} ${comingSoon ? styles.muted : ''}`}
+                                >
+                                    {cta} <CtaIcon aria-hidden="true" />
+                                </Link>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* SUBDOMAIN CALLOUT */}
+                <div className={styles.platformsFooter}>
+                    <div className={styles.platformsFooterIcon}><TbWorld aria-hidden="true" /></div>
+                    <div className={styles.platformsFooterBody}>
+                        <div className={styles.platformsFooterTitle}>Don&apos;t have a website? Use a custom subdomain.</div>
+                        <div className={styles.platformsFooterDesc}>Get a branded URL like <strong>yourbusiness.storefindy.com</strong> — a ready-made store locator page with your header, footer, and branding. No website needed.</div>
+                    </div>
+                    <div className={styles.platformsFooterActions}>
+                        <a href="/dashboard/locators/subdomains" className="buttonBox secondary">Learn More</a>
+                        <a href="/dashboard" className="buttonBox">Get Started Free</a>
+                    </div>
                 </div>
             </div>
         </section>
