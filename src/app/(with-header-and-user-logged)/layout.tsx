@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import { ToastContainer } from 'react-toastify';
 import { Suspense } from 'react';
 
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import '../../styles/globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -27,6 +27,10 @@ export const metadata: Metadata = {
 		],
 		apple: [{ url: '/images/favicon/favicon-180x180.png', sizes: '180x180' }],
 	},
+};
+
+export const viewport: Viewport = {
+	themeColor: '#ffe54c',
 };
 
 type Props = {

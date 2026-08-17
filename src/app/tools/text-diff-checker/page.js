@@ -19,6 +19,10 @@ export const metadata = {
     ...buildSocialMetadata({ title: pageTitle, description: pageDescription, path: '/tools/text-diff-checker' }),
 };
 
+export const viewport = {
+    themeColor: '#ffe54c',
+};
+
 export default function TextDiffCheckerPage() {
     return (
         <div className={styles.toolpage}>
