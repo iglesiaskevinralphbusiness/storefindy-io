@@ -199,9 +199,10 @@ const platforms = [
                 <span className={styles.codeTag}>{'/>'}</span>
             </>
         ),
-        cta: 'View React guide',
-        href: '/dashboard/locators/embed',
+        cta: "Notify me when it's available",
+        href: '/contact-us',
         featured: true,
+        comingSoon: true,
     },
 ];
 
