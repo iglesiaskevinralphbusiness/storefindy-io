@@ -30,7 +30,7 @@ export default function Footer() {
             <div className={styles.footerContainer}>
                 <div className={styles.footerTop}>
                     <div className={styles.footerBrand}>
-                        <Link href="/" className={styles.brandLogo}>
+                        <Link href="/" className={styles.brandLogo} aria-label="Storefindy.com">
                             <Logo type='light' />
                         </Link>
                         <p className={styles.brandTagline}>
