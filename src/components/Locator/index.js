@@ -1018,6 +1018,7 @@ export default function Locator({
                             pinImage={settings.pin.image}
                             activeId={activeId}
                             focusedZoom={features.focused_zoom}
+                            dynamicSearch={features.dynamic_search}
                             onMove={handleMapMove}
                             onSelect={setActiveId}
                             renderPopup={(loc, index) => renderLocationCard(loc, index, { showStoreHoursToggle: false })}

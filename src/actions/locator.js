@@ -202,8 +202,8 @@ export async function functionSaveCustomizeLocator(locator_id, settings, feature
     }
 
     // update locator
-    const { focused_zoom, ...restFeatures } = features;
-    await LocatorModel.findByIdAndUpdate(locator_id, { settings, focused_zoom, ...restFeatures }, { new: true });
+    const { focused_zoom, dynamic_search, ...restFeatures } = features;
+    await LocatorModel.findByIdAndUpdate(locator_id, { settings, focused_zoom, dynamic_search, ...restFeatures }, { new: true });
 
     // return the updated locator
     return { status: "success", message: 'Locator settings and features updated successfully' };

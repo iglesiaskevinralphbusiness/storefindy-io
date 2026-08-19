@@ -68,6 +68,43 @@ function buildNumberedPinIcon(color = '#185FA5', number, size = 'small', textCol
     });
 }
 
+// The draggable "search from here" person marker is a fixed size — it is a
+// control rather than a result pin, so it deliberately ignores settings.pin.size.
+// The hit area the glyph is centered in; the box itself draws nothing.
+const PERSON_ICON_W = 28;
+const PERSON_ICON_H = 33;
+const PERSON_GLYPH_PX = 20;
+// The ImMan glyph is always this red, independent of the locator's pin color.
+const PERSON_ICON_FILL = '#ca4940';
+
+// The ImMan glyph from react-icons/im (its head + body paths and 16-unit
+// viewBox, verbatim). Leaflet's divIcon takes an HTML string rather than a React
+// node, so the paths are inlined here instead of rendering <ImMan /> — that
+// keeps react-dom/server out of both the Next.js and esbuild widget bundles.
+const IM_MAN_VIEWBOX = '0 0 16 16';
+const IM_MAN_PATHS = [
+    'M9 1.5c0 0.828-0.672 1.5-1.5 1.5s-1.5-0.672-1.5-1.5c0-0.828 0.672-1.5 1.5-1.5s1.5 0.672 1.5 1.5z',
+    'M9 4h-3c-0.552 0-1 0.448-1 1v5h1v6h1.25v-6h0.5v6h1.25v-6h1v-5c0-0.552-0.448-1-1-1z',
+];
+
+// Builds the person marker that stands on the map's current search center when
+// dynamic search is off. The bare ImMan glyph, centered in a transparent box
+// that is a little larger than the glyph so it stays easy to grab.
+function buildPersonIcon() {
+    const w = PERSON_ICON_W;
+    const h = PERSON_ICON_H;
+    const glyphPx = PERSON_GLYPH_PX;
+    const paths = IM_MAN_PATHS.map((d) => `<path d="${d}"/>`).join('');
+    return L.divIcon({
+        className: '',
+        html: `<div title="Drag to search this area" style="box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:${w}px;height:${h}px;background:transparent;border:unset;border-radius:50%;cursor:grab"><svg width="${glyphPx}" height="${glyphPx}" viewBox="${IM_MAN_VIEWBOX}" fill="${PERSON_ICON_FILL}" xmlns="http://www.w3.org/2000/svg">${paths}</svg></div>`,
+        iconSize: [w, h],
+        // Centered on the coordinate rather than standing on it like the
+        // teardrop pins, so the glyph sits over the point it represents.
+        iconAnchor: [w / 2, h / 2],
+    });
+}
+
 // Recenters the map whenever a new search center arrives from the parent
 // (text-search geocode result or geolocation). Programmatic moves like this do
 // NOT fire the `dragend`/`zoomend` events used for auto-search, so there is no
@@ -111,6 +148,41 @@ function MoveHandler({ onMove, programmaticUntil }) {
     return null;
 }
 
+// The person marker standing on the map's current search center, shown only when
+// dynamic search is off. In that mode panning the map never searches, so this
+// marker is how the visitor moves the search: they drag it somewhere else and
+// the search re-runs around wherever it was dropped.
+// The parent keys this component on `center`, so every new search center
+// (text search, geolocation, the search a drop itself triggered) remounts it at
+// that point — the marker and the search center can never disagree.
+function SearchCenterMarker({ center, icon, onDrop }) {
+    const map = useMap();
+    // Its own position, so a drag leaves it where it was dropped even before the
+    // search comes back. Seeded from the map's current view when no search
+    // center exists yet (e.g. the country-only default load returns none).
+    const [position, setPosition] = useState(() => {
+        if (center && center.length === 2) return center;
+        const c = map.getCenter();
+        return [c.lat, c.lng];
+    });
+    return (
+        <Marker
+            position={position}
+            icon={icon}
+            draggable={true}
+            // Keep it above the location pins and the radius circle.
+            zIndexOffset={1000}
+            eventHandlers={{
+                dragend(e) {
+                    const p = e.target.getLatLng();
+                    setPosition([p.lat, p.lng]);
+                    onDrop({ lat: p.lat, lng: p.lng }, map.getZoom());
+                },
+            }}
+        />
+    );
+}
+
 // Zooms the map in on the active location whenever a result is selected — by
 // clicking its pin or its entry in the store list. We mark the move as
 // programmatic so MoveHandler ignores the resulting zoom/move events.
@@ -142,11 +214,14 @@ export default function LocatorMap({
     pinImage = '',
     activeId = null,
     focusedZoom = false,
+    dynamicSearch = true,
     onMove = () => {},
     onSelect = () => {},
     renderPopup = null,
 }) {
     const icon = useMemo(() => buildPinIcon(pinColor, pinSize), [pinColor, pinSize]);
+    // The draggable search-center marker (dynamic search off only).
+    const personIcon = useMemo(() => buildPersonIcon(), []);
     // When the locator uses a custom pin with an uploaded image, that image
     // replaces the teardrop shape. The number badge is still drawn on top when
     // "Show pin number" is enabled (handled per-marker below).
@@ -189,7 +264,20 @@ export default function LocatorMap({
             />
 
             <Recenter center={recenterCenter} zoom={zoom} />
-            <MoveHandler onMove={onMove} programmaticUntil={programmaticUntil} />
+            {/* With dynamic search on, panning/zooming the map auto-searches
+                around the new viewport center. With it off, moving the map
+                searches nothing at all — the draggable person marker is then the
+                only way to move the search center. */}
+            {dynamicSearch ? (
+                <MoveHandler onMove={onMove} programmaticUntil={programmaticUntil} />
+            ) : (
+                <SearchCenterMarker
+                    key={center && center.length === 2 ? `${center[0]},${center[1]}` : 'initial'}
+                    center={center}
+                    icon={personIcon}
+                    onDrop={onMove}
+                />
+            )}
             {focusedZoom && (
                 <FocusActive activeId={activeId} locations={locations} zoom={16} programmaticUntil={programmaticUntil} />
             )}

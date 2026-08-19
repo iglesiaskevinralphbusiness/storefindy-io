@@ -661,6 +661,13 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                                 onChange={(v) => updateFeatures('show_map_pin_number', v)}
                             />
                             <Checkbox
+                                label="Map Dynamic Search"
+                                name="dynamic_search"
+                                description="If set true, dragging the map will dynamically update the search results, when set false, the search results will be updated only when the user made search on form or drag the man icon in the map"
+                                checked={features.dynamic_search}
+                                onChange={(v) => updateFeatures('dynamic_search', v)}
+                            />
+                            <Checkbox
                                 label="Zoom-in when location is selected"
                                 name="focused_zoom"
                                 description="Zoom in on the map when the user selects a location"

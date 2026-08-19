@@ -101,6 +101,7 @@ export function generateFeaturesDefault(data) {
         show_map_pin_number: data.show_map_pin_number,
         form_style: data.form_style,
         focused_zoom: data.focused_zoom,
+        dynamic_search: data.dynamic_search,
 
         //
         show_search_bar: data.show_search_bar,

@@ -89,6 +89,7 @@ const locatorSchema = new mongoose.Schema({
     show_map_pin_number: { type: Boolean, required: false, default: true },
     form_style: { type: String, required: false, default: 'style-1' },
     focused_zoom: { type: Boolean, required: false, default: true },
+    dynamic_search: { type: Boolean, required: false, default: true },
 
     // CUSTOM UI
     settings: {
