@@ -4,7 +4,7 @@ import { dbConnect } from '@/config/mongo.config';
 import { LocationModel } from '@/mongo/LocationsModel';
 import { LocatorModel } from '@/mongo/LocatorModel';
 import { UserModel } from '@/mongo/UserModel';
-import { serializeForClient, getCurrentHourCode } from '@/utils/helpers';
+import { serializeForClient, getCurrentHourCode, getUserPlan } from '@/utils/helpers';
 import { plans } from '@/utils/constant/pricing';
 
 // This endpoint powers the public store-locator widget, which is embedded on
@@ -228,7 +228,9 @@ export async function GET(request) {
     if(!user) {
         return json({ status: 'error', message: 'Locator owner not found.', locations: [] }, 404);
     }
-    const plan = plans.find(p => p.id === user.plan) || plan[0];
+    const user_plan = getUserPlan(user._id.toString(), user.plan);
+
+    const plan = plans.find(p => p.id === user_plan) || plan[0];
     const skip = plan.max_location;
 
     const inactiveIds = plan.id === 'business' ? [] :(await LocationModel.find({ user_id })
@@ -419,6 +421,7 @@ export async function GET(request) {
         label,
         radius,
         count: results.length,
+        inactiveIds,
         locations: serializeForClient(activeResults),
     });
 }
