@@ -211,7 +211,7 @@ export async function queryLocations({
     const plan = plans.find(p => p.id === user_plan) || plans[0];
 
     const location = await LocationModel.countDocuments({ user_id });
-    const location_used = location > plan.max_location ? plan.max_location : location;
+    const location_used = location;
     const location_max = plan.max_location;
 
     return {

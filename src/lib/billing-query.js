@@ -43,9 +43,7 @@ export async function queryBillingLimits(user_id, user = null) {
     // `used` is the count clamped to the cap — anything past it exists but is
     // reported inactive, which is what the locator/location queries also do.
     const locator_used = locator > plan.max_locator ? plan.max_locator : locator;
-    const location_used = location > plan.max_location
-          ? plan.max_location
-          : location;
+    const location_used = location;
     const sub_domain_used = sub_domain > plan.max_sub_domain ? plan.max_sub_domain : sub_domain;
 
     return {
