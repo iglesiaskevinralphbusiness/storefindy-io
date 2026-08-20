@@ -81,7 +81,7 @@ export async function getBillingStatus() {
                 inactive: location_inactive,
                 percent: location_percent,
                 fill: location_percent >= 100 ? 'warn' : '',
-                hint: location_percent >= 100 ? `Limit reached${location_inactive > 0 ? ` and ${location_inactive} inactive` : ''}. Upgrade to ${location_inactive > 0 ? `enable them` : 'create more'}.` : `${plan.max_location - location_used} locators remaining.`
+                hint: location_percent >= 100 ? `Limit reached${location_inactive > 0 ? ` and ${location_inactive} inactive` : ''}.` : `${plan.max_location - location_used} locators remaining.`
             },
             {
                 icon: <TbWorld />,
