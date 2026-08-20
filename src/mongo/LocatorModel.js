@@ -90,6 +90,7 @@ const locatorSchema = new mongoose.Schema({
     form_style: { type: String, required: false, default: 'style-1' },
     focused_zoom: { type: Boolean, required: false, default: true },
     dynamic_search: { type: Boolean, required: false, default: true },
+    map_style: { type: String, required: false, default: '' },
 
     // CUSTOM UI
     settings: {

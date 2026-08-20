@@ -28,6 +28,7 @@ const HIDDEN_LOCATOR_FIELDS = [
     'form_style',
     'focused_zoom',
     'dynamic_search',
+    'map_style',
     'settings',
     // analytics detail — `views_count` is kept as the summary figure
     'views',

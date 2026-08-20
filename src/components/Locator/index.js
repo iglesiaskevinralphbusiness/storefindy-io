@@ -1016,6 +1016,7 @@ export default function Locator({
                             pinTextSize={settings.pin.text_size}
                             pinType={settings.pin.type}
                             pinImage={settings.pin.image}
+                            mapStyle={features.map_style}
                             activeId={activeId}
                             focusedZoom={features.focused_zoom}
                             dynamicSearch={features.dynamic_search}

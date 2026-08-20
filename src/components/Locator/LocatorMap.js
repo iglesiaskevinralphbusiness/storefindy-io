@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { resolveMapStyle } from '@/utils/constant/map-styles';
 
 // Pixel dimensions for each configurable pin size (settings.pin.size). The
 // existing default ("small") is 32px; medium and large scale up from there.
@@ -212,6 +213,7 @@ export default function LocatorMap({
     pinTextSize,
     pinType = 'standard',
     pinImage = '',
+    mapStyle = '',
     activeId = null,
     focusedZoom = false,
     dynamicSearch = true,
@@ -220,6 +222,9 @@ export default function LocatorMap({
     renderPopup = null,
 }) {
     const icon = useMemo(() => buildPinIcon(pinColor, pinSize), [pinColor, pinSize]);
+    // The configured base map (settings' `map_style`). An empty/unknown value
+    // resolves to the default Voyager tiles the map has always used.
+    const tiles = useMemo(() => resolveMapStyle(mapStyle), [mapStyle]);
     // The draggable search-center marker (dynamic search off only).
     const personIcon = useMemo(() => buildPersonIcon(), []);
     // When the locator uses a custom pin with an uploaded image, that image
@@ -256,11 +261,15 @@ export default function LocatorMap({
             attributionControl={false}
             style={{ height: '100%', width: '100%' }}
         >
+            {/* Keyed on the style code so switching styles remounts the layer:
+                react-leaflet only makes `url` reactive, so `subdomains` and
+                `maxZoom` would otherwise keep the previous style's values. */}
             <TileLayer
-                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-                subdomains="abcd"
-                attribution="&copy; OpenStreetMap"
-                maxZoom={19}
+                key={tiles.code}
+                url={tiles.url}
+                subdomains={tiles.subdomains || 'abc'}
+                attribution={tiles.attribution}
+                maxZoom={tiles.maxZoom}
             />
 
             <Recenter center={recenterCenter} zoom={zoom} />

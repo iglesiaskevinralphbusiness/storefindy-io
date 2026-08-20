@@ -18,10 +18,12 @@ import {
     LuRows3,
     LuNavigation,
     LuMapPinned,
-    LuAlignEndHorizontal
+    LuAlignEndHorizontal,
+    LuMap
 } from "react-icons/lu";
 import { MdFilterList } from "react-icons/md";
 import styles from './SidebarCustomize.module.scss';
+import { MAP_STYLE_OPTIONS, DEFAULT_MAP_STYLE } from '@/utils/constant/map-styles';
 import Button from '@/components/Forms/Button';
 import Checkbox from '@/components/Forms/Checkbox';
 import Modal from '@/components/Modal';
@@ -102,6 +104,7 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
         filter: false,
         filterList: false,
         pin: false,
+        mapStyle: false,
         resultItem: false,
         getDirections: false,
         viewLocation: false,
@@ -576,6 +579,24 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                                    </div>
                                 </div>
                             </Section>
+
+                            <Section
+                                icon={<LuMap />}
+                                title="Map Style"
+                                isOpen={openSections.mapStyle}
+                                onToggle={() => toggleSection('mapStyle')}
+                            >
+                                <p className={styles.sectionDescription}>The base map the locator renders. Every style is free to use and needs no API key.</p>
+                                <SelectField
+                                    label="Style"
+                                    // An unset map_style means "default", so show
+                                    // the default style as the current selection.
+                                    value={features.map_style || DEFAULT_MAP_STYLE}
+                                    onChange={(v) => updateFeatures('map_style', v)}
+                                    options={MAP_STYLE_OPTIONS}
+                                />
+                            </Section>
+
                             <Section
                                 icon={<LuAlignEndHorizontal />}
                                 title="Mobile Tabs View"

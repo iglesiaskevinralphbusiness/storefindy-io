@@ -102,6 +102,8 @@ export function generateFeaturesDefault(data) {
         form_style: data.form_style,
         focused_zoom: data.focused_zoom,
         dynamic_search: data.dynamic_search,
+        // Empty string means "use the map's default style" (see resolveMapStyle).
+        map_style: data.map_style ?? '',
 
         //
         show_search_bar: data.show_search_bar,
