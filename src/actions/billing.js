@@ -54,7 +54,7 @@ export async function getBillingStatus() {
         locator_count: limits.locator_count,
         locator_is_limit_reached: limits.locator_is_limit_reached,
 
-        location_max: limits.unlimited_locations ? 'Unlimited' : plan.max_location,
+        location_max: plan.max_location,
         location_count: limits.location_count,
         location_is_limit_reached: limits.location_is_limit_reached,
 
@@ -77,11 +77,11 @@ export async function getBillingStatus() {
                 icon: <TbMapPin />,
                 label: 'Locations',
                 used: location_used,
-                limit: plan.id === 'business' ? 'unlimited' : plan.max_location,
+                limit: plan.max_location,
                 inactive: location_inactive,
                 percent: location_percent,
-                fill: plan.id === 'business' ? 'ok' :location_percent >= 100 ? 'warn' : '',
-                hint: plan.id === 'business' ? 'Unlimited locations' : location_percent >= 100 ? `Limit reached${location_inactive > 0 ? ` and ${location_inactive} locations inactive` : ''}. Upgrade to ${location_inactive > 0 ? `enable them` : 'create more'}.` : `${plan.max_location - location_used} locations remaining.`
+                fill: location_percent >= 100 ? 'warn' : '',
+                hint: location_percent >= 100 ? `Limit reached${location_inactive > 0 ? ` and ${location_inactive} inactive` : ''}. Upgrade to ${location_inactive > 0 ? `enable them` : 'create more'}.` : `${plan.max_location - location_used} locators remaining.`
             },
             {
                 icon: <TbWorld />,

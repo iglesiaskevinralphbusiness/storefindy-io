@@ -47,10 +47,6 @@ export async function getInactiveLocationIds(user_id) {
     const user_plan = getUserPlan(user._id.toString(), user.plan);
     const plan = plans.find((p) => p.id === user_plan) || plans[0];
 
-    if (plan.id === 'business') {
-        return [];
-    }
-
     return (await LocationModel.find({ user_id })
         .sort({ createdAt: 1 }) // oldest -> newest
         .skip(plan.max_location)
@@ -215,7 +211,7 @@ export async function queryLocations({
     const plan = plans.find(p => p.id === user_plan) || plans[0];
 
     const location = await LocationModel.countDocuments({ user_id });
-    const location_used = plan.id === 'business' ? location : location > plan.max_location ? plan.max_location : location;
+    const location_used = location > plan.max_location ? plan.max_location : location;
     const location_max = plan.max_location;
 
     return {
@@ -223,6 +219,6 @@ export async function queryLocations({
         page: currentPage,
         pages: totalPages === 0 ? 1 : totalPages,
         items: serializeForClient(locationsWithStatus),
-        used: plan.id === 'business' ? `${location_used} used` : `${location_used} of ${location_max} used`
+        used: `${location_used} of ${location_max} used`
     };
 }

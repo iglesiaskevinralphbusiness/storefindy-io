@@ -233,7 +233,7 @@ export async function GET(request) {
     const plan = plans.find(p => p.id === user_plan) || plan[0];
     const skip = plan.max_location;
 
-    const inactiveIds = plan.id === 'business' ? [] :(await LocationModel.find({ user_id })
+    const inactiveIds = (await LocationModel.find({ user_id })
         .sort({ createdAt: 1 }) // oldest -> newest
         .skip(skip)
         .select('_id')
