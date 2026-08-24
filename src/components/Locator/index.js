@@ -1048,6 +1048,7 @@ export const locatorStyles = `
     height: 700px;
     width: 100%;
     font-size: 14px;
+    line-height: normal;
     overflow: hidden;
 }
 .locator-sidebar {

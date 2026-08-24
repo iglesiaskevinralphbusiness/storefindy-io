@@ -161,17 +161,16 @@ const platforms = [
         desc: 'Paste two lines of code into any website and your store locator is live. Works on Wix, Squarespace, Webflow, or any static site — no plugin or framework needed.',
         code: (
             <>
-                <span className={styles.codeComment}>{'<!-- Paste where you want the map -->'}</span>
+                <span className={styles.codeComment}>{'<!-- Place this where you want the locator -->'}</span>
                 {'\n'}
-                <span className={styles.codeTag}>{'<div'}</span> <span className={styles.codeAttr}>id</span>=
-                <span className={styles.codeStr}>&quot;storefindy-widget&quot;</span>
-                <span className={styles.codeTag}>{'></div>'}</span>
+                <span className={styles.codeTag}>{'<locator-widget'}</span> <span className={styles.codeAttr}>locator</span>=
+                <span className={styles.codeStr}>&quot;YOUR_ID&quot;</span>
+                <span className={styles.codeTag}>{'></locator-widget>'}</span>
+                {'\n'}
+                <span className={styles.codeComment}>{'<!-- Add before closing </body> tag -->'}</span>
                 {'\n'}
                 <span className={styles.codeTag}>{'<script'}</span> <span className={styles.codeAttr}>src</span>=
-                <span className={styles.codeStr}>&quot;storefindy.com/widget.js&quot;</span>
-                {'\n  '}
-                <span className={styles.codeAttr}>data-locator-id</span>=
-                <span className={styles.codeStr}>&quot;YOUR_ID&quot;</span>
+                <span className={styles.codeStr}>&quot;https://www.storefindy.com/widgets.js&quot;</span>
                 <span className={styles.codeTag}>{'></script>'}</span>
             </>
         ),

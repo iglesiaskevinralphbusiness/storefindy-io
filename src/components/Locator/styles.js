@@ -387,6 +387,9 @@ export const mapStyles = `
 .leaflet-popup-content {
     margin: 14px 16px;
 }
+.locator-popup-card {
+    font-size: 13px;
+}
 .locator-popup-card .title {
     display: flex;
     justify-content: space-between;
