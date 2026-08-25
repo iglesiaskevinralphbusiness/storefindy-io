@@ -68,7 +68,7 @@ const sections = [
                     <li>the embeddable store locator widget on any website;</li>
                     <li>
                         <strong>Storefindy Store Locator for Shopify</strong>, the embedded app at{' '}
-                        <a href="https://shopify.storefindy.com">shopify.storefindy.com</a> and in the Shopify App Store;
+                        <a href="https://app.storefindy.com">app.storefindy.com</a> and in the Shopify App Store;
                     </li>
                     <li>
                         the <strong>Storefindy Store Locator</strong> WordPress plugin, which manages locators from the
