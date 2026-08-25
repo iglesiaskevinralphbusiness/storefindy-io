@@ -66,6 +66,7 @@ const locationSchema = new mongoose.Schema({
     published: { type: Boolean, required: true, default: true },
     show_opening_hours: { type: Boolean, required: true, default: false },
     custom_notes: { type: String, required: false, default: '' },
+    icon: { type: String, required: false, default: '' },
 
 }, { timestamps: true },);
 

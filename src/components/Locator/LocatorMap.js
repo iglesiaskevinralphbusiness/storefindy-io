@@ -301,18 +301,23 @@ export default function LocatorMap({
 
             {locations.map((loc, index) => {
                 if (typeof loc.latitude !== 'number' || typeof loc.longitude !== 'number') return null;
+                // A per-location icon overrides the locator pin whenever it is a
+                // non-empty string. undefined / null / '' keep the locator default.
+                const locationIcon = typeof loc.icon === 'string' ? loc.icon.trim() : '';
+                const pinNumber = showPinNumber ? index + 1 : null;
+                const markerIcon = locationIcon
+                    ? buildCustomImageIcon(locationIcon, pinSize, pinNumber, pinTextColor, pinTextSize)
+                    : useCustomImage
+                        ? buildCustomImageIcon(pinImage, pinSize, pinNumber, pinTextColor, pinTextSize)
+                        : showPinNumber
+                            ? buildNumberedPinIcon(pinColor, index + 1, pinSize, pinTextColor, pinTextSize)
+                            : icon;
                 return (
                     <Marker
                         key={loc._id}
                         ref={(instance) => { if (instance) markerRefs.current[loc._id] = instance; }}
                         position={[loc.latitude, loc.longitude]}
-                        icon={
-                            useCustomImage
-                                ? buildCustomImageIcon(pinImage, pinSize, showPinNumber ? index + 1 : null, pinTextColor, pinTextSize)
-                                : showPinNumber
-                                    ? buildNumberedPinIcon(pinColor, index + 1, pinSize, pinTextColor, pinTextSize)
-                                    : icon
-                        }
+                        icon={markerIcon}
                         opacity={activeId && activeId !== loc._id ? 0.6 : 1}
                         eventHandlers={{ click: () => onSelect(loc._id) }}
                     >

@@ -48,6 +48,7 @@ export async function postCreateLocation(categories, hours, holidays, socialMedi
         published: formData.get('published') === 'on' ? true : false,
         show_opening_hours: formData.get('opening_hours') === 'on' ? true : false,
         custom_notes: formData.get('custom_notes').trim(),
+        icon: (formData.get('icon') || '').trim(),
     });
 
     // validation
@@ -172,6 +173,7 @@ export async function postEditLocation(location_id, categories, hours, holidays,
         published: formData.get('published') === 'on' ? true : false,
         show_opening_hours: formData.get('opening_hours') === 'on' ? true : false,
         custom_notes: formData.get('custom_notes').trim(),
+        icon: (formData.get('icon') || '').trim(),
     });
 
     // validation

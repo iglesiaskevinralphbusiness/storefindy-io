@@ -1,9 +1,9 @@
 'use client';
 import styles from '../../Dashboard.module.scss';
-import { useState, useEffect, forwardRef, useActionState } from 'react';
+import { useState, useEffect, forwardRef, useActionState, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import { LuInfo, LuMapPin, LuHouse, LuPhone, LuClock, LuSettings, LuCheck, LuChevronLeft, LuPlus, LuRefreshCw, LuImage, LuSearch, LuTrash2, LuPencil } from "react-icons/lu";
+import { LuInfo, LuMapPin, LuHouse, LuPhone, LuClock, LuSettings, LuCheck, LuChevronLeft, LuPlus, LuRefreshCw, LuImage, LuSearch, LuTrash2, LuPencil, LuUpload, LuX } from "react-icons/lu";
 import Input from '@/components/Forms/Input';
 import Textarea from '@/components/Forms/Textarea';
 import Select from '@/components/Forms/Select';
@@ -22,6 +22,8 @@ const MapPicker = dynamic(() => import('@/components/Dashboard/MapPicker'), {
 });
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const ALLOWED_IMAGE_TYPES = ['image/png', 'image/svg+xml', 'image/gif', 'image/jpeg'];
+const MAX_IMAGE_SIZE = 500 * 1024; // 500KB
 
 const DEFAULT_HOURS = {
     Mon: { enabled: true, open: '08:00', close: '17:00' },
@@ -133,6 +135,8 @@ export default function AddLocationPage({ locators, data }) {
     const [published, setPublished] = useState(data?.published || true);
     const [showOpeningHours, setShowOpeningHours] = useState(data?.show_opening_hours || false);
     const [customNotes, setCustomNotes] = useState(data?.custom_notes || '');
+    const [icon, setIcon] = useState(data?.icon || '');
+    const fileInputRef = useRef(null);
 
     // Locator options for the dropdown
     const [selectedLocator, setSelectedLocator] = useState(null);
@@ -334,6 +338,30 @@ export default function AddLocationPage({ locators, data }) {
             setSocialLink('');
             setEditingSocialIndex(null);
         }
+    };
+
+    // Same upload method as Customize Locator → Custom pin / Custom Image:
+    // validate type + size, then persist the file as a base64 data URL.
+    const handleIconUpload = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+                toast.error('Invalid file type. Only PNG, SVG, GIF, and JPEG are allowed.');
+                e.target.value = '';
+                return;
+            }
+            if (file.size > MAX_IMAGE_SIZE) {
+                toast.error('Image is too large. Maximum allowed size is 500KB.');
+                e.target.value = '';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = () => {
+                setIcon(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+        e.target.value = '';
     };
 
     const isValid = storeName.trim() !== '' && locatorId !== '' && lat !== '' && lng !== '' && city.trim() !== '' && stateProvince.trim() !== '';
@@ -739,6 +767,42 @@ export default function AddLocationPage({ locators, data }) {
                         onChange={e => setCustomNotes(e.target.value)}
                         placeholder="e.g. Parking available at basement level 2..."
                     />
+                    <div className={styles.iconUpload}>
+                        <label htmlFor="location-icon">Icon</label>
+                        <p className={styles.labelIconImage}>Recommended: Upload a PNG or SVG · size 32×32px · Transparent background · Max 500KB</p>
+                        <p className={styles.labelIconImage}>When this is empty, the locator default pin will be used.</p>
+                        {icon ? (
+                            <div className={styles.imagePreview}>
+                                <img src={icon} alt="Icon preview" />
+                                <button
+                                    type="button"
+                                    className={styles.removeImage}
+                                    onClick={() => setIcon('')}
+                                    aria-label="Remove image"
+                                >
+                                    <LuX />
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                type="button"
+                                className={styles.uploadButton}
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                <LuUpload />
+                                Upload Image
+                            </button>
+                        )}
+                        <input
+                            ref={fileInputRef}
+                            id="location-icon"
+                            type="file"
+                            accept="image/png,image/svg+xml,image/gif,image/jpeg"
+                            onChange={handleIconUpload}
+                            hidden
+                        />
+                        <input type="hidden" name="icon" value={icon} />
+                    </div>
                 </div>
             </div>
 
