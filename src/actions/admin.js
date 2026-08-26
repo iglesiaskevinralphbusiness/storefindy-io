@@ -4,12 +4,18 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { dbConnect } from '@/config/mongo.config';
 import { UserModel, LocatorModel, LocationModel, SubDomainModel } from '@/mongo';
-import { getLocationsInactiveIds } from '@/actions/locations';
-import { serializeForClient, getUserPlan } from '@/utils/helpers';
+import { getInactiveLocationIds } from '@/lib/locations-query';
+import { getInactiveLocatorIds } from '@/lib/locators-query';
+import { serializeForClient } from '@/utils/helpers';
 import { isValidObjectId } from 'mongoose';
-import { plans } from '@/utils/constant/pricing';
-import { queryLocators, queryLocatorById, getInactiveLocatorIds } from '@/lib/locators-query';
-import mongoose from "mongoose";
+import {
+    isConfigured,
+    getSubscription,
+    listSubscriptions,
+    mapSubscription,
+    applySubscriptionToUser,
+    pickLatestSubscription,
+} from '@/lib/lemonsqueezy';
 import {
     LIMITS,
     escapeRegex,
@@ -27,6 +33,27 @@ const SORTABLE_FIELDS = [
     'created_at',
 ];
 
+export async function getAdminData() {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+    if (session.user.id !== process.env.USER_ID_ADMIN) {
+        notFound();
+    }
+
+    await dbConnect();
+
+    const user = await UserModel.findById(session.user.id);
+    if (!user) {
+        redirect('/sign-in');
+    }
+
+    return {
+        user: serializeForClient(user),
+    };
+}
+
 export async function getAdminUsers(page=1, rows=10, sort='created_at', order='asc') {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -35,6 +62,11 @@ export async function getAdminUsers(page=1, rows=10, sort='created_at', order='a
 
     if (session.user.id !== process.env.USER_ID_ADMIN) {
         notFound();
+    }
+
+    const user = await UserModel.findById(session.user.id);
+    if (!user) {
+        redirect('/sign-in');
     }
 
     await dbConnect();
@@ -81,6 +113,13 @@ export async function getAdminUsers(page=1, rows=10, sort='created_at', order='a
                     {
                         $addFields: {
                             total_locations: { $size: '$locations' },
+                            location_ids: {
+                                $map: {
+                                    input: '$locations',
+                                    as: 'loc',
+                                    in: { $toString: '$$loc._id' },
+                                },
+                            },
                         }
                     },
                     {
@@ -150,10 +189,102 @@ export async function getAdminUsers(page=1, rows=10, sort='created_at', order='a
         { $limit: currentRows }
     ]);
 
+    const enrichedUsers = await Promise.all(users.map(async (user) => {
+        const userId = String(user._id);
+        const [inactiveLocatorIds, inactiveLocationIds] = await Promise.all([
+            getInactiveLocatorIds(userId),
+            getInactiveLocationIds(userId),
+        ]);
+
+        user.locators = (user.locators || []).map((locator) => {
+            const locatorId = String(locator._id);
+            const locationIds = locator.location_ids || [];
+            const inactiveLocations = locationIds.filter((id) => inactiveLocationIds.includes(id)).length;
+            const activeLocations = locationIds.length - inactiveLocations;
+            const { location_ids, ...rest } = locator;
+
+            return {
+                ...rest,
+                status: inactiveLocatorIds.includes(locatorId) ? 'inactive' : 'active',
+                active_locations: activeLocations,
+                inactive_locations: inactiveLocations,
+                total_locations: locationIds.length,
+            };
+        });
+
+        return user;
+    }));
+
     return {
         rows: currentRows,
         page: currentPage,
         pages: totalPages === 0 ? 1 : totalPages,
-        items: serializeForClient(users),
+        items: serializeForClient(enrichedUsers),
+        session_user_id: session.user.id,
+        admin_user_id: process.env.USER_ID_ADMIN,
     };
+}
+
+export async function syncAdminUserPlan(userId) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    if (session.user.id !== process.env.USER_ID_ADMIN) {
+        notFound();
+    }
+
+    if (!isConfigured()) {
+        return { status: 'error', message: 'Lemon Squeezy is not configured yet.' };
+    }
+
+    if (!isValidObjectId(userId)) {
+        return { status: 'error', message: 'Invalid user ID.' };
+    }
+
+    await dbConnect();
+
+    const user = await UserModel.findById(userId);
+    if (!user) {
+        return { status: 'error', message: 'User not found.' };
+    }
+
+    try {
+        let resource = null;
+
+        if (user.ls_subscription_id) {
+            resource = await getSubscription(user.ls_subscription_id);
+        }
+
+        if (!resource && user.email) {
+            const subs = await listSubscriptions({ email: user.email });
+            resource = pickLatestSubscription(subs);
+        }
+
+        if (!resource) {
+            user.last_synced_at = new Date().toISOString();
+            await user.save();
+
+            return {
+                status: 'pending',
+                message: 'No subscription found on Lemon Squeezy yet.',
+                plan: user.plan,
+                last_synced_at: user.last_synced_at,
+            };
+        }
+
+        applySubscriptionToUser(user, mapSubscription(resource));
+        user.last_synced_at = new Date().toISOString();
+        await user.save();
+
+        return {
+            status: 'success',
+            message: 'Account synced',
+            plan: user.plan,
+            last_synced_at: user.last_synced_at,
+        };
+    } catch (error) {
+        return { status: 'error', message: error.message || 'Sync failed.' };
+    }
 }

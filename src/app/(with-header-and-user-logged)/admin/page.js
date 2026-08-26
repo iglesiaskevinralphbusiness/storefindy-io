@@ -1,7 +1,9 @@
 import styles from './Admin.module.scss';
 import SidebarAdmin from '@/components/Admin/Sidebar';
+import { getAdminData } from '@/actions/admin';
 
 export default async function AdminPage() {
+    const adminData = await getAdminData();
     
     return (
         <div className={styles.admin}>

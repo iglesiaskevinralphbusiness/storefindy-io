@@ -1,8 +1,11 @@
 'use client';
+import { useState } from 'react';
 import styles from './UsersTable.module.scss';
-import { LuArrowUpDown, LuUsers } from 'react-icons/lu';
+import { LuArrowUpDown, LuUsers, LuRefreshCw } from 'react-icons/lu';
 import { mongooseFormatTimeAgo } from '@/utils/helpers';
 import { plans } from '@/utils/constant/pricing';
+import { syncAdminUserPlan } from '@/actions/admin';
+import { toast } from 'react-toastify';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
 function formatRelativeDate(value, label) {
@@ -25,12 +28,36 @@ export default function UsersTable({ data = [], sort, order }) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    const [syncingUserId, setSyncingUserId] = useState(null);
 
     const handleSort = (column) => {
         const params = new URLSearchParams(searchParams);
         params.set('sort', column);
         params.set('order', sort === column && order === 'asc' ? 'desc' : 'asc');
         router.push(`${pathname}?${params.toString()}`);
+    };
+
+    const handleSync = async (userId) => {
+        if (syncingUserId) return;
+        setSyncingUserId(userId);
+
+        try {
+            const result = await syncAdminUserPlan(userId);
+
+            if (result.status === 'success') {
+                toast.success('Account synced', { description: 'Plan is up to date with Lemon Squeezy.' });
+                router.refresh();
+            } else if (result.status === 'pending') {
+                toast.info('Nothing to sync', { description: 'No subscription found on Lemon Squeezy yet.' });
+                router.refresh();
+            } else {
+                throw new Error(result.message || 'Could not sync this account.');
+            }
+        } catch (err) {
+            toast.error('Could not sync account', { description: err.message });
+        } finally {
+            setSyncingUserId(null);
+        }
     };
 
     return (
@@ -91,7 +118,19 @@ export default function UsersTable({ data = [], sort, order }) {
                                                     {formatRelativeDate(user.last_login_at, 'Logged in')}
                                                 </td>
                                                 <td rowSpan={locators.length} className={styles.date}>
-                                                    {formatRelativeDate(user.last_synced_at, 'Synced')}
+                                                    <div className={styles.syncCell}>
+                                                        <span>{formatRelativeDate(user.last_synced_at, 'Synced')}</span>
+                                                        <button
+                                                            type="button"
+                                                            className={styles.syncBtn}
+                                                            onClick={() => handleSync(user._id)}
+                                                            disabled={syncingUserId === user._id}
+                                                            title="Refresh plan from Lemon Squeezy"
+                                                        >
+                                                            <LuRefreshCw />
+                                                            {syncingUserId === user._id ? 'Syncing…' : 'Sync'}
+                                                        </button>
+                                                    </div>
                                                 </td>
                                                 <td rowSpan={locators.length} className={styles.date}>
                                                     {formatRelativeDate(user.created_at, 'Created')}
@@ -100,7 +139,16 @@ export default function UsersTable({ data = [], sort, order }) {
                                         )}
                                         <td>
                                             {locator?.name ? (
-                                                <span className={styles.locatorPill}>{locator.name}</span>
+                                                <div className={styles.locatorCell}>
+                                                    <span className={styles.locatorPill}>{locator.name}</span>
+                                                    <span
+                                                        className={`${styles.statusBadge} ${locator.status === 'active' ? styles.active : styles.inactive}`}
+                                                        title={locator.status === 'inactive' ? "Beyond the user's plan locator limit." : undefined}
+                                                    >
+                                                        <span className={styles.badgeDot}></span>
+                                                        {locator.status === 'active' ? 'Active' : 'Inactive'}
+                                                    </span>
+                                                </div>
                                             ) : (
                                                 '—'
                                             )}
@@ -111,7 +159,21 @@ export default function UsersTable({ data = [], sort, order }) {
                                                 : '—'}
                                         </td>
                                         <td className={styles.views}>
-                                            {locator ? (locator.total_locations ?? 0).toLocaleString() : '—'}
+                                            {locator ? (
+                                                <div className={styles.locationCounts}>
+                                                    <span className={styles.locationTotal}>
+                                                        {(locator.total_locations ?? 0).toLocaleString()} total
+                                                    </span>
+                                                    <span className={styles.locationActive}>
+                                                        {(locator.active_locations ?? 0).toLocaleString()} active
+                                                    </span>
+                                                    <span className={styles.locationInactive}>
+                                                        {(locator.inactive_locations ?? 0).toLocaleString()} inactive
+                                                    </span>
+                                                </div>
+                                            ) : (
+                                                '—'
+                                            )}
                                         </td>
                                     </tr>
                                 ));
