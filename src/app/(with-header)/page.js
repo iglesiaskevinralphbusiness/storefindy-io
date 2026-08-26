@@ -31,6 +31,7 @@ import styles from './page.module.scss';
 import { plans } from '@/utils/constant/pricing';
 import { faqs } from '@/utils/constant/faqs';
 import FaqHome from '@/components/FaqHome';
+import FadeIn from '@/components/FadeIn';
 import Image from 'next/image';
 import { buildSocialMetadata } from '@/utils/constant/seo';
 
@@ -242,32 +243,48 @@ export default async function Home() {
             dangerouslySetInnerHTML={{ __html: JSON.stringify(wordpressPluginJsonLd) }}
         />
 
+        <noscript>
+            <style>{'[data-sf-fade] > *{opacity:1!important;transform:none!important;animation:none!important}'}</style>
+        </noscript>
+
         <div className='wrap'>
             <section className={styles.hero}>
-                <h1>Store Locator for Your Website — Beautiful and Fast at the Cheapest Cost</h1>
-                <p>Customized to your brand. Live in minutes. No developer, zero complexity — just a store locator that works.</p>
-                <div className={styles.buttonBox}>
-                    <a href="/demo" className="buttonBox secondary">See Our Live Demo</a>
-                    <a href="/dashboard" className="buttonBox">Create Store Locator</a>
-                </div>
-
-                <div className={styles.heroSample}>
-                    <div className={styles.heroSampleInner}>
-                        <Image src="/images/hero-demo.png" alt="Store Locator" width={1000} height={1000} loading='eager' />
-                        <Image src="/images/hero-demo-mobile.png" alt="Store Locator" width={375} height={667} loading='eager' />
+                <FadeIn immediate>
+                    <h1>Store Locator for Your Website — Beautiful and Fast at the Cheapest Cost</h1>
+                </FadeIn>
+                <FadeIn immediate delay={120}>
+                    <p>Customized to your brand. Live in minutes. No developer, zero complexity — just a store locator that works.</p>
+                </FadeIn>
+                <FadeIn immediate delay={220}>
+                    <div className={styles.buttonBox}>
+                        <a href="/demo" className="buttonBox secondary">See Our Live Demo</a>
+                        <a href="/dashboard" className="buttonBox">Create Store Locator</a>
                     </div>
-                </div>
+                </FadeIn>
+
+                <FadeIn immediate delay={320}>
+                    <div className={styles.heroSample}>
+                        <div className={styles.heroSampleInner}>
+                            <Image src="/images/hero-demo.png" alt="Store Locator" width={1000} height={1000} loading='eager' />
+                            <Image src="/images/hero-demo-mobile.png" alt="Store Locator" width={375} height={667} loading='eager' />
+                        </div>
+                    </div>
+                </FadeIn>
             </section>
         </div>
 
         {/* LOGOS */}
         <div className={styles.logos}>
-            <p>Trusted by businesses across every industry</p>
+            <FadeIn>
+                <p>Trusted by businesses across every industry</p>
+            </FadeIn>
             <div className={styles.logosRow}>
-                {industries.map(({ icon: Icon, label }) => (
-                    <div className={styles.logoPill} key={label}>
-                        <Icon aria-hidden="true" /> {label}
-                    </div>
+                {industries.map(({ icon: Icon, label }, i) => (
+                    <FadeIn key={label} delay={i * 70}>
+                        <div className={styles.logoPill}>
+                            <Icon aria-hidden="true" /> {label}
+                        </div>
+                    </FadeIn>
                 ))}
             </div>
         </div>
@@ -275,18 +292,22 @@ export default async function Home() {
         <div className='wrap'>
             {/* FEATURES */}
             <section className={styles.features} id="features">
-                <div style={{ textAlign: 'center', maxWidth: 700, margin: '0 auto' }}>
-                    <div className={styles.sectionLabel}>Features</div>
-                    <div className={styles.sectionTitle}>Everything you need to help customers find your stores</div>
-                    <div className={styles.sectionSub}>Storefindy gives you a powerful, customizable store locator widget — built for small businesses, with zero cost and zero complexity.</div>
-                </div>
+                <FadeIn>
+                    <div style={{ textAlign: 'center', maxWidth: 700, margin: '0 auto' }}>
+                        <div className={styles.sectionLabel}>Features</div>
+                        <div className={styles.sectionTitle}>Everything you need to help customers find your stores</div>
+                        <div className={styles.sectionSub}>Storefindy gives you a powerful, customizable store locator widget — built for small businesses, with zero cost and zero complexity.</div>
+                    </div>
+                </FadeIn>
                 <div className={styles.featuresGrid}>
-                    {features.map(({ icon: Icon, title, desc }) => (
-                        <div className={styles.featureCard} key={title}>
-                            <div className={styles.featureIcon}><Icon aria-hidden="true" /></div>
-                            <div className={styles.featureTitle}>{title}</div>
-                            <div className={styles.featureDesc}>{desc}</div>
-                        </div>
+                    {features.map(({ icon: Icon, title, desc }, i) => (
+                        <FadeIn key={title} delay={i * 70}>
+                            <div className={styles.featureCard}>
+                                <div className={styles.featureIcon}><Icon aria-hidden="true" /></div>
+                                <div className={styles.featureTitle}>{title}</div>
+                                <div className={styles.featureDesc}>{desc}</div>
+                            </div>
+                        </FadeIn>
                     ))}
                 </div>
             </section>
@@ -295,18 +316,22 @@ export default async function Home() {
         {/* HOW IT WORKS */}
         <section className={styles.howitworks} id="how-it-works">
             <div className='wrap'>
-                <div style={{ textAlign: 'center' }}>
-                    <div className={styles.sectionLabel}>How it works</div>
-                    <div className={styles.sectionTitle} style={{ marginBottom: 8 }}>Up and running in minutes</div>
-                    <div className={styles.sectionSub} style={{ margin: '0 auto' }}>No developer needed. Anyone can set up a Storefindy widget in four simple steps.</div>
-                </div>
+                <FadeIn>
+                    <div style={{ textAlign: 'center' }}>
+                        <div className={styles.sectionLabel}>How it works</div>
+                        <div className={styles.sectionTitle} style={{ marginBottom: 8 }}>Up and running in minutes</div>
+                        <div className={styles.sectionSub} style={{ margin: '0 auto' }}>No developer needed. Anyone can set up a Storefindy widget in four simple steps.</div>
+                    </div>
+                </FadeIn>
                 <div className={styles.stepsGrid}>
-                    {steps.map(({ num, title, desc }) => (
-                        <div className={styles.stepCard} key={num}>
-                            <div className={styles.stepNum}>{num}</div>
-                            <div className={styles.stepTitle}>{title}</div>
-                            <div className={styles.stepDesc}>{desc}</div>
-                        </div>
+                    {steps.map(({ num, title, desc }, i) => (
+                        <FadeIn key={num} delay={i * 80}>
+                            <div className={styles.stepCard}>
+                                <div className={styles.stepNum}>{num}</div>
+                                <div className={styles.stepTitle}>{title}</div>
+                                <div className={styles.stepDesc}>{desc}</div>
+                            </div>
+                        </FadeIn>
                     ))}
                 </div>
             </div>
@@ -315,91 +340,100 @@ export default async function Home() {
         {/* INTEGRATIONS / PLATFORMS */}
         <section className={styles.platforms} id="integrations">
             <div className='wrap'>
-                <div style={{ textAlign: 'center', maxWidth: 640, margin: '0 auto' }}>
-                    <div className={styles.sectionLabel}>Integrations</div>
-                    <div className={styles.sectionTitle} style={{ marginBottom: 8 }}>Works with your platform — no developer needed</div>
-                    <div className={styles.sectionSub} style={{ margin: '0 auto' }}>Storefindy embeds on any website in minutes. Choose the method that works best for you — a WordPress plugin, a script tag, a React component, or a custom branded subdomain.</div>
-                </div>
+                <FadeIn>
+                    <div style={{ textAlign: 'center', maxWidth: 640, margin: '0 auto' }}>
+                        <div className={styles.sectionLabel}>Integrations</div>
+                        <div className={styles.sectionTitle} style={{ marginBottom: 8 }}>Works with your platform — no developer needed</div>
+                        <div className={styles.sectionSub} style={{ margin: '0 auto' }}>Storefindy embeds on any website in minutes. Choose the method that works best for you — a WordPress plugin, a script tag, a React component, or a custom branded subdomain.</div>
+                    </div>
+                </FadeIn>
                 <div className={styles.platformsGrid}>
-                    {platforms.map(({ key, icon: Icon, title, badge, desc, features, note, code, cta, ctaIcon, href, featured, comingSoon }) => {
+                    {platforms.map(({ key, icon: Icon, title, badge, desc, features, note, code, cta, ctaIcon, href, featured, comingSoon }, i) => {
                         const CtaIcon = ctaIcon || TbArrowRight;
                         return (
-                            <div
-                                className={`${styles.platformCard} ${featured ? styles.featured : ''} ${comingSoon ? styles.comingSoon : ''}`}
-                                key={key}
-                            >
-                                <div className={styles.platformTop}>
-                                    <div className={styles.platformIcon}><Icon aria-hidden="true" /></div>
-                                    <span className={`${styles.platformBadge} ${styles[badge.className]}`}>{badge.label}</span>
-                                </div>
-                                <div className={styles.platformTitle}>{title}</div>
-                                <div className={styles.platformDesc}>{desc}</div>
-                                {features && (
-                                    <div className={styles.platformFeatures}>
-                                        {features.map((f) => (
-                                            <div className={styles.platformFeature} key={f}>
-                                                <TbCircleCheck aria-hidden="true" /> {f}
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                                {code && <pre className={styles.platformCode}>{code}</pre>}
-                                {note && (
-                                    <div className={styles.platformNote}>
-                                        <TbStar aria-hidden="true" /> {note}
-                                    </div>
-                                )}
-                                <Link
-                                    href={href}
-                                    className={`${styles.platformLink} ${comingSoon ? styles.muted : ''}`}
+                            <FadeIn key={key} delay={i * 80}>
+                                <div
+                                    className={`${styles.platformCard} ${featured ? styles.featured : ''} ${comingSoon ? styles.comingSoon : ''}`}
                                 >
-                                    {cta} <CtaIcon aria-hidden="true" />
-                                </Link>
-                            </div>
+                                    <div className={styles.platformTop}>
+                                        <div className={styles.platformIcon}><Icon aria-hidden="true" /></div>
+                                        <span className={`${styles.platformBadge} ${styles[badge.className]}`}>{badge.label}</span>
+                                    </div>
+                                    <div className={styles.platformTitle}>{title}</div>
+                                    <div className={styles.platformDesc}>{desc}</div>
+                                    {features && (
+                                        <div className={styles.platformFeatures}>
+                                            {features.map((f) => (
+                                                <div className={styles.platformFeature} key={f}>
+                                                    <TbCircleCheck aria-hidden="true" /> {f}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {code && <pre className={styles.platformCode}>{code}</pre>}
+                                    {note && (
+                                        <div className={styles.platformNote}>
+                                            <TbStar aria-hidden="true" /> {note}
+                                        </div>
+                                    )}
+                                    <Link
+                                        href={href}
+                                        className={`${styles.platformLink} ${comingSoon ? styles.muted : ''}`}
+                                    >
+                                        {cta} <CtaIcon aria-hidden="true" />
+                                    </Link>
+                                </div>
+                            </FadeIn>
                         );
                     })}
                 </div>
 
                 {/* SUBDOMAIN CALLOUT */}
-                <div className={styles.platformsFooter}>
-                    <div className={styles.platformsFooterIcon}><TbWorld aria-hidden="true" /></div>
-                    <div className={styles.platformsFooterBody}>
-                        <div className={styles.platformsFooterTitle}>Don&apos;t have a website? Use a custom subdomain.</div>
-                        <div className={styles.platformsFooterDesc}>Get a branded URL like <strong>yourbusiness.storefindy.com</strong> — a ready-made store locator page with your header, footer, and branding. No website needed.</div>
+                <FadeIn>
+                    <div className={styles.platformsFooter}>
+                        <div className={styles.platformsFooterIcon}><TbWorld aria-hidden="true" /></div>
+                        <div className={styles.platformsFooterBody}>
+                            <div className={styles.platformsFooterTitle}>Don&apos;t have a website? Use a custom subdomain.</div>
+                            <div className={styles.platformsFooterDesc}>Get a branded URL like <strong>yourbusiness.storefindy.com</strong> — a ready-made store locator page with your header, footer, and branding. No website needed.</div>
+                        </div>
+                        <div className={styles.platformsFooterActions}>
+                            <a href="/dashboard/locators/subdomains" className="buttonBox secondary">Learn More</a>
+                            <a href="/dashboard" className="buttonBox">Get Started Free</a>
+                        </div>
                     </div>
-                    <div className={styles.platformsFooterActions}>
-                        <a href="/dashboard/locators/subdomains" className="buttonBox secondary">Learn More</a>
-                        <a href="/dashboard" className="buttonBox">Get Started Free</a>
-                    </div>
-                </div>
+                </FadeIn>
             </div>
         </section>
 
         <div className='wrap'>
             {/* PRICING */}
             <section className={styles.pricing} id="pricing">
-                <div style={{ textAlign: 'center', maxWidth: 560, margin: '0 auto' }}>
-                    <div className={styles.sectionLabel}>Pricing</div>
-                    <div className={styles.sectionTitle}>Simple, honest pricing</div>
-                    <div className={styles.sectionSub} style={{ margin: '0 auto' }}>Start free and stay free — or unlock advanced features as your business grows. No hidden fees, ever.</div>
-                </div>
+                <FadeIn>
+                    <div style={{ textAlign: 'center', maxWidth: 560, margin: '0 auto' }}>
+                        <div className={styles.sectionLabel}>Pricing</div>
+                        <div className={styles.sectionTitle}>Simple, honest pricing</div>
+                        <div className={styles.sectionSub} style={{ margin: '0 auto' }}>Start free and stay free — or unlock advanced features as your business grows. No hidden fees, ever.</div>
+                    </div>
+                </FadeIn>
                 <div className={styles.pricingGrid}>
-                    {plans.map((plan) => (
-                        <div className={`${styles.pricingCard} ${plan.featured ? styles.featured : ''}`} key={plan.name}>
-                            {plan.badge && <div className={styles.pricingBadge}>{plan.badge}</div>}
-                            <div className={styles.pricingName}>{plan.name}</div>
-                            <div className={styles.pricingPrice}>{plan.price} <span>{plan.period}</span></div>
-                            <div className={styles.pricingDesc}>{plan.desc}</div>
-                            <div className={styles.pricingDivider}></div>
-                            <div className={styles.pricingFeatures}>
-                                {plan.features.map((f, i) => (
-                                    <div className={`${styles.pricingFeature} ${f.ok ? '' : styles.no}`} key={i}>
-                                        {f.ok ? <TbCircleCheck aria-hidden="true" /> : <TbCircleX aria-hidden="true" />} {f.text}
-                                    </div>
-                                ))}
+                    {plans.map((plan, i) => (
+                        <FadeIn key={plan.name} delay={i * 80}>
+                            <div className={`${styles.pricingCard} ${plan.featured ? styles.featured : ''}`}>
+                                {plan.badge && <div className={styles.pricingBadge}>{plan.badge}</div>}
+                                <div className={styles.pricingName}>{plan.name}</div>
+                                <div className={styles.pricingPrice}>{plan.price} <span>{plan.period}</span></div>
+                                <div className={styles.pricingDesc}>{plan.desc}</div>
+                                <div className={styles.pricingDivider}></div>
+                                <div className={styles.pricingFeatures}>
+                                    {plan.features.map((f, fi) => (
+                                        <div className={`${styles.pricingFeature} ${f.ok ? '' : styles.no}`} key={fi}>
+                                            {f.ok ? <TbCircleCheck aria-hidden="true" /> : <TbCircleX aria-hidden="true" />} {f.text}
+                                        </div>
+                                    ))}
+                                </div>
+                                <Link href="/dashboard/billing" className={`${styles.btnPricing} ${styles[plan.ctaClass]}`}>{plan.cta}</Link>
                             </div>
-                            <Link href="/dashboard/billing" className={`${styles.btnPricing} ${styles[plan.ctaClass]}`}>{plan.cta}</Link>
-                        </div>
+                        </FadeIn>
                     ))}
                 </div>
             </section>
@@ -408,26 +442,30 @@ export default async function Home() {
             {/* TESTIMONIALS */}
         <section className={styles.testimonials} id="testimonials">
             <div className='wrap'>
-                <div style={{ textAlign: 'center' }}>
-                    <div className={styles.sectionLabel}>Testimonials</div>
-                    <div className={styles.sectionTitle}>Businesses love Storefindy</div>
-                    <div className={styles.sectionSub} style={{ margin: '0 auto' }}>Real feedback from real store owners who switched from expensive tools to Storefindy.</div>
-                </div>
+                <FadeIn>
+                    <div style={{ textAlign: 'center' }}>
+                        <div className={styles.sectionLabel}>Testimonials</div>
+                        <div className={styles.sectionTitle}>Businesses love Storefindy</div>
+                        <div className={styles.sectionSub} style={{ margin: '0 auto' }}>Real feedback from real store owners who switched from expensive tools to Storefindy.</div>
+                    </div>
+                </FadeIn>
                 <div className={styles.testimonialsGrid}>
-                    {testimonials.map((t) => (
-                        <div className={styles.testimonialCard} key={t.name}>
-                            <div className={styles.testimonialStars}>
-                                {Array.from({ length: 5 }).map((_, i) => <TbStarFilled key={i} aria-hidden="true" />)}
-                            </div>
-                            <div className={styles.testimonialText}>{t.text}</div>
-                            <div className={styles.testimonialAuthor}>
-                                <div className={styles.authorAvatar}>{t.initials}</div>
-                                <div>
-                                    <div className={styles.authorName}>{t.name}</div>
-                                    <div className={styles.authorRole}>{t.role}</div>
+                    {testimonials.map((t, i) => (
+                        <FadeIn key={t.name} delay={i * 80}>
+                            <div className={styles.testimonialCard}>
+                                <div className={styles.testimonialStars}>
+                                    {Array.from({ length: 5 }).map((_, si) => <TbStarFilled key={si} aria-hidden="true" />)}
+                                </div>
+                                <div className={styles.testimonialText}>{t.text}</div>
+                                <div className={styles.testimonialAuthor}>
+                                    <div className={styles.authorAvatar}>{t.initials}</div>
+                                    <div>
+                                        <div className={styles.authorName}>{t.name}</div>
+                                        <div className={styles.authorRole}>{t.role}</div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </FadeIn>
                     ))}
                 </div>
             </div>
@@ -438,14 +476,16 @@ export default async function Home() {
             <FaqHome />
 
             {/* CTA BANNER */}
-            <div className={styles.ctaBanner}>
-                <h2>Start finding your customers more stores — free</h2>
-                <p>Join hundreds of businesses already using Storefindy to help customers find their nearest store, branch, or outlet.</p>
-                <div className={styles.ctaBannerActions}>
-                    <a href="/demo" className={`${styles.ctaButtonBox} ${styles.secondary}`}>See Our Live Demo</a>
-                    <a href="/dashboard" className={styles.ctaButtonBox}>Create Your Free Locator</a>
+            <FadeIn>
+                <div className={styles.ctaBanner}>
+                    <h2>Start finding your customers more stores — free</h2>
+                    <p>Join hundreds of businesses already using Storefindy to help customers find their nearest store, branch, or outlet.</p>
+                    <div className={styles.ctaBannerActions}>
+                        <a href="/demo" className={`${styles.ctaButtonBox} ${styles.secondary}`}>See Our Live Demo</a>
+                        <a href="/dashboard" className={styles.ctaButtonBox}>Create Your Free Locator</a>
+                    </div>
                 </div>
-            </div>
+            </FadeIn>
         </div>
     </>);
 }

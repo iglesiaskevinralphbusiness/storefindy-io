@@ -1,0 +1,40 @@
+.fadeIn {
+    display: contents;
+}
+
+.fadeIn > * {
+    opacity: 0;
+    transform: translateY(24px);
+}
+
+.visible > * {
+    animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--fade-delay, 0ms);
+}
+
+.done > * {
+    animation: none;
+    opacity: 1;
+    transform: none;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fadeIn > *,
+    .visible > *,
+    .done > * {
+        opacity: 1;
+        transform: none;
+        animation: none;
+    }
+}
