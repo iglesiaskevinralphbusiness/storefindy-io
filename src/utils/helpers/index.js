@@ -2,21 +2,23 @@ export function serializeForClient(data) {
     return JSON.parse(JSON.stringify(data));
 }
 
-export function mongooseFormatTimeAgo(created, edited) {
-    let label = "Edited";
-    if(created === edited){ label = "Created"; }
-    
+export function mongooseFormatTimeAgo(created, edited, labelOverride) {
+    let label = labelOverride;
+    if (!label) {
+        label = created === edited ? 'Created' : 'Edited';
+    }
+
     const seconds = Math.floor((new Date() - new Date(edited)) / 1000);
-  
+
     if (seconds < 60)       return `${label} just now`;
     if (seconds < 3600)     return `${label} ${Math.floor(seconds / 60)} minutes ago`;
     if (seconds < 7200)     return `${label} 1 hour ago`;
     if (seconds < 86400)    return `${label} ${Math.floor(seconds / 3600)} hours ago`;
-    if (seconds < 172800)   return "${label} yesterday";
+    if (seconds < 172800)   return `${label} yesterday`;
     if (seconds < 2592000)  return `${label} ${Math.floor(seconds / 86400)} days ago`;
     if (seconds < 31536000) return `${label} ${Math.floor(seconds / 2592000)} months ago`;
-  
-    return `Edited ${Math.floor(seconds / 31536000)} years ago`;
+
+    return `${label} ${Math.floor(seconds / 31536000)} years ago`;
 }
 
 export function generateSettingsDefault(settings) {

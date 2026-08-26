@@ -1,0 +1,146 @@
+.tableWrap {
+    overflow: hidden;
+    background: #fff;
+    border: 0.5px solid #e4e4e4;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+}
+
+.tableScroll {
+    overflow-x: auto;
+
+    &::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: #ddd;
+        border-radius: 4px;
+    }
+}
+
+.tableWrap {
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    thead {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #f1f1f1;
+
+        tr {
+            border-bottom: 0.5px solid #e4e4e4;
+        }
+    }
+
+    th {
+        padding: 12px;
+        font-size: 12px;
+        font-weight: 500;
+        color: #636363;
+        text-align: left;
+        white-space: nowrap;
+        user-select: none;
+        cursor: pointer;
+
+        &:hover {
+            color: #1a1a1a;
+        }
+
+        svg {
+            display: inline-block;
+            font-size: 11px;
+            margin-left: 3px;
+            vertical-align: middle;
+        }
+    }
+
+    td {
+        padding: 10px 12px;
+        font-size: 13px;
+        color: #333;
+        border-bottom: 0.5px solid #f5f5f3;
+        vertical-align: top;
+    }
+
+    tbody tr {
+        &:last-child td {
+            border-bottom: none;
+        }
+        &:hover td {
+            background: #fafcff;
+        }
+    }
+}
+
+.locatorsGroup {
+    text-align: center !important;
+    border-left: 0.5px solid #e4e4e4;
+    cursor: default !important;
+
+    &:hover {
+        color: #636363 !important;
+    }
+}
+
+.subHeader {
+    cursor: default !important;
+    border-left: 0.5px solid #e4e4e4;
+
+    &:first-of-type {
+        border-left: 0.5px solid #e4e4e4;
+    }
+
+    &:hover {
+        color: #636363 !important;
+    }
+}
+
+.email {
+    font-weight: 500;
+    color: #1a1a1a;
+}
+
+.date {
+    font-size: 12px !important;
+    color: #666;
+    white-space: nowrap;
+}
+
+.views {
+    color: #888;
+    font-size: 11px;
+}
+
+.locatorPill {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: #f0f0ee;
+    color: #555;
+    white-space: nowrap;
+}
+
+.emptyState {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 40px 20px;
+    text-align: center;
+    color: #bbb;
+
+    > svg {
+        font-size: 36px;
+        margin-bottom: 10px;
+    }
+    p {
+        margin-bottom: 10px;
+        font-size: 13px;
+    }
+}
