@@ -194,8 +194,22 @@ function FocusActive({ activeId, locations, zoom = 18, programmaticUntil }) {
         const loc = locations.find((l) => l._id === activeId);
         if (!loc || typeof loc.latitude !== 'number' || typeof loc.longitude !== 'number') return;
         if (programmaticUntil) programmaticUntil.current = Date.now() + 1500;
-        map.flyTo([loc.latitude, loc.longitude], zoom, { duration: 0.6 });
+        const targetZoom = Math.min(zoom, map.getMaxZoom());
+        map.flyTo([loc.latitude, loc.longitude], targetZoom, { duration: 0.6 });
     }, [activeId, locations, zoom, map, programmaticUntil]);
+    return null;
+}
+
+// Keeps the map's zoom ceiling in lockstep with the current tile style, so
+// switching to a style that has fewer native zoom levels cannot overshoot
+// into stretched tiles or Esri's "Map data not yet available" placeholder.
+function SyncMaxZoom({ maxZoom }) {
+    const map = useMap();
+    useEffect(() => {
+        const cap = Number.isFinite(maxZoom) ? maxZoom : 18;
+        map.setMaxZoom(cap);
+        if (map.getZoom() > cap) map.setZoom(cap);
+    }, [map, maxZoom]);
     return null;
 }
 
@@ -257,20 +271,48 @@ export default function LocatorMap({
         <MapContainer
             center={initialView.center}
             zoom={initialView.zoom}
+            maxZoom={tiles.maxZoom}
             scrollWheelZoom={true}
             attributionControl={false}
             style={{ height: '100%', width: '100%' }}
         >
+            <SyncMaxZoom maxZoom={tiles.maxZoom} />
             {/* Keyed on the style code so switching styles remounts the layer:
                 react-leaflet only makes `url` reactive, so `subdomains` and
-                `maxZoom` would otherwise keep the previous style's values. */}
+                `maxZoom` would otherwise keep the previous style's values.
+                `labelsUrl` is an optional transparent overlay (city names)
+                drawn above the base but below markers. */}
             <TileLayer
-                key={tiles.code}
+                key={`${tiles.code}-base`}
                 url={tiles.url}
                 subdomains={tiles.subdomains || 'abc'}
                 attribution={tiles.attribution}
                 maxZoom={tiles.maxZoom}
+                maxNativeZoom={tiles.maxNativeZoom ?? tiles.maxZoom}
+                zIndex={1}
             />
+            {tiles.overlayUrl ? (
+                <TileLayer
+                    key={`${tiles.code}-overlay`}
+                    url={tiles.overlayUrl}
+                    subdomains={tiles.subdomains || 'abc'}
+                    attribution=""
+                    maxZoom={tiles.maxZoom}
+                    maxNativeZoom={tiles.maxNativeZoom ?? tiles.maxZoom}
+                    zIndex={2}
+                />
+            ) : null}
+            {tiles.labelsUrl ? (
+                <TileLayer
+                    key={`${tiles.code}-labels`}
+                    url={tiles.labelsUrl}
+                    subdomains={tiles.subdomains || 'abc'}
+                    attribution=""
+                    maxZoom={tiles.maxZoom}
+                    maxNativeZoom={tiles.maxNativeZoom ?? tiles.maxZoom}
+                    zIndex={3}
+                />
+            ) : null}
 
             <Recenter center={recenterCenter} zoom={zoom} />
             {/* With dynamic search on, panning/zooming the map auto-searches

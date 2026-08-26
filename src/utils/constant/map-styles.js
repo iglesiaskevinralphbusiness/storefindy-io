@@ -7,14 +7,58 @@
 // inlined so neither the Next.js app nor the esbuild widget bundle has to carry
 // that package.
 //
+// CARTO's raster tiles at basemaps.cartocdn.com now watermark every request
+// ("API KEY REQUIRED") and are being retired. A CARTO key cannot live in the
+// public widget — it would be shared across every customer embed and capped at
+// 5M tiles/month — so the Voyager / Positron / Dark Matter looks are served
+// from Esri's keyless World Street Map and Gray Canvas tiles instead. Stored
+// `CartoDB.*` codes stay the same so existing locators keep working.
+//
 // Three providers from the original shortlist are deliberately absent because
 // they are transparent OVERLAYS rather than base maps — used on their own they
 // render labels (or rail lines) floating over an empty grey canvas:
 //   CartoDB.PositronOnlyLabels, CartoDB.VoyagerOnlyLabels, OpenRailwayMap
 
 const OSM_ATTRIBUTION = '&copy; OpenStreetMap contributors';
-const CARTO_ATTRIBUTION = `${OSM_ATTRIBUTION}, &copy; CARTO`;
+const ESRI_ATTRIBUTION = 'Tiles &copy; Esri';
+const ESRI_STREET_ATTRIBUTION = `${ESRI_ATTRIBUTION} &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom`;
+const ESRI_CANVAS_ATTRIBUTION = `${ESRI_ATTRIBUTION} &mdash; Esri, DeLorme, NAVTEQ`;
 const USGS_ATTRIBUTION = 'Tiles courtesy of the U.S. Geological Survey';
+
+// Colorful street map (replaces CARTO Voyager). ArcGIS uses {z}/{y}/{x} order.
+// Labels are fused into this JPEG, so Voyager (No Labels) is the light canvas
+// plus a transparent road overlay — streets without city/town names.
+// Native coverage is unreliable past zoom 17 (Esri serves a "Map data not yet
+// available" placeholder), so we stop the map there instead of requesting
+// empty tiles or stretching lower ones.
+const ESRI_STREET = {
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+    subdomains: '',
+    maxZoom: 17,
+    attribution: ESRI_STREET_ATTRIBUTION,
+};
+
+// Light gray canvas (replaces CARTO Positron). Native tiles stop at zoom 16;
+// past that Esri returns a placeholder, and upscaling looks stretched. Cap
+// both the layer and the map at 16. The Base layer has the street grid only;
+// city/town names live on the transparent Reference overlay (`labelsUrl`).
+const ESRI_LIGHT_GRAY = {
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    subdomains: '',
+    maxZoom: 16,
+    attribution: ESRI_CANVAS_ATTRIBUTION,
+};
+const ESRI_LIGHT_GRAY_LABELS = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}';
+const ESRI_DARK_GRAY_LABELS = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}';
+const ESRI_TRANSPORTATION = 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}';
+
+// Dark gray canvas (replaces CARTO Dark Matter). Same Base + Reference split.
+const ESRI_DARK_GRAY = {
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    subdomains: '',
+    maxZoom: 16,
+    attribution: ESRI_CANVAS_ATTRIBUTION,
+};
 
 // The style used when `map_style` is empty/null/undefined or names something we
 // no longer ship. This is the tile layer the map has always rendered, so
@@ -25,42 +69,30 @@ export const MAP_STYLES = [
     {
         code: 'CartoDB.Voyager',
         label: 'Voyager (Default)',
-        url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-        subdomains: 'abcd',
-        maxZoom: 20,
-        attribution: CARTO_ATTRIBUTION,
+        ...ESRI_STREET,
     },
     {
         code: 'CartoDB.VoyagerNoLabels',
         label: 'Voyager (No Labels)',
-        url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png',
-        subdomains: 'abcd',
-        maxZoom: 20,
-        attribution: CARTO_ATTRIBUTION,
+        ...ESRI_LIGHT_GRAY,
+        overlayUrl: ESRI_TRANSPORTATION,
     },
     {
         code: 'CartoDB.Positron',
         label: 'Positron (Light)',
-        url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-        subdomains: 'abcd',
-        maxZoom: 20,
-        attribution: CARTO_ATTRIBUTION,
+        ...ESRI_LIGHT_GRAY,
+        labelsUrl: ESRI_LIGHT_GRAY_LABELS,
     },
     {
         code: 'CartoDB.PositronNoLabels',
         label: 'Positron (Light, No Labels)',
-        url: 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
-        subdomains: 'abcd',
-        maxZoom: 20,
-        attribution: CARTO_ATTRIBUTION,
+        ...ESRI_LIGHT_GRAY,
     },
     {
         code: 'CartoDB.DarkMatter',
         label: 'Dark Matter (Dark)',
-        url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-        subdomains: 'abcd',
-        maxZoom: 20,
-        attribution: CARTO_ATTRIBUTION,
+        ...ESRI_DARK_GRAY,
+        labelsUrl: ESRI_DARK_GRAY_LABELS,
     },
     {
         code: 'OpenStreetMap.Mapnik',

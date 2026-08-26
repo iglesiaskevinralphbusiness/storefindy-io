@@ -2,6 +2,9 @@
 import { MapContainer, TileLayer, CircleMarker, Tooltip, useMap } from 'react-leaflet';
 import { useEffect } from 'react';
 import 'leaflet/dist/leaflet.css';
+import { DEFAULT_MAP_STYLE, resolveMapStyle } from '@/utils/constant/map-styles';
+
+const defaultTiles = resolveMapStyle(DEFAULT_MAP_STYLE);
 
 // Circle radius (in pixels) scaled by a cluster's share of the busiest cluster,
 // so the largest cluster is prominent while the smallest stays legible.
@@ -51,15 +54,17 @@ export default function GeoClusterMapInner({ clusters = [], center = [12.8797, 1
         <MapContainer
             center={center}
             zoom={zoom}
+            maxZoom={defaultTiles.maxZoom}
             scrollWheelZoom={false}
             attributionControl={false}
             style={{ height: '100%', width: '100%' }}
         >
             <TileLayer
-                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-                subdomains="abcd"
-                attribution="&copy; OpenStreetMap"
-                maxZoom={19}
+                url={defaultTiles.url}
+                subdomains={defaultTiles.subdomains || 'abc'}
+                attribution={defaultTiles.attribution}
+                maxZoom={defaultTiles.maxZoom}
+                maxNativeZoom={defaultTiles.maxNativeZoom ?? defaultTiles.maxZoom}
             />
             <FitToClusters clusters={validClusters} />
             {validClusters.map((c) => (

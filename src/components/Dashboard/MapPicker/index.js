@@ -3,6 +3,9 @@ import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { DEFAULT_MAP_STYLE, resolveMapStyle } from '@/utils/constant/map-styles';
+
+const defaultTiles = resolveMapStyle(DEFAULT_MAP_STYLE);
 
 const pinIcon = L.divIcon({
     className: '',
@@ -60,15 +63,17 @@ export default function MapPicker({ lat, lng, onChange, center = [12.8797, 121.7
         <MapContainer
             center={center}
             zoom={zoom}
+            maxZoom={defaultTiles.maxZoom}
             scrollWheelZoom={true}
             attributionControl={false}
             style={{ height: '100%', width: '100%' }}
         >
             <TileLayer
-                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-                subdomains="abcd"
-                attribution="&copy; OpenStreetMap"
-                maxZoom={19}
+                url={defaultTiles.url}
+                subdomains={defaultTiles.subdomains || 'abc'}
+                attribution={defaultTiles.attribution}
+                maxZoom={defaultTiles.maxZoom}
+                maxNativeZoom={defaultTiles.maxNativeZoom ?? defaultTiles.maxZoom}
             />
             <ClickHandler onChange={onChange} />
             <DefaultView lat={centerLat} lng={centerLng} zoom={zoom} active={!hasPin} />
