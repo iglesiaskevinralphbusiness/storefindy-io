@@ -4,6 +4,7 @@
 export const LOCATOR_LANGUAGES = {
 	en: {
 		searching: 'Searching…',
+		searchPrompt: 'Search a city, state, or postal code to find locations.',
 		locationFoundNearYou: '{count} location found near you',
 		locationsFoundNearYou: '{count} locations found near you',
 		noLocationsFound: 'No locations were found using your search criteria. Please try another input address.',
@@ -29,6 +30,7 @@ export const LOCATOR_LANGUAGES = {
 	},
 	fr: {
 		searching: 'Recherche…',
+		searchPrompt: 'Recherchez une ville, un état ou un code postal pour trouver des emplacements.',
 		locationFoundNearYou: '{count} emplacement trouvé près de chez vous',
 		locationsFoundNearYou: '{count} emplacements trouvés près de chez vous',
 		noLocationsFound: "Aucun emplacement n'a été trouvé avec vos critères de recherche. Veuillez essayer une autre adresse.",
@@ -54,6 +56,7 @@ export const LOCATOR_LANGUAGES = {
 	},
 	es: {
 		searching: 'Buscando…',
+		searchPrompt: 'Busca una ciudad, estado o código postal para encontrar ubicaciones.',
 		locationFoundNearYou: '{count} ubicación encontrada cerca de ti',
 		locationsFoundNearYou: '{count} ubicaciones encontradas cerca de ti',
 		noLocationsFound: 'No se encontraron ubicaciones con tus criterios de búsqueda. Prueba con otra dirección.',
@@ -79,6 +82,7 @@ export const LOCATOR_LANGUAGES = {
 	},
 	de: {
 		searching: 'Suche…',
+		searchPrompt: 'Suchen Sie nach einer Stadt, einem Bundesland oder einer Postleitzahl, um Standorte zu finden.',
 		locationFoundNearYou: '{count} Standort in Ihrer Nähe gefunden',
 		locationsFoundNearYou: '{count} Standorte in Ihrer Nähe gefunden',
 		noLocationsFound: 'Mit Ihren Suchkriterien wurden keine Standorte gefunden. Bitte versuchen Sie eine andere Adresse.',
@@ -104,6 +108,7 @@ export const LOCATOR_LANGUAGES = {
 	},
 	it: {
 		searching: 'Ricerca…',
+		searchPrompt: 'Cerca una città, uno stato o un codice postale per trovare le sedi.',
 		locationFoundNearYou: '{count} sede trovata vicino a te',
 		locationsFoundNearYou: '{count} sedi trovate vicino a te',
 		noLocationsFound: 'Nessuna sede trovata con i criteri di ricerca. Prova con un altro indirizzo.',
@@ -129,6 +134,7 @@ export const LOCATOR_LANGUAGES = {
 	},
 	pt: {
 		searching: 'A pesquisar…',
+		searchPrompt: 'Pesquise uma cidade, estado ou código postal para encontrar locais.',
 		locationFoundNearYou: '{count} local encontrado perto de si',
 		locationsFoundNearYou: '{count} locais encontrados perto de si',
 		noLocationsFound: 'Nenhum local foi encontrado com os seus critérios de pesquisa. Tente outro endereço.',
@@ -154,6 +160,7 @@ export const LOCATOR_LANGUAGES = {
 	},
 	nl: {
 		searching: 'Zoeken…',
+		searchPrompt: 'Zoek op stad, staat of postcode om locaties te vinden.',
 		locationFoundNearYou: '{count} locatie bij u in de buurt gevonden',
 		locationsFoundNearYou: '{count} locaties bij u in de buurt gevonden',
 		noLocationsFound: 'Er zijn geen locaties gevonden met uw zoekcriteria. Probeer een ander adres.',
@@ -179,6 +186,7 @@ export const LOCATOR_LANGUAGES = {
 	},
 	ja: {
 		searching: '検索中…',
+		searchPrompt: '市区町村、州、または郵便番号を検索して店舗を探してください。',
 		locationFoundNearYou: '{count}件の店舗が近くに見つかりました',
 		locationsFoundNearYou: '{count}件の店舗が近くに見つかりました',
 		noLocationsFound: '検索条件に一致する店舗は見つかりませんでした。別の住所をお試しください。',
@@ -204,6 +212,7 @@ export const LOCATOR_LANGUAGES = {
 	},
 	ko: {
 		searching: '검색 중…',
+		searchPrompt: '도시, 주 또는 우편번호를 검색하여 매장을 찾으세요.',
 		locationFoundNearYou: '{count}개의 매장이 근처에서 검색되었습니다',
 		locationsFoundNearYou: '{count}개의 매장이 근처에서 검색되었습니다',
 		noLocationsFound: '검색 조건에 맞는 매장을 찾을 수 없습니다. 다른 주소를 입력해 주세요.',
@@ -229,6 +238,7 @@ export const LOCATOR_LANGUAGES = {
 	},
 	'zh-CN': {
 		searching: '正在搜索…',
+		searchPrompt: '搜索城市、州或邮政编码以查找地点。',
 		locationFoundNearYou: '{count} 个地点在您附近',
 		locationsFoundNearYou: '{count} 个地点在您附近',
 		noLocationsFound: '未找到符合搜索条件的地点。请尝试其他地址。',
@@ -254,6 +264,7 @@ export const LOCATOR_LANGUAGES = {
 	},
 	'zh-TW': {
 		searching: '正在搜尋…',
+		searchPrompt: '搜尋城市、州或郵遞區號以尋找地點。',
 		locationFoundNearYou: '{count} 個地點在您附近',
 		locationsFoundNearYou: '{count} 個地點在您附近',
 		noLocationsFound: '找不到符合搜尋條件的地點。請嘗試其他地址。',
@@ -279,6 +290,7 @@ export const LOCATOR_LANGUAGES = {
 	},
 	ar: {
 		searching: 'جارٍ البحث…',
+		searchPrompt: 'ابحث عن مدينة أو ولاية أو رمز بريدي للعثور على المواقع.',
 		locationFoundNearYou: 'موقع واحد موجود بالقرب منك',
 		locationsFoundNearYou: '{count} مواقع موجودة بالقرب منك',
 		noLocationsFound: 'لم يتم العثور على مواقع باستخدام معايير البحث. يرجى تجربة عنوان آخر.',

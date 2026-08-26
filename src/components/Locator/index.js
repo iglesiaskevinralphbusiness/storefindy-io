@@ -972,7 +972,7 @@ export default function Locator({
                             <p className="results-error" role="alert" aria-atomic="true">{message}</p>
                         )}
                         {status === 'idle' && (
-                            <p className="results-count"><LuMapPin /> Search a city, state, or postal code to find locations.</p>
+                            <p className="results-count"><LuMapPin /> {labels.searchPrompt}</p>
                         )}
 
                         {features.show_store_list && (
