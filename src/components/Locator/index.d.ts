@@ -10,6 +10,7 @@ export type LocatorProps = {
 	default_zoom_level?: number;
 	detect_location?: boolean;
 	default_country?: string;
+	default_language?: string;
 	filters?: unknown[];
 	settings?: Record<string, unknown>;
 	features?: Record<string, unknown>;

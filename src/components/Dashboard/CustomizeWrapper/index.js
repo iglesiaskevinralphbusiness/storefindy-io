@@ -91,6 +91,7 @@ export default function CustomizeWrapper({ data, available_countries, onPreview=
                     default_zoom_level={data.default_zoom_level}
                     detect_location={data.detect_location}
                     default_country={data.default_country}
+                    default_language={data.default_language}
                     show_search_bar={data.show_search_bar}
                     show_filters={data.show_filters}
                     show_radius={data.show_radius}

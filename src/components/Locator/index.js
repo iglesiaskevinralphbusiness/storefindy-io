@@ -15,6 +15,7 @@ import Link from 'next/link';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { COUNTRIES } from '@/utils/constant/countries';
 import { SOCIAL_MEDIA_LINKS, SEARCH_RADII } from '@/utils/constant';
+import { getLocatorLabels, formatLocationsFound, dayLabelKey } from '@/utils/constant/locator-languages';
 
 import SearchSuggest from './SearchSuggest';
 
@@ -25,16 +26,16 @@ const LocatorMap = lazy(() => import('./LocatorMap'));
 // Maps JS Date.getDay() (0 = Sunday) to the schema's hours keys.
 const DAY_KEYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const WEEK = [
-    ['Mon', 'Monday'], ['Tue', 'Tuesday'], ['Wed', 'Wednesday'], ['Thu', 'Thursday'],
-    ['Fri', 'Friday'], ['Sat', 'Saturday'], ['Sun', 'Sunday'],
+    ['Mon', 'monday'], ['Tue', 'tuesday'], ['Wed', 'wednesday'], ['Thu', 'thursday'],
+    ['Fri', 'friday'], ['Sat', 'saturday'], ['Sun', 'sunday'],
 ];
 
 // "08:00" -> "8:00 AM"
-function formatTime(value) {
+function formatTime(value, labels) {
     if (!value) return '';
     const [h, m] = String(value).split(':').map(Number);
     if (Number.isNaN(h)) return value;
-    const period = h >= 12 ? 'PM' : 'AM';
+    const period = h >= 12 ? labels.pm : labels.am;
     const hour12 = h % 12 === 0 ? 12 : h % 12;
     return `${hour12}:${String(m || 0).padStart(2, '0')} ${period}`;
 }
@@ -78,11 +79,11 @@ function toMinutes(value) {
 }
 
 // 1260 -> "9 PM", 1290 -> "9:30 PM". Google drops the ":00" on the hour.
-function formatClock(minutes) {
+function formatClock(minutes, labels) {
     const mins = ((minutes % 1440) + 1440) % 1440;
     const h = Math.floor(mins / 60);
     const m = mins % 60;
-    const period = h >= 12 ? 'PM' : 'AM';
+    const period = h >= 12 ? labels.pm : labels.am;
     const hour12 = h % 12 === 0 ? 12 : h % 12;
     return m === 0 ? `${hour12} ${period}` : `${hour12}:${String(m).padStart(2, '0')} ${period}`;
 }
@@ -166,15 +167,17 @@ function openIntervals(loc, base) {
     }, []);
 }
 
-// Google appends the weekday when a transition isn't today: "Closes 1 AM Sat".
-function daySuffix(base, minutes) {
+// Google appends the weekday when a transition isn't today: "Closes 1 AM Saturday".
+function daySuffix(base, minutes, labels) {
     const offset = Math.floor(minutes / 1440);
-    return offset > 0 ? ` ${DAY_KEYS[(base.dayIndex + offset) % 7]}` : '';
+    if (offset <= 0) return '';
+    const key = DAY_KEYS[(base.dayIndex + offset) % 7];
+    return ` ${labels[dayLabelKey(key)]}`;
 }
 
 // The full indicator for one location: a state word, the next transition, and a
 // tone the UI colours by. Returns null when there's nothing meaningful to show.
-function locationStatus(loc, now) {
+function locationStatus(loc, now, labels) {
     const notice = closedStatusLabel(loc);
     if (notice) return { tone: 'notice', label: notice, detail: '', isHoliday: false };
     if (!loc.hours) return null;
@@ -189,29 +192,29 @@ function locationStatus(loc, now) {
         // A stretch of a full day or more has no meaningful closing time to
         // quote — Google just says "Open 24 hours".
         if (current.end - current.start >= 1440) {
-            return { tone: 'open', label: 'Open 24 hours', detail: '', isHoliday };
+            return { tone: 'open', label: labels.open24Hours, detail: '', isHoliday };
         }
-        const at = `${formatClock(current.end)}${daySuffix(base, current.end)}`;
+        const at = `${formatClock(current.end, labels)}${daySuffix(base, current.end, labels)}`;
         return current.end - base.minutes <= SOON_MINUTES
-            ? { tone: 'soon', label: 'Closing soon', detail: at, isHoliday }
-            : { tone: 'open', label: 'Open', detail: `Closes ${at}`, isHoliday };
+            ? { tone: 'soon', label: labels.closes, detail: at, isHoliday }
+            : { tone: 'open', label: labels.open, detail: `${labels.closes} ${at}`, isHoliday };
     }
 
     const next = intervals.find((i) => i.start > base.minutes);
-    if (!next) return { tone: 'closed', label: 'Closed', detail: '', isHoliday };
+    if (!next) return { tone: 'closed', label: labels.closed, detail: '', isHoliday };
 
-    const at = `${formatClock(next.start)}${daySuffix(base, next.start)}`;
+    const at = `${formatClock(next.start, labels)}${daySuffix(base, next.start, labels)}`;
     return next.start - base.minutes <= SOON_MINUTES
-        ? { tone: 'soon', label: 'Opens soon', detail: at, isHoliday }
-        : { tone: 'closed', label: 'Closed', detail: `Opens ${at}`, isHoliday };
+        ? { tone: 'soon', label: labels.opens, detail: at, isHoliday }
+        : { tone: 'closed', label: labels.closed, detail: `${labels.opens} ${at}`, isHoliday };
 }
 
 // Today's opening span, with holiday overrides applied.
-function todaysHours(loc, now) {
+function todaysHours(loc, now, labels) {
     const base = clockNow(now);
     const day = daySpec(loc, base.date, base.dayIndex);
-    if (!day.enabled) return 'Closed';
-    return `${formatTime(day.open)} - ${formatTime(day.close)}`;
+    if (!day.enabled) return labels.closed;
+    return `${formatTime(day.open, labels)} - ${formatTime(day.close, labels)}`;
 }
 
 // Reverse-geocode a coordinate via the free OpenStreetMap Nominatim service.
@@ -250,11 +253,13 @@ export default function Locator({
     default_zoom_level = 10,
     detect_location = true,
     default_country = '',
+    default_language = 'en',
     filters = [],
     // Theme / labels
     settings = {},
     features = {},
 }) {
+    const labels = getLocatorLabels(default_language);
 
     if(isInactive === 'inactive') {
         return inactiveForm;
@@ -411,7 +416,7 @@ export default function Locator({
                 setMessage('');
             } else {
                 setStatus('empty');
-                setMessage(data.message || 'No locations were found using your search criteria. Please try another input address.');
+                setMessage(labels.noLocationsFound);
             }
         } catch {
             setStatus('error');
@@ -586,7 +591,7 @@ export default function Locator({
     // is still in the database, but quoting it to a visitor would be misleading.
     const renderHours = (location, showStoreHoursToggle) => {
         if (!features.show_store_hours) return null;
-        const info = locationStatus(location, now);
+        const info = locationStatus(location, now, labels);
         if (!info) return null;
         const hideHours = info.tone === 'notice';
         // Read from the visitor's clock, the same source the badge uses, so the
@@ -604,8 +609,8 @@ export default function Locator({
                 </div>
                 {!hideHours && (
                     <div className="todays-hours">
-                        <p><LuClock /> Today&apos;s Hours:</p>
-                        <p>{todaysHours(location, now)}</p>
+                        <p><LuClock /> {labels.todaysHours}:</p>
+                        <p>{todaysHours(location, now, labels)}</p>
                     </div>
                 )}
                 {!hideHours && showStoreHoursToggle && (
@@ -616,18 +621,18 @@ export default function Locator({
                             onClick={() => toggleHours(location._id)}
                             aria-expanded={!!openHours[location._id]}
                         >
-                            <LuClock /> Business Hours <FaAngleDown />
+                            <LuClock /> {labels.businessHours} <FaAngleDown />
                         </button>
                         <ul className={`store-hours${openHours[location._id] ? ' open' : ''}`}>
-                            {WEEK.map(([key, label]) => {
+                            {WEEK.map(([key, labelKey]) => {
                                 // Resolved against this row's actual date, so a
                                 // special-hours entry landing in this week
                                 // replaces the regular schedule for that day.
                                 const d = daySpec(location, weekDates[key], DAY_KEYS.indexOf(key));
                                 return (
                                     <li key={key} className={key === todayKey ? 'today' : undefined}>
-                                        <span>{label}</span>
-                                        <span>{d.enabled ? `${formatTime(d.open)} - ${formatTime(d.close)}` : 'Closed'}</span>
+                                        <span>{labels[labelKey]}</span>
+                                        <span>{d.enabled ? `${formatTime(d.open, labels)} - ${formatTime(d.close, labels)}` : labels.closed}</span>
                                     </li>
                                 );
                             })}
@@ -864,7 +869,7 @@ export default function Locator({
 
                                 {features.show_radius && (
                                     <div className="radius-control">
-                                        <label htmlFor="locator-radius">Radius</label>
+                                        <label htmlFor="locator-radius">{labels.radius}</label>
                                         <select
                                             id="locator-radius"
                                             value={params.radius}
@@ -939,7 +944,7 @@ export default function Locator({
                             onClick={() => setShowListMap('list')}
                         >
                             <LuList />
-                            <span>List View</span>
+                            <span>{labels.listView}</span>
                         </div>
                         <div
                             className={'mobile-tab-item' + (showListMap === 'map' ? ' active' : '')}
@@ -950,17 +955,17 @@ export default function Locator({
                             onClick={() => setShowListMap('map')}
                         >
                             <LuMap />
-                            <span>Map View</span>
+                            <span>{labels.mapView}</span>
                         </div>
                     </div>
 
                     <div className="results">
                         {status === 'loading' && (
-                            <p className="results-count"><LuMapPin /> Searching…</p>
+                            <p className="results-count"><LuMapPin /> {labels.searching}</p>
                         )}
                         {status === 'success' && (
                             <p className="results-count" role="alert" aria-atomic="true">
-                                <LuMapPin /> {locations.length} location{locations.length === 1 ? '' : 's'} found near you
+                                <LuMapPin /> {formatLocationsFound(locations.length, labels)}
                             </p>
                         )}
                         {(status === 'empty' || status === 'error') && (

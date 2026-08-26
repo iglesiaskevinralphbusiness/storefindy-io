@@ -138,6 +138,7 @@ export default function LocatorsCreatePage({ data=null }) {
                                 value={defaultLanguage}
                                 onChange={e => setDefaultLanguage(e.target.value)}
                                 options={LOCALES}
+                                note="Some text labels are not included in this selection. To change please go to customize locator visualizer page."
                             />
                         </div>
 

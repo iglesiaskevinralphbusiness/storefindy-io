@@ -15,6 +15,7 @@ type LocatorData = {
 	default_zoom_level?: number;
 	detect_location?: boolean;
 	default_country?: string;
+	default_language?: string;
 	show_search_bar?: boolean;
 	show_filters?: boolean;
 	show_radius?: boolean;
@@ -102,6 +103,7 @@ export default function LocatorWidget({ locator }: LocatorWidgetProps) {
 			default_zoom_level={data.default_zoom_level}
 			detect_location={data.detect_location}
 			default_country={data.default_country}
+			default_language={data.default_language}
 			show_search_bar={data.show_search_bar}
 			show_filters={data.show_filters}
 			show_radius={data.show_radius}

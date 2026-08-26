@@ -20,9 +20,20 @@ import {
 export const LOCALES = [
 	{ code: 'en', label: 'English' },
 	{ code: 'fr', label: 'Français' },
+    { code: 'es', label: 'Español' },
+    { code: 'de', label: 'Deutsch' },
+    { code: 'it', label: 'Italiano' },
+    { code: 'pt', label: 'Português' },
+    { code: 'nl', label: 'Nederlands' },
+    { code: 'ja', label: '日本語' },
+    { code: 'ko', label: '한국어' },
+    { code: 'zh-CN', label: '简体中文' },
+    { code: 'zh-TW', label: '繁體中文' },
+    { code: 'ar', label: 'العربية' },
 ];
 
 export { COUNTRIES } from './countries';
+export { LOCATOR_LANGUAGES, getLocatorLabels, formatLocationsFound } from './locator-languages';
 
 export const TIMEZONES = [
 	{ code: 'Pacific/Midway', label: '(GMT-11:00) Midway Island, Samoa' },
