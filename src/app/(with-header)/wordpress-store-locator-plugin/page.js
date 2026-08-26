@@ -145,15 +145,15 @@ const heroMeta = [
 
 const screenshots = [
     {
-        src: `https://ps.w.org/${PLUGIN_SLUG}/assets/screenshot-1.png?rev=3651516`,
+        src: `https://ps.w.org/${PLUGIN_SLUG}/assets/screenshot-6.png?rev=3651517`,
         alt: 'Storefindy WordPress plugin — store locator map view',
     },
     {
-        src: `https://ps.w.org/${PLUGIN_SLUG}/assets/screenshot-3.png?rev=3651516`,
+        src: `https://ps.w.org/${PLUGIN_SLUG}/assets/screenshot-1.png?rev=3651517`,
         alt: 'Storefindy WordPress plugin — locator list view',
     },
     {
-        src: `https://ps.w.org/${PLUGIN_SLUG}/assets/screenshot-5.png?rev=3651516`,
+        src: `https://ps.w.org/${PLUGIN_SLUG}/assets/screenshot-3.png?rev=3651517`,
         alt: 'Storefindy WordPress plugin — WordPress dashboard settings',
     },
 ];
