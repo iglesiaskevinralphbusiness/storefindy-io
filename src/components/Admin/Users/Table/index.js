@@ -2,11 +2,23 @@
 import styles from './UsersTable.module.scss';
 import { LuArrowUpDown, LuUsers } from 'react-icons/lu';
 import { mongooseFormatTimeAgo } from '@/utils/helpers';
+import { plans } from '@/utils/constant/pricing';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
 function formatRelativeDate(value, label) {
     if (!value) return '—';
     return mongooseFormatTimeAgo(value, value, label);
+}
+
+function getPlanLabel(planId = 'free') {
+    const plan = plans.find((p) => p.id === planId);
+    return plan?.name ?? planId.charAt(0).toUpperCase() + planId.slice(1);
+}
+
+function getPlanClass(planId = 'free') {
+    if (planId === 'pro') return styles.pro;
+    if (planId === 'business') return styles.business;
+    return styles.free;
 }
 
 export default function UsersTable({ data = [], sort, order }) {
@@ -68,7 +80,12 @@ export default function UsersTable({ data = [], sort, order }) {
                                         {idx === 0 && (
                                             <>
                                                 <td rowSpan={locators.length}>
-                                                    <span className={styles.email}>{user.email}</span>
+                                                    <div className={styles.emailCell}>
+                                                        <span className={styles.email}>{user.email}</span>
+                                                        <span className={`${styles.planBadge} ${getPlanClass(user.plan)}`}>
+                                                            {getPlanLabel(user.plan)}
+                                                        </span>
+                                                    </div>
                                                 </td>
                                                 <td rowSpan={locators.length} className={styles.date}>
                                                     {formatRelativeDate(user.last_login_at, 'Logged in')}

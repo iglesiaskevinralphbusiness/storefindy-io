@@ -101,9 +101,46 @@
     }
 }
 
+.emailCell {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
 .email {
     font-weight: 500;
     color: #1a1a1a;
+}
+
+.planBadge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+    border: 1px solid transparent;
+
+    &.free {
+        background: #fffbe6;
+        border-color: #ffe54c;
+        color: #171717;
+    }
+
+    &.pro {
+        background: #171717;
+        border-color: #171717;
+        color: #ffe54c;
+    }
+
+    &.business {
+        background: #ede9fe;
+        border-color: #d6cbfa;
+        color: #635bff;
+    }
 }
 
 .date {
