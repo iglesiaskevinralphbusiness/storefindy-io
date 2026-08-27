@@ -83,12 +83,12 @@ export async function getAdminUsers(page=1, rows=10, sort='created_at', order='a
         notFound();
     }
 
+    await dbConnect();
+
     const user = await UserModel.findById(session.user.id);
     if (!user) {
         redirect('/sign-in');
     }
-
-    await dbConnect();
 
     // pagination — clamped so `$limit`/`$skip` can't be handed an arbitrary
     // number of documents to scan or return.
