@@ -65,3 +65,54 @@ export function toPublicLocator(locator) {
 export function toPublicLocatorDetail(locator) {
     return omit(locator, HIDDEN_LOCATOR_DETAIL_FIELDS);
 }
+
+/** Customize read/write shape — settings, feature flags, and plan gating fields. */
+export function toPublicLocatorCustomize(locator) {
+    if (!locator || typeof locator !== 'object') return locator;
+
+    const {
+        _id,
+        name,
+        user_plan,
+        status,
+        settings,
+        show_map_radius_indicator,
+        show_map_pin_number,
+        form_style,
+        focused_zoom,
+        dynamic_search,
+        map_style,
+        show_search_bar,
+        detect_location,
+        show_filters,
+        show_radius,
+        show_store_list,
+        show_directions,
+        show_store_hours,
+        powered_by_storefindy,
+    } = locator;
+
+    return {
+        _id,
+        name,
+        user_plan,
+        status,
+        settings,
+        features: {
+            show_map_radius_indicator,
+            show_map_pin_number,
+            form_style,
+            focused_zoom,
+            dynamic_search,
+            map_style: map_style ?? '',
+            show_search_bar,
+            detect_location,
+            show_filters,
+            show_radius,
+            show_store_list,
+            show_directions,
+            show_store_hours,
+            powered_by_storefindy,
+        },
+    };
+}

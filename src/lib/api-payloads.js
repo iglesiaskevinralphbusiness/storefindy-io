@@ -465,3 +465,280 @@ export function validateLocationIdList(body) {
     // without changing what the query touches, so they are collapsed here.
     return { location_ids: Array.from(new Set(ids)) };
 }
+
+/* --------------------------------------------------------------------- *
+ * Locator customize payload — GET/PUT /api/v1/locators/:id/customize
+ * ------------------------------------------------------------------ */
+
+const CUSTOMIZE_FEATURE_FIELDS = [
+    'show_map_radius_indicator',
+    'show_map_pin_number',
+    'form_style',
+    'focused_zoom',
+    'dynamic_search',
+    'map_style',
+    'show_search_bar',
+    'detect_location',
+    'show_filters',
+    'show_radius',
+    'show_store_list',
+    'show_directions',
+    'show_store_hours',
+    'powered_by_storefindy',
+];
+
+const CUSTOMIZE_HEIGHTS = new Set(['small', 'medium', 'large']);
+const CUSTOMIZE_BORDERS = new Set(['none', 'rounded', 'pill', 'square']);
+const CUSTOMIZE_PIN_TYPES = new Set(['standard', 'custom']);
+const CUSTOMIZE_PIN_SIZES = new Set(['small', 'medium', 'large']);
+const CUSTOMIZE_FORM_STYLES = new Set(['style-1', 'style-2', 'style-3']);
+
+const PIN_IMAGE_MAX_B64 = Math.ceil((500 * 1024 * 4) / 3) + 200;
+const PIN_IMAGE_PREFIXES = [
+    'data:image/png;base64,',
+    'data:image/svg+xml;base64,',
+    'data:image/gif;base64,',
+    'data:image/jpeg;base64,',
+];
+
+const SETTINGS_TOP = ['height', 'background', 'text_color', 'font_family', 'font_size', 'border', 'border_color'];
+const SETTINGS_GROUPS = {
+    searchInput: ['border', 'background', 'text_color', 'border_color', 'placeholder'],
+    search: ['border', 'background', 'label', 'text_color', 'icon'],
+    filter: ['border', 'background', 'label', 'text_color', 'icon'],
+    filterList: ['border_color', 'background', 'text_color', 'active_background', 'active_text_color'],
+    resultItem: ['active_border_color', 'active_background', 'border', 'border_color', 'background'],
+    getDirections: ['border', 'background', 'label', 'text_color', 'icon'],
+    viewLocation: ['border', 'background', 'label', 'text_color', 'icon'],
+    pin: ['type', 'color', 'size', 'text_color', 'text_size', 'image'],
+    mobileView: ['background', 'text_color', 'active_border_color', 'active_background'],
+};
+
+/** Strip pin.image before the generic sanitizer runs — base64 exceeds stringLength. */
+function sanitizeCustomizeBody(body) {
+    const pinImage =
+        body?.settings?.pin && typeof body.settings.pin.image === 'string'
+            ? body.settings.pin.image
+            : '';
+
+    const clone = { ...body };
+    if (clone.settings && typeof clone.settings === 'object') {
+        clone.settings = { ...clone.settings };
+        if (clone.settings.pin && typeof clone.settings.pin === 'object') {
+            clone.settings.pin = { ...clone.settings.pin, image: '' };
+        }
+    }
+
+    const { value, error } = sanitizeMongoInput(clone);
+    if (error) return { error };
+
+    if (pinImage !== '') {
+        value.settings = value.settings || {};
+        value.settings.pin = value.settings.pin || {};
+        value.settings.pin.image = pinImage;
+    }
+
+    return { value };
+}
+
+function customizeString(value, field, max = 200) {
+    const str = String(value ?? '').trim();
+    if (str.length > max) {
+        return { error: `${field} cannot exceed ${max} characters` };
+    }
+    return { str };
+}
+
+function validatePinImage(value) {
+    if (value === '' || value === undefined || value === null) return { str: '' };
+    if (typeof value !== 'string') return { error: 'Pin image must be a string' };
+    if (value.length > PIN_IMAGE_MAX_B64) {
+        return { error: 'Pin image exceeds the 500KB limit' };
+    }
+    if (!PIN_IMAGE_PREFIXES.some((prefix) => value.startsWith(prefix))) {
+        return { error: 'Pin image must be a PNG, SVG, GIF, or JPEG data URL' };
+    }
+    return { str: value };
+}
+
+function validateSettings(settings, errors) {
+    if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
+        errors.settings = 'Settings object is required';
+        return null;
+    }
+
+    const out = {};
+
+    for (const field of SETTINGS_TOP) {
+        const raw = settings[field];
+        if (field === 'height') {
+            const code = String(raw ?? '').trim();
+            if (!CUSTOMIZE_HEIGHTS.has(code)) {
+                errors[`settings.${field}`] = 'Height must be small, medium, or large';
+                continue;
+            }
+            out[field] = code;
+        } else if (field === 'font_size') {
+            const parsed = z.coerce.number().safeParse(raw);
+            if (!parsed.success || !Number.isFinite(parsed.data) || parsed.data < 8 || parsed.data > 32) {
+                errors[`settings.${field}`] = 'Root font size must be between 8 and 32';
+                continue;
+            }
+            out[field] = parsed.data;
+        } else if (field === 'border') {
+            const code = String(raw ?? '').trim();
+            if (!CUSTOMIZE_BORDERS.has(code)) {
+                errors[`settings.${field}`] = 'Border wrapper must be none, rounded, pill, or square';
+                continue;
+            }
+            out[field] = code;
+        } else {
+            const { str, error } = customizeString(raw, field, field === 'font_family' ? 120 : 40);
+            if (error) {
+                errors[`settings.${field}`] = error;
+                continue;
+            }
+            out[field] = str;
+        }
+    }
+
+    for (const [group, fields] of Object.entries(SETTINGS_GROUPS)) {
+        const source = settings[group];
+        if (!source || typeof source !== 'object' || Array.isArray(source)) {
+            errors[`settings.${group}`] = `${group} settings are required`;
+            continue;
+        }
+
+        out[group] = {};
+        for (const field of fields) {
+            const raw = source[field];
+            if (field === 'text_size') {
+                const parsed = z.coerce.number().safeParse(raw);
+                if (!parsed.success || !Number.isFinite(parsed.data) || parsed.data < 8 || parsed.data > 32) {
+                    errors[`settings.${group}.${field}`] = 'Text size must be between 8 and 32';
+                    continue;
+                }
+                out[group][field] = parsed.data;
+            } else if (field === 'type') {
+                const code = String(raw ?? '').trim();
+                if (!CUSTOMIZE_PIN_TYPES.has(code)) {
+                    errors[`settings.${group}.${field}`] = 'Pin type must be standard or custom';
+                    continue;
+                }
+                out[group][field] = code;
+            } else if (field === 'size') {
+                const code = String(raw ?? '').trim();
+                if (!CUSTOMIZE_PIN_SIZES.has(code)) {
+                    errors[`settings.${group}.${field}`] = 'Pin size must be small, medium, or large';
+                    continue;
+                }
+                out[group][field] = code;
+            } else if (field === 'border') {
+                const code = String(raw ?? '').trim();
+                if (!CUSTOMIZE_BORDERS.has(code)) {
+                    errors[`settings.${group}.${field}`] = 'Border must be none, rounded, pill, or square';
+                    continue;
+                }
+                out[group][field] = code;
+            } else if (field === 'image') {
+                const { str, error } = validatePinImage(raw);
+                if (error) {
+                    errors[`settings.${group}.${field}`] = error;
+                    continue;
+                }
+                out[group][field] = str;
+            } else {
+                const max = field === 'placeholder' || field === 'label' ? 120 : 40;
+                const { str, error } = customizeString(raw, field, max);
+                if (error) {
+                    errors[`settings.${group}.${field}`] = error;
+                    continue;
+                }
+                out[group][field] = str;
+            }
+        }
+    }
+
+    return out;
+}
+
+/**
+ * Customize update payload — mirrors functionSaveCustomizeLocator().
+ *
+ * Body shape:
+ *   { settings: {...}, features: {...} }
+ * or the feature flags at the top level alongside `settings`.
+ *
+ * @param {object} body Parsed JSON body.
+ * @param {{ plan?: string }} options Caller plan for feature gating.
+ */
+export function validateCustomizePayload(body, { plan = 'free' } = {}) {
+    const { value, error } = sanitizeCustomizeBody(body);
+    if (error) return { errors: { body: error } };
+
+    const errors = {};
+    const settings = validateSettings(value.settings, errors);
+    if (!settings) return { errors };
+
+    const featureSource =
+        value.features && typeof value.features === 'object' && !Array.isArray(value.features)
+            ? value.features
+            : value;
+
+    const features = {};
+    for (const field of CUSTOMIZE_FEATURE_FIELDS) {
+        if (featureSource[field] === undefined) {
+            errors[field] = `${field} is required`;
+            continue;
+        }
+
+        if (field === 'form_style') {
+            const code = String(featureSource[field] ?? '').trim();
+            if (!CUSTOMIZE_FORM_STYLES.has(code)) {
+                errors[field] = 'Form style must be style-1, style-2, or style-3';
+                continue;
+            }
+            features[field] = code;
+        } else if (field === 'map_style') {
+            const { str, error: mapError } = customizeString(featureSource[field], field, 120);
+            if (mapError) {
+                errors[field] = mapError;
+                continue;
+            }
+            features[field] = str;
+        } else if (typeof featureSource[field] === 'boolean') {
+            features[field] = featureSource[field];
+        } else {
+            features[field] = Boolean(featureSource[field]);
+        }
+    }
+
+    if (Object.keys(errors).length > 0) return { errors };
+
+    // Plan gates — same rules as SidebarCustomize.
+    if (plan === 'free' && settings.pin.type === 'custom') {
+        errors['settings.pin.type'] = 'Custom pin is only available on Pro or Business plans';
+    }
+    if (plan === 'free' && settings.pin.image) {
+        errors['settings.pin.image'] = 'Custom pin image is only available on Pro or Business plans';
+    }
+    if (plan !== 'business' && features.form_style !== 'style-1') {
+        errors.form_style = 'Form style 2 and 3 are only available on the Business plan';
+    }
+    if (plan !== 'business') {
+        features.powered_by_storefindy = true;
+    }
+
+    if (Object.keys(errors).length > 0) return { errors };
+
+    const { focused_zoom, dynamic_search, ...restFeatures } = features;
+
+    return {
+        form: {
+            settings,
+            focused_zoom,
+            dynamic_search,
+            ...restFeatures,
+        },
+    };
+}
