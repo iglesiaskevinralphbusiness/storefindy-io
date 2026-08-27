@@ -3,7 +3,7 @@ import { redirect, notFound } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { dbConnect } from '@/config/mongo.config';
-import { UserModel, LocatorModel, LocationModel, SubDomainModel } from '@/mongo';
+import { UserModel, LocatorModel, LocationModel, SubDomainModel, SupportTicketModel, BugReportModel } from '@/mongo';
 import { getInactiveLocationIds } from '@/lib/locations-query';
 import { getInactiveLocatorIds } from '@/lib/locators-query';
 import { serializeForClient } from '@/utils/helpers';
@@ -32,6 +32,25 @@ const SORTABLE_FIELDS = [
     'last_synced_at',
     'created_at',
 ];
+
+const SUPPORT_TICKET_SORTABLE_FIELDS = [
+    'reference',
+    'email',
+    'topic',
+    'status',
+    'created_at',
+];
+
+const BUG_REPORT_SORTABLE_FIELDS = [
+    'reference',
+    'email',
+    'subject',
+    'severity',
+    'status',
+    'created_at',
+];
+
+const BUG_REPORT_STATUSES = ['open', 'fixed'];
 
 export async function getAdminData() {
     const session = await getServerSession(authOptions);
@@ -287,4 +306,297 @@ export async function syncAdminUserPlan(userId) {
     } catch (error) {
         return { status: 'error', message: error.message || 'Sync failed.' };
     }
+}
+
+export async function getAdminHelpAndSupportMessages(page = 1, rows = 50, sort = 'created_at', order = 'desc') {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    if (session.user.id !== process.env.USER_ID_ADMIN) {
+        notFound();
+    }
+
+    await dbConnect();
+
+    const currentPage = toBoundedInt(page, { min: 1, max: LIMITS.page, fallback: 1 });
+    const currentRows = toBoundedInt(rows, { min: 1, max: LIMITS.pageSize, fallback: 50 });
+
+    const totalCount = await SupportTicketModel.countDocuments({});
+    const totalPages = Math.ceil(totalCount / currentRows);
+
+    const rawSortField = pickSortField(sort, SUPPORT_TICKET_SORTABLE_FIELDS, 'created_at');
+    const sortFieldMap = {
+        created_at: 'createdAt',
+        reference: 'reference',
+        email: 'email',
+        topic: 'topic',
+        status: 'status',
+    };
+    const sortField = sortFieldMap[rawSortField] || 'createdAt';
+    const sortOrder = pickSortOrder(order) === 'desc' ? -1 : 1;
+
+    const tickets = await SupportTicketModel
+        .find({})
+        .sort({ [sortField]: sortOrder })
+        .skip((currentPage - 1) * currentRows)
+        .limit(currentRows)
+        .lean();
+
+    const items = tickets.map((ticket) => ({
+        _id: String(ticket._id),
+        user_id: ticket.user_id || '',
+        email: ticket.email || '',
+        reference: ticket.reference || '',
+        topic: ticket.topic || '',
+        message: ticket.message || '',
+        plan: ticket.plan || '',
+        page_url: ticket.page_url || '',
+        status: ticket.status || 'open',
+        created_at: ticket.createdAt ? new Date(ticket.createdAt).toISOString() : '',
+        updated_at: ticket.updatedAt ? new Date(ticket.updatedAt).toISOString() : '',
+    }));
+
+    return {
+        rows: currentRows,
+        page: currentPage,
+        pages: totalPages === 0 ? 1 : totalPages,
+        items: serializeForClient(items),
+        unread_count: await SupportTicketModel.countDocuments({ status: 'open' }),
+    };
+}
+
+export async function markSupportTicketAsRead(ticketId) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    if (session.user.id !== process.env.USER_ID_ADMIN) {
+        notFound();
+    }
+
+    if (!isValidObjectId(ticketId)) {
+        return { status: 'error', message: 'Invalid ticket ID.' };
+    }
+
+    await dbConnect();
+
+    const ticket = await SupportTicketModel.findById(ticketId);
+    if (!ticket) {
+        return { status: 'error', message: 'Message not found.' };
+    }
+
+    if (ticket.status === 'read') {
+        return { status: 'success', message: 'Already read.' };
+    }
+
+    ticket.status = 'read';
+    await ticket.save();
+
+    return { status: 'success', message: 'Marked as read.' };
+}
+
+export async function deleteSupportTicket(ticketId) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    if (session.user.id !== process.env.USER_ID_ADMIN) {
+        notFound();
+    }
+
+    if (!isValidObjectId(ticketId)) {
+        return { status: 'error', message: 'Invalid ticket ID.' };
+    }
+
+    await dbConnect();
+
+    const ticket = await SupportTicketModel.findByIdAndDelete(ticketId);
+    if (!ticket) {
+        return { status: 'error', message: 'Message not found.' };
+    }
+
+    return { status: 'success', message: 'Message deleted.' };
+}
+
+function mapBugReportItem(bug, { includeScreenshots = false } = {}) {
+    const systemInfo = bug.system_info || {};
+    const item = {
+        _id: String(bug._id),
+        user_id: bug.user_id || '',
+        email: bug.email || '',
+        reference: bug.reference || '',
+        subject: bug.subject || '',
+        severity: bug.severity || 'medium',
+        affected_feature: bug.affected_feature || '',
+        frequency: bug.frequency || '',
+        description: bug.description || '',
+        expected_behavior: bug.expected_behavior || '',
+        steps: bug.steps || [],
+        system_info: {
+            browser: systemInfo.browser || '',
+            os: systemInfo.os || '',
+            screen_resolution: systemInfo.screen_resolution || '',
+            user_agent: systemInfo.user_agent || '',
+            plan: systemInfo.plan || '',
+            app_version: systemInfo.app_version || '',
+        },
+        status: bug.status || 'open',
+        created_at: bug.createdAt ? new Date(bug.createdAt).toISOString() : '',
+        updated_at: bug.updatedAt ? new Date(bug.updatedAt).toISOString() : '',
+    };
+
+    if (includeScreenshots) {
+        item.screenshots = bug.screenshots || [];
+    }
+
+    return item;
+}
+
+export async function getAdminBugReports(page = 1, rows = 50, sort = 'created_at', order = 'desc') {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    if (session.user.id !== process.env.USER_ID_ADMIN) {
+        notFound();
+    }
+
+    await dbConnect();
+
+    const currentPage = toBoundedInt(page, { min: 1, max: LIMITS.page, fallback: 1 });
+    const currentRows = toBoundedInt(rows, { min: 1, max: LIMITS.pageSize, fallback: 50 });
+
+    const totalCount = await BugReportModel.countDocuments({});
+    const totalPages = Math.ceil(totalCount / currentRows);
+
+    const rawSortField = pickSortField(sort, BUG_REPORT_SORTABLE_FIELDS, 'created_at');
+    const sortFieldMap = {
+        created_at: 'createdAt',
+        reference: 'reference',
+        email: 'email',
+        subject: 'subject',
+        severity: 'severity',
+        status: 'status',
+    };
+    const sortField = sortFieldMap[rawSortField] || 'createdAt';
+    const sortOrder = pickSortOrder(order) === 'desc' ? -1 : 1;
+
+    const bugs = await BugReportModel
+        .find({})
+        .select('-screenshots')
+        .sort({ [sortField]: sortOrder })
+        .skip((currentPage - 1) * currentRows)
+        .limit(currentRows)
+        .lean();
+
+    const items = bugs.map((bug) => mapBugReportItem(bug));
+
+    return {
+        rows: currentRows,
+        page: currentPage,
+        pages: totalPages === 0 ? 1 : totalPages,
+        items: serializeForClient(items),
+        open_count: await BugReportModel.countDocuments({ status: 'open' }),
+    };
+}
+
+export async function getAdminBugReport(bugId) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    if (session.user.id !== process.env.USER_ID_ADMIN) {
+        notFound();
+    }
+
+    if (!isValidObjectId(bugId)) {
+        return { status: 'error', message: 'Invalid bug report ID.' };
+    }
+
+    await dbConnect();
+
+    const bug = await BugReportModel.findById(bugId).lean();
+    if (!bug) {
+        return { status: 'error', message: 'Bug report not found.' };
+    }
+
+    return {
+        status: 'success',
+        item: serializeForClient(mapBugReportItem(bug, { includeScreenshots: true })),
+    };
+}
+
+export async function updateBugReportStatus(bugId, status) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    if (session.user.id !== process.env.USER_ID_ADMIN) {
+        notFound();
+    }
+
+    if (!isValidObjectId(bugId)) {
+        return { status: 'error', message: 'Invalid bug report ID.' };
+    }
+
+    const nextStatus = (status || '').toString().trim();
+    if (!BUG_REPORT_STATUSES.includes(nextStatus)) {
+        return { status: 'error', message: 'Invalid status.' };
+    }
+
+    await dbConnect();
+
+    try {
+        const bug = await BugReportModel.findByIdAndUpdate(
+            bugId,
+            { $set: { status: nextStatus } },
+            { new: true, runValidators: true }
+        );
+
+        if (!bug) {
+            return { status: 'error', message: 'Bug report not found.' };
+        }
+
+        return {
+            status: 'success',
+            message: nextStatus === 'fixed' ? 'Bug report marked as fixed.' : 'Bug report reopened.',
+            bug_status: nextStatus,
+        };
+    } catch (error) {
+        return {
+            status: 'error',
+            message: error?.message || 'Could not update status.',
+        };
+    }
+}
+
+export async function deleteBugReport(bugId) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    if (session.user.id !== process.env.USER_ID_ADMIN) {
+        notFound();
+    }
+
+    if (!isValidObjectId(bugId)) {
+        return { status: 'error', message: 'Invalid bug report ID.' };
+    }
+
+    await dbConnect();
+
+    const bug = await BugReportModel.findByIdAndDelete(bugId);
+    if (!bug) {
+        return { status: 'error', message: 'Bug report not found.' };
+    }
+
+    return { status: 'success', message: 'Bug report deleted.' };
 }

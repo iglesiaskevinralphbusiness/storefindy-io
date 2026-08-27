@@ -26,16 +26,20 @@ const bugReportSchema = new mongoose.Schema({
 
   system_info: { type: systemInfoSchema, required: false, default: () => ({}) },
 
-  // Triage
-  status: { type: String, required: false, default: 'open' },
+  // Triage — `open` = pending, `fixed` = addressed by the team
+  status: {
+    type: String,
+    required: false,
+    default: 'open',
+    enum: ['open', 'fixed'],
+  },
 
 }, { timestamps: true });
 
 let BugReportModel;
-try {
-  BugReportModel = mongoose.model('BugReportModel');
-} catch {
-  BugReportModel = mongoose.model('BugReportModel', bugReportSchema);
+if (mongoose.models.BugReportModel) {
+  delete mongoose.models.BugReportModel;
 }
+BugReportModel = mongoose.model('BugReportModel', bugReportSchema);
 
 export { BugReportModel };

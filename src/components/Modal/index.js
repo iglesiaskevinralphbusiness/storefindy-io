@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { LuX } from "react-icons/lu";
 import styles from './Modal.module.scss';
 
-export default function Modal({ isOpen, onClose, title, children, showHeader = true, footer = null }) {
+export default function Modal({ isOpen, onClose, title, children, showHeader = true, footer = null, wide = false }) {
     useEffect(() => {
         if (!isOpen) return;
 
@@ -29,7 +29,7 @@ export default function Modal({ isOpen, onClose, title, children, showHeader = t
             role="presentation"
         >
             <div
-                className={styles.modal}
+                className={`${styles.modal} ${wide ? styles.wide : ''}`}
                 onClick={(e) => e.stopPropagation()}
                 role="dialog"
                 aria-modal="true"

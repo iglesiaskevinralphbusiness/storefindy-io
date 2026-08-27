@@ -13,8 +13,13 @@ const supportTicketSchema = new mongoose.Schema({
   plan: { type: String, required: false, default: '' },
   page_url: { type: String, required: false, default: '' },
 
-  // Triage
-  status: { type: String, required: false, default: 'open' },
+  // Admin triage — `open` = unread, `read` = admin has viewed the message
+  status: {
+    type: String,
+    required: false,
+    default: 'open',
+    enum: ['open', 'read'],
+  },
 }, { timestamps: true });
 
 let SupportTicketModel;

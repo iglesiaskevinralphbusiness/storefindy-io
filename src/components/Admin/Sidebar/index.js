@@ -79,6 +79,26 @@ export default function SidebarAdmin() {
                             </Link>
                         </li>
                     </ul>
+
+                    <h2>SUPPORT</h2>
+                    <ul className={styles.mainMenu}>
+                        <li className={isRootLinkActive('/admin/reported-bugs')}>
+                            <Link href="/admin/reported-bugs">
+                                <div>
+                                    <LuHouse />
+                                    <span>Bugs Reported</span>
+                                </div>
+                            </Link>
+                        </li>
+                        <li className={isRootLinkActive('/admin/help-and-support-messages')}>
+                            <Link href="/admin/help-and-support-messages">
+                                <div>
+                                    <LuHouse />
+                                    <span>Help And Support Msgs</span>
+                                </div>
+                            </Link>
+                        </li>
+                    </ul>
                     
                 </div>
                 <div className={styles.user}>

@@ -21,6 +21,10 @@
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     animation: slideUp 0.2s ease-in-out;
 
+    &.wide {
+        max-width: 720px;
+    }
+
     .header {
         display: flex;
         align-items: center;
