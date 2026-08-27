@@ -10,6 +10,7 @@ const HIDDEN_LOCATOR_FIELDS = [
     // default map view and search behaviour
     'default_country',
     'default_zoom_level',
+    'distance_unit',
     'search_radius',
     'maximum_results_shown',
     'filters',

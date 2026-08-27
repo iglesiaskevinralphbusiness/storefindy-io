@@ -7,6 +7,7 @@ export type LocatorProps = {
 	locator_id?: string;
 	available_countries?: string[];
 	search_radius?: number;
+	distance_unit?: 'mi' | 'km';
 	default_zoom_level?: number;
 	detect_location?: boolean;
 	default_country?: string;

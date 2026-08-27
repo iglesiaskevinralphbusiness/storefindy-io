@@ -88,6 +88,7 @@ export default function CustomizeWrapper({ data, available_countries, onPreview=
                     // default settings
                     form_style={data.form_style}
                     search_radius={data.search_radius}
+                    distance_unit={data.distance_unit}
                     default_zoom_level={data.default_zoom_level}
                     detect_location={data.detect_location}
                     default_country={data.default_country}

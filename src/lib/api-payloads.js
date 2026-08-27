@@ -140,6 +140,7 @@ const LOCATOR_DEFAULTS = {
     default_language: 'en',
     default_country: 'us',
     default_zoom_level: 10,
+    distance_unit: 'mi',
     search_radius: 10,
     maximum_results_shown: 10,
     filters: [],
@@ -289,6 +290,13 @@ export function validateLocatorPayload(body, { partial = false } = {}) {
                 continue;
             }
             form.filters = values;
+        } else if (field === 'distance_unit') {
+            const unit = String(body[field] ?? '').trim();
+            if (unit !== 'mi' && unit !== 'km') {
+                errors.distance_unit = 'Distance unit must be mi or km';
+                continue;
+            }
+            form.distance_unit = unit;
         } else {
             const { str, max, tooLong } = boundedString(body[field], field);
             if (tooLong) {

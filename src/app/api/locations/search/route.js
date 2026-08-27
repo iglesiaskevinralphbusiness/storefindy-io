@@ -5,6 +5,7 @@ import { LocationModel } from '@/mongo/LocationsModel';
 import { LocatorModel } from '@/mongo/LocatorModel';
 import { UserModel } from '@/mongo/UserModel';
 import { serializeForClient, getCurrentHourCode, getUserPlan } from '@/utils/helpers';
+import { kmToMiles, milesToKm } from '@/utils/distance';
 import { plans } from '@/utils/constant/pricing';
 
 // This endpoint powers the public store-locator widget, which is embedded on
@@ -133,7 +134,10 @@ export async function GET(request) {
     }
 
     // Radius and result count fall back to the locator's configured defaults.
-    const radius = Number(radiusParam) > 0 ? Number(radiusParam) : (locator.search_radius || 10);
+    // `search_radius` is stored in the locator's distance unit (mi or km).
+    const distanceUnit = locator.distance_unit === 'km' ? 'km' : 'mi';
+    const radiusInUnit = Number(radiusParam) > 0 ? Number(radiusParam) : (locator.search_radius || 10);
+    const radiusMiles = distanceUnit === 'km' ? kmToMiles(radiusInUnit) : radiusInUnit;
     const limit = locator.maximum_results_shown > 0 ? locator.maximum_results_shown : 10;
 
     // Selected filter labels, e.g. ["🏬 Mall", "🏥 Clinic"]. A location matches
@@ -177,7 +181,7 @@ export async function GET(request) {
                 status: 'not_found',
                 message: `No locations were found using your search criteria [ ${query} ]. Please try another input address to search for locations.`,
                 center: null,
-                radius,
+                radius: radiusInUnit,
                 locations: [],
             });
         }
@@ -213,12 +217,17 @@ export async function GET(request) {
     let results = docs;
     if (center) {
         results = docs
-            .map((doc) => ({
-                ...doc,
-                distance: distanceInMiles(center.lat, center.lng, doc.latitude, doc.longitude),
-            }))
-            .filter((doc) => doc.distance <= radius)
-            .sort((a, b) => a.distance - b.distance);
+            .map((doc) => {
+                const distanceMiles = distanceInMiles(center.lat, center.lng, doc.latitude, doc.longitude);
+                return {
+                    ...doc,
+                    distance: distanceUnit === 'km' ? milesToKm(distanceMiles) : distanceMiles,
+                    _distanceMiles: distanceMiles,
+                };
+            })
+            .filter((doc) => doc._distanceMiles <= radiusMiles)
+            .sort((a, b) => a.distance - b.distance)
+            .map(({ _distanceMiles, ...doc }) => doc);
     }
     results = results.slice(0, limit);
 
@@ -419,7 +428,8 @@ export async function GET(request) {
         status: 'success',
         center,
         label,
-        radius,
+        radius: radiusInUnit,
+        distance_unit: distanceUnit,
         count: results.length,
         inactiveIds,
         locations: serializeForClient(activeResults),

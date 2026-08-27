@@ -14,7 +14,8 @@ import Textarea from '@/components/Forms/Textarea';
 import Select from '@/components/Forms/Select';
 import Checkbox from '@/components/Forms/Checkbox';
 import Button from '@/components/Forms/Button';
-import { LOCALES, COUNTRIES, ZOOM_LEVELS, SEARCH_RADII, MAXIMUM_RESULTS_SHOWN } from '@/utils/constant';
+import { LOCALES, COUNTRIES, ZOOM_LEVELS, MAXIMUM_RESULTS_SHOWN } from '@/utils/constant';
+import { DISTANCE_UNITS, getSearchRadiiOptions, convertDistance } from '@/utils/distance';
 import { toast } from 'react-toastify';
 import { isNull } from 'lodash';
 
@@ -26,6 +27,7 @@ export default function LocatorsCreatePage({ data=null }) {
     const [defaultLanguage, setDefaultLanguage] = useState(data?.default_language || '');
     const [defaultCountry, setDefaultCountry] = useState(data?.default_country || 'us');
     const [defaultZoomLevel, setDefaultZoomLevel] = useState(data?.default_zoom_level || '10');
+    const [distanceUnit, setDistanceUnit] = useState(data?.distance_unit || 'mi');
     const [searchRadius, setSearchRadius] = useState(data?.search_radius || '10');
     const [maximumResultsShown, setMaximumResultsShown] = useState(data?.maximum_results_shown || '10');
     const [filterTitle, setFilterTitle] = useState('');
@@ -83,6 +85,16 @@ export default function LocatorsCreatePage({ data=null }) {
             setEditingValue('');
         }
     }
+
+    const handleDistanceUnitChange = (newUnit) => {
+        if (newUnit !== distanceUnit) {
+            const converted = convertDistance(Number(searchRadius), distanceUnit, newUnit);
+            setSearchRadius(String(converted));
+        }
+        setDistanceUnit(newUnit);
+    };
+
+    const searchRadiiOptions = getSearchRadiiOptions(distanceUnit);
 
     // form submit handler
     const postCreateLocatorWithParams = data ? postEditLocator.bind(null, data._id, filters) : postCreateLocator.bind(null, filters);
@@ -166,11 +178,19 @@ export default function LocatorsCreatePage({ data=null }) {
                                 <div className={styles.block}>
                                     <h2><HiMiniMagnifyingGlass /> Search Settings</h2>
                                     <Select
+                                        label="Distance Unit"
+                                        name="distance_unit"
+                                        value={distanceUnit}
+                                        onChange={e => handleDistanceUnitChange(e.target.value)}
+                                        options={DISTANCE_UNITS}
+                                        note="Search radius values are shown in the selected unit."
+                                    />
+                                    <Select
                                         label="Search Radius"
                                         name="search_radius"
                                         value={searchRadius}
                                         onChange={e => setSearchRadius(e.target.value)}
-                                        options={SEARCH_RADII}
+                                        options={searchRadiiOptions}
                                     />
                                     <Select
                                         label="Maximum Results Shown"

@@ -70,8 +70,10 @@ const locatorSchema = new mongoose.Schema({
     default_country: { type: String, required: false, default: 'us' },
     default_zoom_level: { type: Number, required: true },
     // search settings
+    distance_unit: { type: String, required: false, default: 'mi' },
     search_radius: { type: Number, required: true },
     maximum_results_shown: { type: Number, required: true },
+    
     // filters
     filters: { type: Array, required: false, default: [] },
     // widget features

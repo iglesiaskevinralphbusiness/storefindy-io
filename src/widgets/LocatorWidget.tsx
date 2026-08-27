@@ -12,6 +12,7 @@ type LocatorData = {
 	status?: 'active' | 'inactive';
 	filters?: any[];
 	search_radius?: number;
+	distance_unit?: 'mi' | 'km';
 	default_zoom_level?: number;
 	detect_location?: boolean;
 	default_country?: string;
@@ -100,6 +101,7 @@ export default function LocatorWidget({ locator }: LocatorWidgetProps) {
 
 			// default settings
 			search_radius={data.search_radius}
+			distance_unit={data.distance_unit}
 			default_zoom_level={data.default_zoom_level}
 			detect_location={data.detect_location}
 			default_country={data.default_country}

@@ -14,7 +14,8 @@ import { formStyles, resultsStyles, mapStyles, userDefinedStyles, formStyle2Styl
 import Link from 'next/link';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { COUNTRIES } from '@/utils/constant/countries';
-import { SOCIAL_MEDIA_LINKS, SEARCH_RADII } from '@/utils/constant';
+import { SOCIAL_MEDIA_LINKS } from '@/utils/constant';
+import { getSearchRadiiValues, formatDistanceDisplay, kmToMiles } from '@/utils/distance';
 import { getLocatorLabels, formatLocationsFound, dayLabelKey } from '@/utils/constant/locator-languages';
 
 import SearchSuggest from './SearchSuggest';
@@ -250,6 +251,7 @@ export default function Locator({
     available_countries = [default_country],
     user_plan = 'free',
     search_radius = 10,
+    distance_unit = 'mi',
     default_zoom_level = 10,
     detect_location = true,
     default_country = '',
@@ -269,6 +271,7 @@ export default function Locator({
     // Configured defaults — the source of truth for the map's first load and for
     // every fresh search. (maximum_results_shown is enforced server-side.)
     const defaultRadius = search_radius ?? 10;
+    const distanceUnit = distance_unit === 'km' ? 'km' : 'mi';
     const defaultZoom = default_zoom_level ?? 10;
     // Open the map on the locator's configured country (e.g. "jp", "us", "ph")
     // instead of the hardcoded world fallback. This is the first-load view when
@@ -276,10 +279,11 @@ export default function Locator({
     // browser blocks/denies geolocation.
     const countryView = COUNTRIES.find((c) => c.code === String(default_country || '').toLowerCase());
     const defaultCenter = countryView ? [countryView.lat, countryView.lng] : null;
-    // Radius choices come from the shared SEARCH_RADII constant, always
+    // Radius choices come from presets in the locator's distance unit, always
     // including the locator's configured default even if it isn't a preset.
-    const radiusOptions = [...new Set([...SEARCH_RADII.map((r) => Number(r.code)), defaultRadius])]
+    const radiusOptions = [...new Set([...getSearchRadiiValues(distanceUnit), defaultRadius])]
         .sort((a, b) => a - b);
+    const radiusUnitLabel = distanceUnit === 'km' ? 'km' : 'mi';
 
     // Country dropdown choices — restricted to the locator's configured
     // available_countries (a list of codes like ["us", "ph"]). Falls back to the
@@ -652,7 +656,7 @@ export default function Locator({
                     <span>{index + 1}. {location.name}</span>
                 </h2>
                 {typeof location.distance === 'number' && (
-                    <p>{location.distance.toFixed(1)} mi</p>
+                    <p>{formatDistanceDisplay(location.distance, distanceUnit)}</p>
                 )}
             </div>
             <div className="details">
@@ -882,7 +886,7 @@ export default function Locator({
                                             }}
                                         >
                                             {radiusOptions.map((r) => (
-                                                <option key={r} value={r}>{r} mi</option>
+                                                <option key={r} value={r}>{r} {radiusUnitLabel}</option>
                                             ))}
                                         </select>
                                     </div>
@@ -1013,7 +1017,7 @@ export default function Locator({
                             recenterCenter={recenterCenter}
                             zoom={zoom}
                             defaultCenter={defaultCenter}
-                            radiusMiles={features.show_map_radius_indicator ? params.radius : 0}
+                            radiusMiles={features.show_map_radius_indicator ? (distanceUnit === 'km' ? kmToMiles(params.radius) : params.radius) : 0}
                             showPinNumber={features.show_map_pin_number}
                             pinColor={settings.pin.color}
                             pinSize={settings.pin.size}
