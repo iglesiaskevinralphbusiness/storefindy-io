@@ -8,7 +8,9 @@ import Input from '@/components/Forms/Input';
 import Select from '@/components/Forms/Select';
 import Textarea from '@/components/Forms/Textarea';
 import Button from '@/components/Forms/Button';
-import { submitBugReport, getReportBugContext } from '@/actions/report-bug';
+import Modal from '@/components/Modal';
+import BugReportDetailView from '@/components/BugReport/DetailView';
+import { submitBugReport, getReportBugContext, getUserBugReport } from '@/actions/report-bug';
 import { RiArrowRightLine } from "react-icons/ri";
 import {
     TbFileDescription,
@@ -23,6 +25,7 @@ import {
     TbCircleCheck,
     TbHome,
     TbFileAlert,
+    TbEye,
 } from 'react-icons/tb';
 
 const MAX_STEPS = 8;
@@ -104,6 +107,8 @@ export default function ReportBugPage() {
     const [sysInfo, setSysInfo] = useState({ browser: 'Detecting…', os: 'Detecting…', screen: 'Detecting…', ua: '' });
     const [ctx, setCtx] = useState({ userId: '', email: '', planName: '', appVersion: '', previousReports: [] });
     const [dismissed, setDismissed] = useState(false);
+    const [selectedReport, setSelectedReport] = useState(null);
+    const [loadingReport, setLoadingReport] = useState(false);
 
     // Auto-detect system info + load account context / previous reports.
     useEffect(() => {
@@ -176,6 +181,22 @@ export default function ReportBugPage() {
         });
     };
     const removeScreenshot = (i) => setScreenshots((prev) => prev.filter((_, idx) => idx !== i));
+
+    const handleViewReport = async (reportId) => {
+        setLoadingReport(true);
+        try {
+            const result = await getUserBugReport(reportId);
+            if (result.status === 'success') {
+                setSelectedReport(result.item);
+            } else {
+                toast.error(result.message || 'Could not load bug report.');
+            }
+        } catch (err) {
+            toast.error(err?.message || 'Could not load bug report.');
+        } finally {
+            setLoadingReport(false);
+        }
+    };
 
     const renderCrumb = (
         <div className={styles.title}>
@@ -441,6 +462,14 @@ export default function ReportBugPage() {
                                                 </span>
                                             </div>
                                         </div>
+                                        <button
+                                            type="button"
+                                            className={styles.prevViewBtn}
+                                            onClick={() => handleViewReport(r.id)}
+                                            disabled={loadingReport}
+                                        >
+                                            <TbEye /> View
+                                        </button>
                                     </div>
                                 ))
                             )}
@@ -459,6 +488,24 @@ export default function ReportBugPage() {
                             </div>
                         </div>
                     </form>
+
+                    <Modal
+                        isOpen={selectedReport ? true : false}
+                        onClose={() => setSelectedReport(null)}
+                        title={selectedReport ? `Bug ${selectedReport.reference}` : 'Bug report details'}
+                        wide={true}
+                    >
+                        <BugReportDetailView
+                            bug={selectedReport}
+                            footer={(
+                                <Button
+                                    type="button"
+                                    value="Close"
+                                    onClick={() => setSelectedReport(null)}
+                                />
+                            )}
+                        />
+                    </Modal>
                 </div>
             </div>
         </div>

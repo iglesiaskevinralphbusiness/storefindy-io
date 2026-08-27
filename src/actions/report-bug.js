@@ -5,8 +5,10 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { dbConnect } from '@/config/mongo.config';
 import { UserModel, BugReportModel } from '@/mongo';
 import { sanitizeInput } from '@/utils/lib/input-sanitization';
+import { serializeForClient } from '@/utils/helpers';
 import { plans } from '@/utils/constant/pricing';
 import { version as pkgVersion } from '../../package.json';
+import { isValidObjectId } from 'mongoose';
 
 const SEVERITIES = ['low', 'medium', 'high', 'critical'];
 const FREQUENCIES = ['always', 'sometimes', 'rarely'];
@@ -20,6 +22,34 @@ function buildReference(seq) {
     // Year is part of the human-readable reference; sequence keeps it unique per report.
     const year = new Date().getFullYear();
     return `BUG-${year}-${String(seq).padStart(3, '0')}`;
+}
+
+function mapBugReportItem(bug) {
+    const systemInfo = bug.system_info || {};
+    return {
+        _id: String(bug._id),
+        email: bug.email || '',
+        reference: bug.reference || '',
+        subject: bug.subject || '',
+        severity: bug.severity || 'medium',
+        affected_feature: bug.affected_feature || '',
+        frequency: bug.frequency || '',
+        description: bug.description || '',
+        expected_behavior: bug.expected_behavior || '',
+        steps: bug.steps || [],
+        screenshots: bug.screenshots || [],
+        system_info: {
+            browser: systemInfo.browser || '',
+            os: systemInfo.os || '',
+            screen_resolution: systemInfo.screen_resolution || '',
+            user_agent: systemInfo.user_agent || '',
+            plan: systemInfo.plan || '',
+            app_version: systemInfo.app_version || '',
+        },
+        status: bug.status || 'open',
+        created_at: bug.createdAt ? new Date(bug.createdAt).toISOString() : '',
+        updated_at: bug.updatedAt ? new Date(bug.updatedAt).toISOString() : '',
+    };
 }
 
 export async function submitBugReport(_prev, formData) {
@@ -170,5 +200,32 @@ export async function getReportBugContext() {
         planName: plan.name,
         appVersion: APP_VERSION,
         previousReports,
+    };
+}
+
+export async function getUserBugReport(bugId) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    if (!isValidObjectId(bugId)) {
+        return { status: 'error', message: 'Invalid bug report ID.' };
+    }
+
+    await dbConnect();
+
+    const bug = await BugReportModel.findOne({
+        _id: bugId,
+        user_id: session.user.id,
+    }).lean();
+
+    if (!bug) {
+        return { status: 'error', message: 'Bug report not found.' };
+    }
+
+    return {
+        status: 'success',
+        item: serializeForClient(mapBugReportItem(bug)),
     };
 }

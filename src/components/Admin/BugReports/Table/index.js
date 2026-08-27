@@ -19,6 +19,7 @@ import {
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Modal from '@/components/Modal';
 import Button from '@/components/Forms/Button';
+import BugReportDetailView from '@/components/BugReport/DetailView';
 import { toast } from 'react-toastify';
 
 function formatRelativeDate(value, label) {
@@ -34,29 +35,6 @@ function truncateText(text, max = 90) {
 function formatLabel(value) {
     if (!value) return '—';
     return value.charAt(0).toUpperCase() + value.slice(1);
-}
-
-function displayValue(value) {
-    if (value === null || value === undefined || value === '') return '—';
-    return value;
-}
-
-function formatAbsoluteDate(value) {
-    if (!value) return '—';
-    return new Date(value).toLocaleString();
-}
-
-function DetailRow({ label, children }) {
-    return (
-        <div className={styles.detailRow}>
-            <dt>{label}</dt>
-            <dd>{children}</dd>
-        </div>
-    );
-}
-
-function getSystemInfo(bug) {
-    return bug?.system_info || {};
 }
 
 function getSeverityClass(severity) {
@@ -248,117 +226,11 @@ export default function BugReportsTable({ data = [], sort, order }) {
                 title={selectedBug ? `Bug ${selectedBug.reference}` : 'Bug report details'}
                 wide={true}
             >
-                {selectedBug && (
-                    <>
-                        <div className={styles.modalSection}>
-                            <h3 className={styles.sectionTitle}>Overview</h3>
-                            <dl className={styles.detailList}>
-                                <DetailRow label="Reference">{displayValue(selectedBug.reference)}</DetailRow>
-                                <DetailRow label="Status">
-                                    <span
-                                        className={`${styles.statusBadge} ${selectedBug.status === 'open' ? styles.open : styles.fixed}`}
-                                    >
-                                        <span className={styles.badgeDot} />
-                                        {selectedBug.status === 'open' ? 'Open' : 'Fixed'}
-                                    </span>
-                                </DetailRow>
-                                <DetailRow label="User ID">{displayValue(selectedBug.user_id)}</DetailRow>
-                                <DetailRow label="Email">{displayValue(selectedBug.email)}</DetailRow>
-                                <DetailRow label="Reported">{formatRelativeDate(selectedBug.created_at, 'Reported')}</DetailRow>
-                                <DetailRow label="Updated">{formatAbsoluteDate(selectedBug.updated_at)}</DetailRow>
-                            </dl>
-                        </div>
-
-                        <div className={styles.modalSection}>
-                            <h3 className={styles.sectionTitle}>Report details</h3>
-                            <dl className={styles.detailList}>
-                                <DetailRow label="Subject">{displayValue(selectedBug.subject)}</DetailRow>
-                                <DetailRow label="Severity">
-                                    <span className={`${styles.severityBadge} ${getSeverityClass(selectedBug.severity)}`}>
-                                        {formatLabel(selectedBug.severity)}
-                                    </span>
-                                </DetailRow>
-                                <DetailRow label="Affected feature">{displayValue(selectedBug.affected_feature)}</DetailRow>
-                                <DetailRow label="Frequency">{formatLabel(selectedBug.frequency)}</DetailRow>
-                            </dl>
-                        </div>
-
-                        <div className={styles.messageBlock}>
-                            <h3>Description</h3>
-                            <p>{displayValue(selectedBug.description)}</p>
-                        </div>
-
-                        <div className={styles.messageBlock}>
-                            <h3>Expected behavior</h3>
-                            <p>{displayValue(selectedBug.expected_behavior)}</p>
-                        </div>
-
-                        <div className={styles.messageBlock}>
-                            <h3>Steps to reproduce</h3>
-                            {selectedBug.steps?.length > 0 ? (
-                                <ol className={styles.stepsList}>
-                                    {selectedBug.steps.map((step, index) => (
-                                        <li key={`${selectedBug._id}-step-${index}`}>{step}</li>
-                                    ))}
-                                </ol>
-                            ) : (
-                                <p className={styles.emptyField}>—</p>
-                            )}
-                        </div>
-
-                        <div className={styles.messageBlock}>
-                            <h3>Screenshots</h3>
-                            {selectedBug.screenshots?.length > 0 ? (
-                                <div className={styles.screenshotGrid}>
-                                    {selectedBug.screenshots.map((src, index) => (
-                                        <a
-                                            key={`${selectedBug._id}-shot-${index}`}
-                                            href={src}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className={styles.screenshotLink}
-                                        >
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img src={src} alt={`Screenshot ${index + 1}`} />
-                                        </a>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className={styles.emptyField}>—</p>
-                            )}
-                        </div>
-
-                        <div className={styles.messageBlock}>
-                            <h3>System info</h3>
-                            <dl className={styles.systemInfo}>
-                                <div>
-                                    <dt>Browser</dt>
-                                    <dd>{displayValue(getSystemInfo(selectedBug).browser)}</dd>
-                                </div>
-                                <div>
-                                    <dt>OS</dt>
-                                    <dd>{displayValue(getSystemInfo(selectedBug).os)}</dd>
-                                </div>
-                                <div>
-                                    <dt>Screen resolution</dt>
-                                    <dd>{displayValue(getSystemInfo(selectedBug).screen_resolution)}</dd>
-                                </div>
-                                <div>
-                                    <dt>Plan</dt>
-                                    <dd>{displayValue(getSystemInfo(selectedBug).plan)}</dd>
-                                </div>
-                                <div>
-                                    <dt>App version</dt>
-                                    <dd>{displayValue(getSystemInfo(selectedBug).app_version)}</dd>
-                                </div>
-                                <div className={styles.userAgentRow}>
-                                    <dt>User agent</dt>
-                                    <dd className={styles.userAgent}>{displayValue(getSystemInfo(selectedBug).user_agent)}</dd>
-                                </div>
-                            </dl>
-                        </div>
-
-                        <div className={styles.modalActions}>
+                <BugReportDetailView
+                    bug={selectedBug}
+                    showUserId={true}
+                    footer={selectedBug && (
+                        <>
                             {selectedBug.status === 'open' ? (
                                 <Button
                                     value="Mark as Fixed"
@@ -380,9 +252,9 @@ export default function BugReportsTable({ data = [], sort, order }) {
                                 onClick={closeModal}
                                 disabled={updatingStatus}
                             />
-                        </div>
-                    </>
-                )}
+                        </>
+                    )}
+                />
             </Modal>
 
             <Modal
