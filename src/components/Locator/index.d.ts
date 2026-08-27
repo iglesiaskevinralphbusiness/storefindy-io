@@ -22,6 +22,7 @@ export type LocatorProps = {
 	show_store_hours?: boolean;
 	show_directions?: boolean;
 	show_website_link?: boolean;
+	apiOrigin?: string;
 };
 
 declare const Locator: ComponentType<LocatorProps>;

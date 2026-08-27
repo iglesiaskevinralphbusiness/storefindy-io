@@ -16,6 +16,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { COUNTRIES } from '@/utils/constant/countries';
 import { SOCIAL_MEDIA_LINKS } from '@/utils/constant';
 import { getSearchRadiiValues, formatDistanceDisplay, kmToMiles } from '@/utils/distance';
+import { WIDGET_API_ORIGIN } from '@/utils/widget-api-origin';
 import { getLocatorLabels, formatLocationsFound, dayLabelKey } from '@/utils/constant/locator-languages';
 
 import SearchSuggest from './SearchSuggest';
@@ -260,6 +261,7 @@ export default function Locator({
     // Theme / labels
     settings = {},
     features = {},
+    apiOrigin = WIDGET_API_ORIGIN,
 }) {
     const labels = getLocatorLabels(default_language);
 
@@ -402,8 +404,8 @@ export default function Locator({
             // which surfaces as a CORS block when the widget runs on a tenant
             // sub-domain (demo.storefindy.com) or a third-party embed. This mirrors
             // the get-locator call in LocatorWidget.tsx.
-            const res = await fetch(`https://www.storefindy.com/api/locations/search?${sp.toString()}&is_demo=${isDemo}&is_record_query=${isRecordQuery}`);
-            // Local testing: comment the line above and use the localhost API instead.
+            const res = await fetch(`${apiOrigin}/api/locations/search?${sp.toString()}&is_demo=${isDemo}&is_record_query=${isRecordQuery}`);
+            // Local testing when Locator is imported directly (not via widgets.js):
             // const res = await fetch(`http://localhost:3000/api/locations/search?${sp.toString()}&is_demo=${isDemo}&is_record_query=${isRecordQuery}`);
             const data = await res.json();
             const items = data.locations || [];
@@ -753,10 +755,10 @@ export default function Locator({
             // widget runs on tenant sub-domains and third-party embeds, so it must
             // POST straight to the `www` host and never the apex (which redirects
             // and drops CORS headers).
-            await fetch(`https://www.storefindy.com/api/locations/result-clicked?location_id=${id}&is_demo=${isDemo}&is_record_query=${isRecordQuery}`, {
+            await fetch(`${apiOrigin}/api/locations/result-clicked?location_id=${id}&is_demo=${isDemo}&is_record_query=${isRecordQuery}`, {
                 method: 'POST',
             });
-            // Local testing: comment the line above and use the localhost API instead.
+            // Local testing when Locator is imported directly (not via widgets.js):
             // await fetch(`http://localhost:3000/api/locations/result-clicked?location_id=${id}&is_demo=${isDemo}&is_record_query=${isRecordQuery}`, { method: 'POST' });
         } catch (error) {
             console.error('Failed to record location click:');

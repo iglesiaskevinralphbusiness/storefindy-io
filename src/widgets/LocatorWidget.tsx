@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Locator from '@/components/Locator';
 import { generateSettingsDefault, generateFeaturesDefault } from '@/utils/helpers';
+import { getWidgetApiOrigin } from '@/utils/widget-api-origin';
 
 type LocatorWidgetProps = {
 	locator?: string;
@@ -42,9 +43,9 @@ export default function LocatorWidget({ locator }: LocatorWidgetProps) {
 		// Send the visitor's browser timezone offset so the analytics hour bucket
 		// reflects the user's PC time rather than the server's timezone.
 		const tzOffset = new Date().getTimezoneOffset();
+		const apiOrigin = getWidgetApiOrigin();
 
-		fetch(`https://www.storefindy.com/api/get-locator/${locator}?tz_offset=${tzOffset}`)
-		// fetch(`http://localhost:3000/api/get-locator/${locator}?tz_offset=${tzOffset}`)
+		fetch(`${apiOrigin}/api/get-locator/${locator}?tz_offset=${tzOffset}`)
 			.then((response) => response.json())
 			.then((data) => {
 
@@ -119,6 +120,7 @@ export default function LocatorWidget({ locator }: LocatorWidgetProps) {
 			
 			// features settings
 			features={features}
+			apiOrigin={getWidgetApiOrigin()}
 		/>
 	</>;
 }
