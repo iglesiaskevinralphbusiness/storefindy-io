@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { isValidObjectId } from 'mongoose';
 import { dbConnect } from '@/config/mongo.config';
 import { UserModel, LocatorModel, LocationModel } from '@/mongo';
-import { serializeForClient, getCurrentHourCode } from '@/utils/helpers';
+import { serializeForClient, getCurrentHourCode, getUserPlan } from '@/utils/helpers';
 import { plans } from '@/utils/constant/pricing';
 import { userAgent } from "next/server";
 
@@ -105,13 +105,15 @@ export async function GET(request, { params }) {
         .select('_id')
         .lean()
     ).map(({ _id }) => _id.toString());
-  
+
+    // user plan
+    const user_plan = getUserPlan(user._id.toString(), user.plan);
 
     return json({
         status: 'success',
         locator: serializeForClient({
             ...locator,
-            user_plan: user.plan,
+            user_plan: user_plan,
             user_id: 'hidden',
             status: inactiveIds.includes(String(locator._id)) ? 'inactive' : 'active',
         }),
