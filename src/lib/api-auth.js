@@ -5,9 +5,10 @@ import { NextResponse } from 'next/server';
 import { dbConnect } from '@/config/mongo.config';
 import { UserModel, LocatorModel, LocationModel } from '@/mongo';
 import { isObjectIdString } from '@/lib/api-sanitize';
-import { consumeApiRequest, withRateLimitHeaders } from '@/lib/api-rate-limit';
+import { consumeApiRequest, getApiRequestUsage, withRateLimitHeaders } from '@/lib/api-rate-limit';
 import { plans } from '@/utils/constant/pricing';
 import { getUserPlan } from '@/utils/helpers';
+import { isWordPressPluginRequest } from '@/lib/wp-integration-auth';
 
 // Single source of truth for the key format — key generation lives in
 // postGenerateApiAuthKey() (src/actions/profile.js).
@@ -68,7 +69,10 @@ export async function withServerError(handler, auth = null) {
  *
  * @param {Request} request
  * @param {{ rate_limit?: boolean }} options  Set `rate_limit: false` to
- *   authenticate without consuming quota — used by internal routes.
+ *   authenticate without consuming quota — used by internal routes. Official
+ *   WordPress plugin requests are also exempt when they send the private
+ *   integration header (see wp-integration-auth.js); that path is not documented
+ *   on /dashboard/api-access.
  */
 export async function authenticateApiKey(request, { rate_limit = true } = {}) {
     const header = request.headers.get('authorization') || '';
@@ -104,9 +108,15 @@ export async function authenticateApiKey(request, { rate_limit = true } = {}) {
     // Demo/testing overrides live in getUserPlan(), so the stored plan is never
     // read directly — same as billing-query.js.
     const plan = getUserPlan(user_id, user.plan);
+    const from_wordpress = isWordPressPluginRequest(request);
+    const should_rate_limit = rate_limit && !from_wordpress;
 
-    if (!rate_limit) {
-        return { user, user_id, api_key: key, plan, rate: null };
+    if (!should_rate_limit) {
+        const rate =
+            from_wordpress && rate_limit
+                ? await getApiRequestUsage(user_id, plan)
+                : null;
+        return { user, user_id, api_key: key, plan, rate };
     }
 
     const rate = await consumeApiRequest(user_id, plan);

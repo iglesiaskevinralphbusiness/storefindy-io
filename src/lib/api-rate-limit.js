@@ -35,6 +35,41 @@ function getUtcDayWindow(now = new Date()) {
 }
 
 /**
+ * Read the caller's quota for today without charging a request.
+ *
+ * Used when first-party plugin traffic is authenticated but exempt from the
+ * daily cap — response headers still reflect external API usage only.
+ *
+ * @param {string} user_id
+ * @param {string} plan_id
+ * @returns {Promise<{allowed: boolean, limit: number, remaining: number, used: number, reset: Date, retry_after: number}>}
+ */
+export async function getApiRequestUsage(user_id, plan_id) {
+    const limit = getDailyRequestLimit(plan_id);
+    const { date, reset } = getUtcDayWindow();
+    const retry_after = Math.max(1, Math.ceil((reset.getTime() - Date.now()) / 1000));
+
+    try {
+        await dbConnect();
+
+        const usage = await ApiUsageModel.findOne({ user_id, date }).lean();
+        const used = usage?.count ?? 0;
+
+        return {
+            allowed: used <= limit,
+            limit,
+            remaining: Math.max(0, limit - used),
+            used,
+            reset,
+            retry_after,
+        };
+    } catch (error) {
+        console.log('[api-rate-limit] usage lookup unavailable', error);
+        return { allowed: true, limit, remaining: limit, used: 0, reset, retry_after };
+    }
+}
+
+/**
  * Count one request against the caller's daily quota.
  *
  * The increment happens first and the comparison second, in a single atomic
