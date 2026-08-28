@@ -95,6 +95,42 @@ export const MAP_STYLES = [
         labelsUrl: ESRI_DARK_GRAY_LABELS,
     },
     {
+        code: 'CartoDB.DarkMatterNoLabels',
+        label: 'Dark Matter (Dark, No Labels)',
+        ...ESRI_DARK_GRAY,
+    },
+    {
+        code: 'Esri.NatGeoWorldMap',
+        label: 'NatGeo (Illustrated)',
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}',
+        subdomains: '',
+        // Detailed NatGeo tiles are US-only; elsewhere Esri serves a "Map data
+        // not yet available" placeholder from zoom 13 up. Zoom 12 is the last
+        // level with reliable worldwide coverage.
+        maxZoom: 12,
+        maxNativeZoom: 12,
+        attribution: `${ESRI_ATTRIBUTION} &mdash; National Geographic, Esri, DeLorme, NAVTEQ, UNEP-WCMC, USGS, NASA, ESA, METI, NRCAN, GEBCO, NOAA`,
+    },
+    {
+        code: 'Esri.WorldPhysicalMap',
+        label: 'Physical (Soft Terrain)',
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}',
+        subdomains: '',
+        // Native tiles stop around zoom 8; higher levels are upscaled.
+        maxZoom: 13,
+        maxNativeZoom: 8,
+        attribution: `${ESRI_ATTRIBUTION} &mdash; Source: US National Park Service`,
+    },
+    {
+        code: 'Esri.WorldShadedRelief',
+        label: 'Shaded Relief (Minimal)',
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}',
+        subdomains: '',
+        maxZoom: 13,
+        maxNativeZoom: 13,
+        attribution: `${ESRI_ATTRIBUTION} &mdash; Source: Esri, DeLorme, NAVTEQ, USGS`,
+    },
+    {
         code: 'OpenStreetMap.Mapnik',
         label: 'OpenStreetMap',
         url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -109,6 +145,24 @@ export const MAP_STYLES = [
         subdomains: 'abc',
         maxZoom: 19,
         attribution: `${OSM_ATTRIBUTION}, Tiles style by Humanitarian OpenStreetMap Team`,
+    },
+    {
+        code: 'Esri.WorldImagery',
+        label: 'Satellite Imagery',
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        subdomains: '',
+        // Native imagery is uneven above zoom 17 (Esri placeholder tiles).
+        maxZoom: 17,
+        maxNativeZoom: 17,
+        attribution: `${ESRI_ATTRIBUTION} &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community`,
+    },
+    {
+        code: 'Esri.WorldTopoMap',
+        label: 'Topographic (Esri)',
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+        subdomains: '',
+        maxZoom: 17,
+        attribution: `${ESRI_ATTRIBUTION} &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom`,
     },
     {
         code: 'OpenTopoMap',

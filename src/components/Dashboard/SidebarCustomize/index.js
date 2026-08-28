@@ -586,7 +586,7 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                                 isOpen={openSections.mapStyle}
                                 onToggle={() => toggleSection('mapStyle')}
                             >
-                                <p className={styles.sectionDescription}>The base map the locator renders. Every style is free to use and needs no API key.</p>
+                                <p className={styles.sectionDescription}>Choose the base map tiles for your locator. All styles use Leaflet with free, keyless tile providers — no Google Maps or CARTO API key required.</p>
                                 <SelectField
                                     label="Style"
                                     // An unset map_style means "default", so show
