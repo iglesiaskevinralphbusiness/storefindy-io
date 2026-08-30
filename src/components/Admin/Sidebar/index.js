@@ -99,6 +99,26 @@ export default function SidebarAdmin() {
                             </Link>
                         </li>
                     </ul>
+
+                    <h2>PROSPECTS</h2>
+                    <ul className={styles.mainMenu}>
+                        <li className={isRootLinkActive('/admin/contact-email-finder')}>
+                            <Link href="/admin/contact-email-finder">
+                                <div>
+                                    <LuGlobe />
+                                    <span>Contact Email Finder</span>
+                                </div>
+                            </Link>
+                        </li>
+                        <li className={isRootLinkActive('/admin/contact-email-sender')}>
+                            <Link href="/admin/contact-email-sender">
+                                <div>
+                                    <LuGlobe />
+                                    <span>Email Sender</span>
+                                </div>
+                            </Link>
+                        </li>
+                    </ul>
                     
                 </div>
                 <div className={styles.user}>

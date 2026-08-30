@@ -5,6 +5,7 @@ import { BugReportModel } from "./BugReportModel";
 import { SubDomainModel } from "./SubDomainModel";
 import { SupportTicketModel } from "./SupportTicketModel";
 import { ApiUsageModel } from "./ApiUsageModel";
+import { ProspectCustomerModel } from "./ProspectCustomerModel";
 
 export {
   UserModel,
@@ -14,4 +15,5 @@ export {
   SubDomainModel,
   SupportTicketModel,
   ApiUsageModel,
+  ProspectCustomerModel,
 }
