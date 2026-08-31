@@ -9,12 +9,14 @@ import {
     LuCircleCheck,
     LuRotateCcw,
     LuMail,
+    LuSend,
 } from 'react-icons/lu';
 import { mongooseFormatTimeAgo } from '@/utils/helpers';
 import {
     deleteProspectCustomer,
     markProspectCustomerDone,
     markProspectCustomerPending,
+    sendProspectCustomerEmail,
 } from '@/actions/admin/prospectCustomerActions';
 import { useRouter } from 'next/navigation';
 import Modal from '@/components/Modal';
@@ -37,6 +39,7 @@ export default function ProspectsTable({ data = [] }) {
     const [deleteProspect, setDeleteProspect] = useState(null);
     const [deleting, setDeleting] = useState(false);
     const [updatingId, setUpdatingId] = useState(null);
+    const [sendingId, setSendingId] = useState(null);
 
     const pendingItems = data.filter((item) => item.status === 'pending');
     const doneItems = data.filter((item) => item.status === 'done');
@@ -62,7 +65,7 @@ export default function ProspectsTable({ data = [] }) {
     };
 
     const handleStatusChange = async (prospect, nextStatus) => {
-        if (updatingId) return;
+        if (updatingId || sendingId) return;
 
         setUpdatingId(prospect._id);
         try {
@@ -80,6 +83,26 @@ export default function ProspectsTable({ data = [] }) {
             toast.error('Could not update status.');
         } finally {
             setUpdatingId(null);
+        }
+    };
+
+    const handleSendEmail = async (prospect) => {
+        if (sendingId || updatingId) return;
+
+        setSendingId(prospect._id);
+        try {
+            const result = await sendProspectCustomerEmail(prospect._id);
+
+            if (result.status === 'success') {
+                toast.success(result.message);
+                router.refresh();
+            } else {
+                toast.error(result.message || 'Could not send email.');
+            }
+        } catch {
+            toast.error('Could not send email.');
+        } finally {
+            setSendingId(null);
         }
     };
 
@@ -155,12 +178,22 @@ export default function ProspectsTable({ data = [] }) {
                                         </td>
                                         <td>
                                             <div className={styles.actionCell}>
+                                                {prospect.status === 'pending' && prospect.email ? (
+                                                    <button
+                                                        type="button"
+                                                        className={styles.sendBtn}
+                                                        onClick={() => handleSendEmail(prospect)}
+                                                        disabled={sendingId === prospect._id || updatingId === prospect._id}
+                                                    >
+                                                        <LuSend /> {sendingId === prospect._id ? 'Sending…' : 'Send'}
+                                                    </button>
+                                                ) : null}
                                                 {prospect.status === 'pending' ? (
                                                     <button
                                                         type="button"
                                                         className={styles.doneBtn}
                                                         onClick={() => handleStatusChange(prospect, 'done')}
-                                                        disabled={updatingId === prospect._id}
+                                                        disabled={updatingId === prospect._id || sendingId === prospect._id}
                                                     >
                                                         <LuCircleCheck /> Done
                                                     </button>
@@ -169,7 +202,7 @@ export default function ProspectsTable({ data = [] }) {
                                                         type="button"
                                                         className={styles.pendingBtn}
                                                         onClick={() => handleStatusChange(prospect, 'pending')}
-                                                        disabled={updatingId === prospect._id}
+                                                        disabled={updatingId === prospect._id || sendingId === prospect._id}
                                                     >
                                                         <LuRotateCcw /> Pending
                                                     </button>

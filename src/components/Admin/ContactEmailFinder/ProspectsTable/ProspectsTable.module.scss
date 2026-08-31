@@ -95,7 +95,7 @@
 }
 
 .actionCol {
-    width: 180px;
+    width: 240px;
 }
 
 .company {
@@ -177,6 +177,7 @@
 
 .doneBtn,
 .pendingBtn,
+.sendBtn,
 .deleteBtn {
     display: inline-flex;
     align-items: center;
@@ -192,6 +193,10 @@
         opacity: 0.6;
         cursor: not-allowed;
     }
+}
+
+.sendBtn {
+    color: #2563eb;
 }
 
 .doneBtn {

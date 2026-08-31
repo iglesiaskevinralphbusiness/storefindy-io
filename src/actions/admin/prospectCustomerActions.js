@@ -3,11 +3,15 @@
 import { redirect, notFound } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { getServerSession } from 'next-auth';
+import { z } from 'zod';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { dbConnect } from '@/config/mongo.config';
 import { ProspectCustomerModel } from '@/mongo';
+import { sendSupportEmail } from '@/lib/send-support-email';
 import { serializeForClient } from '@/utils/helpers';
 import { isValidObjectId } from 'mongoose';
+
+const emailSchema = z.email('Invalid email address.');
 
 const ADMIN_PATH = '/admin/contact-email-finder';
 
@@ -122,4 +126,47 @@ export async function markProspectCustomerPending(prospectId) {
 
     revalidatePath(ADMIN_PATH);
     return { status: 'success', message: 'Marked as pending.', prospect_status: 'pending' };
+}
+
+export async function sendProspectCustomerEmail(prospectId) {
+    await requireAdmin();
+
+    if (!isValidObjectId(prospectId)) {
+        return { status: 'error', message: 'Invalid prospect ID.' };
+    }
+
+    const prospect = await ProspectCustomerModel.findById(prospectId);
+    if (!prospect) {
+        return { status: 'error', message: 'Prospect not found.' };
+    }
+
+    if (prospect.status !== 'pending') {
+        return { status: 'error', message: 'Only pending prospects can be emailed.' };
+    }
+
+    const rawEmail = String(prospect.email || '').trim().toLowerCase();
+    const parsed = emailSchema.safeParse(rawEmail);
+    if (!parsed.success) {
+        return { status: 'error', message: 'This prospect does not have a valid email.' };
+    }
+
+    try {
+        await sendSupportEmail(parsed.data);
+    } catch (error) {
+        console.error('[sendProspectCustomerEmail]', error);
+        return {
+            status: 'error',
+            message: 'Failed to send email. Check SMTP credentials and try again.',
+        };
+    }
+
+    prospect.status = 'done';
+    await prospect.save();
+
+    revalidatePath(ADMIN_PATH);
+    return {
+        status: 'success',
+        message: `Email sent to ${parsed.data}.`,
+        prospect_status: 'done',
+    };
 }
