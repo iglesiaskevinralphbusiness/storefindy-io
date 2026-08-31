@@ -7,7 +7,6 @@ import {
     LuTrash2,
     LuChevronLeft,
     LuCircleCheck,
-    LuRotateCcw,
     LuMail,
     LuSend,
 } from 'react-icons/lu';
@@ -15,7 +14,6 @@ import { mongooseFormatTimeAgo } from '@/utils/helpers';
 import {
     deleteProspectCustomer,
     markProspectCustomerDone,
-    markProspectCustomerPending,
     sendProspectCustomerEmail,
 } from '@/actions/admin/prospectCustomerActions';
 import { useRouter } from 'next/navigation';
@@ -64,14 +62,12 @@ export default function ProspectsTable({ data = [] }) {
         }
     };
 
-    const handleStatusChange = async (prospect, nextStatus) => {
+    const handleMarkDone = async (prospect) => {
         if (updatingId || sendingId) return;
 
         setUpdatingId(prospect._id);
         try {
-            const result = nextStatus === 'done'
-                ? await markProspectCustomerDone(prospect._id)
-                : await markProspectCustomerPending(prospect._id);
+            const result = await markProspectCustomerDone(prospect._id);
 
             if (result.status === 'success') {
                 toast.success(result.message);
@@ -192,21 +188,12 @@ export default function ProspectsTable({ data = [] }) {
                                                     <button
                                                         type="button"
                                                         className={styles.doneBtn}
-                                                        onClick={() => handleStatusChange(prospect, 'done')}
+                                                        onClick={() => handleMarkDone(prospect)}
                                                         disabled={updatingId === prospect._id || sendingId === prospect._id}
                                                     >
                                                         <LuCircleCheck /> Done
                                                     </button>
-                                                ) : (
-                                                    <button
-                                                        type="button"
-                                                        className={styles.pendingBtn}
-                                                        onClick={() => handleStatusChange(prospect, 'pending')}
-                                                        disabled={updatingId === prospect._id || sendingId === prospect._id}
-                                                    >
-                                                        <LuRotateCcw /> Pending
-                                                    </button>
-                                                )}
+                                                ) : null}
                                                 <button
                                                     type="button"
                                                     className={styles.deleteBtn}
