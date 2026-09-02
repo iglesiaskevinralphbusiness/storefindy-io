@@ -80,7 +80,7 @@ const wordpressPluginJsonLd = {
     url: 'https://wordpress.org/plugins/storefindy-store-locator/',
 };
 
-const homeTitle = 'Storefindy – Store Locator Widget for Your Website';
+const homeTitle = 'Cheapest Store Locator Widget for Your Website — Free Forever Plan | Storefindy';
 const homeDescription =
     'Create a store locator for your website in minutes. Fast, map-based, mobile-friendly. Free plan available — no credit card required.';
 
