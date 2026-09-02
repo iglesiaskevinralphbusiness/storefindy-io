@@ -191,6 +191,21 @@ export const resultsStyles = `
     margin-bottom: 20px;
     padding-left: 18px;
 }
+/* The location's own photo, when one is uploaded. Unscoped so the results list
+   and the map popup card share one definition. The stored image is any size, so
+   it's cropped to the 355x140 banner ratio the dashboard recommends. */
+.locationPhoto {
+    width: 100%;
+    aspect-ratio: 355 / 140;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.locationPhoto img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
 .results ul.results-list > li .details .address,
 .results ul.results-list > li .details .phone,
 .results ul.results-list > li .details .website,

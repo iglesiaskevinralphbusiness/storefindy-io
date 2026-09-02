@@ -35,6 +35,7 @@ const locationSchema = new mongoose.Schema({
     locator_id: { type: String, required: true, index: true },
     filters: { type: Array, required: false, default: [] },
     description: { type: String, required: false, default: '' },
+    photo: { type: String, required: false, default: '' },
     // Address Details
     street: { type: String, required: false, default: '' },
     city: { type: String, required: true, default: '' },

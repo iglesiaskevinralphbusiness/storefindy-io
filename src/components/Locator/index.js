@@ -12,6 +12,7 @@ import { FiLink } from "react-icons/fi";
 import { LuFilter, LuPhone, LuClock, LuListFilter, LuMap, LuList, LuMapPin, LuMapPinned, LuArrowRight, LuArrowLeft, LuChevronLeft, LuChevronRight, LuCircleChevronLeft, LuCircleChevronRight, LuX } from "react-icons/lu";
 import { formStyles, resultsStyles, mapStyles, userDefinedStyles, formStyle2Styles, loadingStyles } from './styles';
 import Link from 'next/link';
+import Image from 'next/image';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { COUNTRIES } from '@/utils/constant/countries';
 import { SOCIAL_MEDIA_LINKS } from '@/utils/constant';
@@ -662,6 +663,9 @@ export default function Locator({
                 )}
             </div>
             <div className="details">
+                {location.photo && <div className="locationPhoto">
+                    <Image src={location.photo} alt={location.name} width={355} height={140} />
+                </div>}
                 <p className="address"><LuMapPin /> {buildAddress(location)}</p>
                 {location.phone && (
                     <Link href={`tel:${location.phone}`} className="phone">

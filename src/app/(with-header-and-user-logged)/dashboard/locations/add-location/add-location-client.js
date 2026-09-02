@@ -24,6 +24,7 @@ const MapPicker = dynamic(() => import('@/components/Dashboard/MapPicker'), {
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const ALLOWED_IMAGE_TYPES = ['image/png', 'image/svg+xml', 'image/gif', 'image/jpeg'];
 const MAX_IMAGE_SIZE = 500 * 1024; // 500KB
+const MAX_PHOTO_SIZE = 1024 * 1024; // 1MB
 
 const DEFAULT_HOURS = {
     Mon: { enabled: true, open: '08:00', close: '17:00' },
@@ -136,7 +137,9 @@ export default function AddLocationPage({ locators, data }) {
     const [showOpeningHours, setShowOpeningHours] = useState(data?.show_opening_hours || false);
     const [customNotes, setCustomNotes] = useState(data?.custom_notes || '');
     const [icon, setIcon] = useState(data?.icon || '');
+    const [photo, setPhoto] = useState(data?.photo || '');
     const fileInputRef = useRef(null);
+    const photoInputRef = useRef(null);
 
     // Locator options for the dropdown
     const [selectedLocator, setSelectedLocator] = useState(null);
@@ -342,7 +345,8 @@ export default function AddLocationPage({ locators, data }) {
 
     // Same upload method as Customize Locator → Custom pin / Custom Image:
     // validate type + size, then persist the file as a base64 data URL.
-    const handleIconUpload = (e) => {
+    // Shared by the pin Icon (500KB) and the Location Photo (1MB).
+    const handleImageUpload = (setValue, maxSize, maxSizeLabel) => (e) => {
         const file = e.target.files?.[0];
         if (file) {
             if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
@@ -350,14 +354,14 @@ export default function AddLocationPage({ locators, data }) {
                 e.target.value = '';
                 return;
             }
-            if (file.size > MAX_IMAGE_SIZE) {
-                toast.error('Image is too large. Maximum allowed size is 500KB.');
+            if (file.size > maxSize) {
+                toast.error(`Image is too large. Maximum allowed size is ${maxSizeLabel}.`);
                 e.target.value = '';
                 return;
             }
             const reader = new FileReader();
             reader.onload = () => {
-                setIcon(reader.result);
+                setValue(reader.result);
             };
             reader.readAsDataURL(file);
         }
@@ -798,10 +802,46 @@ export default function AddLocationPage({ locators, data }) {
                             id="location-icon"
                             type="file"
                             accept="image/png,image/svg+xml,image/gif,image/jpeg"
-                            onChange={handleIconUpload}
+                            onChange={handleImageUpload(setIcon, MAX_IMAGE_SIZE, '500KB')}
                             hidden
                         />
                         <input type="hidden" name="icon" value={icon} />
+                    </div>
+                    <div className={styles.iconUpload}>
+                        <label htmlFor="location-photo">Location Photo</label>
+                        <p className={styles.labelIconImage}>Recommended: Upload a PNG, JPEG, or SVG · recommended size 355x140px and Maximum size of 1MB</p>
+                        <p className={styles.labelIconImage}>When this is empty, no photo will be shown on the store card.</p>
+                        {photo ? (
+                            <div className={`${styles.imagePreview} ${styles.photoPreview}`}>
+                                <img src={photo} alt="Location photo preview" />
+                                <button
+                                    type="button"
+                                    className={styles.removeImage}
+                                    onClick={() => setPhoto('')}
+                                    aria-label="Remove image"
+                                >
+                                    <LuX />
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                type="button"
+                                className={styles.uploadButton}
+                                onClick={() => photoInputRef.current?.click()}
+                            >
+                                <LuUpload />
+                                Upload Image
+                            </button>
+                        )}
+                        <input
+                            ref={photoInputRef}
+                            id="location-photo"
+                            type="file"
+                            accept="image/png,image/svg+xml,image/gif,image/jpeg"
+                            onChange={handleImageUpload(setPhoto, MAX_PHOTO_SIZE, '1MB')}
+                            hidden
+                        />
+                        <input type="hidden" name="photo" value={photo} />
                     </div>
                 </div>
             </div>
