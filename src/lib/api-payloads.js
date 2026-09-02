@@ -213,11 +213,17 @@ const optionalFormat = (format, message) =>
  *              depth/key-count/array/string limits are enforced.
  *
  * @param {Request} request
- * @param {{ maxBytes?: number }} options `maxBytes` raises the size gate for a
- *   route that legitimately carries more than one record — see the CSV import.
- *   The structural limits in sanitizeMongoInput() still apply either way.
+ * @param {{ maxBytes?: number, longStringPaths?: string[] }} options `maxBytes`
+ *   raises the size gate for a route that legitimately carries more than one
+ *   record — see the CSV import. `longStringPaths` exempts named fields from
+ *   the per-string cap for a route whose validator caps them itself — see the
+ *   customize endpoint's base64 pin image. The structural limits in
+ *   sanitizeMongoInput() still apply either way.
  */
-export async function readJsonBody(request, { maxBytes = LIMITS.bodyBytes } = {}) {
+export async function readJsonBody(
+    request,
+    { maxBytes = LIMITS.bodyBytes, longStringPaths = [] } = {}
+) {
     const { text, error: sizeError } = await readBoundedText(request, maxBytes);
     if (sizeError) return { errors: { body: sizeError } };
 
@@ -231,7 +237,7 @@ export async function readJsonBody(request, { maxBytes = LIMITS.bodyBytes } = {}
         return { errors: { body: 'Request body must be a JSON object' } };
     }
 
-    const { value, error } = sanitizeMongoInput(parsed);
+    const { value, error } = sanitizeMongoInput(parsed, { longStringPaths });
     if (error) return { errors: { body: error } };
 
     return { body: value };
@@ -514,12 +520,13 @@ const CUSTOMIZE_FEATURE_FIELDS = [
 //
 // Note that over THIS endpoint `mapbox_custom_json` is additionally capped at
 // LIMITS.stringLength (5,000 chars) by sanitizeMongoInput, well below
-// MAPBOX_CUSTOM_JSON_MAX — the same pre-existing per-string cap that already
-// limits `settings.pin.image` here. The dashboard's own save action does not go
-// through that sanitiser, so a full-size style document pasted in the customize
-// sidebar saves fine; only a large document pushed over the REST API is
-// rejected. Raising the cap is a decision about every endpoint, not just this
-// field, so it is left alone.
+// MAPBOX_CUSTOM_JSON_MAX. The dashboard's own save action does not go through
+// that sanitiser, so a full-size style document pasted in the customize sidebar
+// saves fine; only a large document pushed over the REST API is rejected.
+// Raising the cap is a decision about every endpoint, not just this field, so
+// it is left alone. (`settings.pin.image` used to be caught by the same cap,
+// which broke every custom pin upload over the API — it is now exempted via
+// CUSTOMIZE_LONG_STRING_PATHS and bounded by validatePinImage() instead.)
 const CUSTOMIZE_MAP_LIBRARY_FIELDS = [
     'map_library',
     'mapbox_style_source',
@@ -553,6 +560,14 @@ const SETTINGS_GROUPS = {
     pin: ['type', 'color', 'size', 'text_color', 'text_size', 'image'],
     mobileView: ['background', 'text_color', 'active_border_color', 'active_background'],
 };
+
+/**
+ * Fields on this endpoint that readJsonBody() must not measure against
+ * LIMITS.stringLength. A 500KB pin image is ~683,000 base64 characters, so the
+ * generic 5,000-char cap would reject every custom pin before this validator
+ * ran. validatePinImage() applies the real limit.
+ */
+export const CUSTOMIZE_LONG_STRING_PATHS = ['settings.pin.image'];
 
 /** Strip pin.image before the generic sanitizer runs — base64 exceeds stringLength. */
 function sanitizeCustomizeBody(body) {

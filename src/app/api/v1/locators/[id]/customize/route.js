@@ -10,7 +10,11 @@ import {
     withServerError,
 } from '@/lib/api-auth';
 import { queryLocatorById } from '@/lib/locators-query';
-import { readJsonBody, validateCustomizePayload } from '@/lib/api-payloads';
+import {
+    CUSTOMIZE_LONG_STRING_PATHS,
+    readJsonBody,
+    validateCustomizePayload,
+} from '@/lib/api-payloads';
 import { toPublicLocatorCustomize } from '@/lib/api-serializers';
 
 // REST equivalent of getLocatorById() + functionSaveCustomizeLocator() —
@@ -42,7 +46,12 @@ export async function PUT(request, { params }) {
     const owned = await requireOwnedLocator(auth.user_id, id);
     if (owned.error) return owned.error;
 
-    const { body, errors: bodyErrors } = await readJsonBody(request, { maxBytes: 1024 * 1024 });
+    // 1MB body: a custom pin is a base64 data URL, ~683KB at the 500KB image
+    // cap that validatePinImage() enforces.
+    const { body, errors: bodyErrors } = await readJsonBody(request, {
+        maxBytes: 1024 * 1024,
+        longStringPaths: CUSTOMIZE_LONG_STRING_PATHS,
+    });
     if (bodyErrors) return jsonValidationError(bodyErrors);
 
     const { form, errors } = validateCustomizePayload(body, { plan: auth.plan });

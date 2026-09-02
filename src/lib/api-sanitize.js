@@ -72,14 +72,14 @@ function isUnsafeKey(key) {
 
 class SanitizeError extends Error {}
 
-function walk(value, depth, path) {
+function walk(value, depth, path, field, exempt) {
     if (depth > LIMITS.depth) {
         throw new SanitizeError(`${path} is nested more than ${LIMITS.depth} levels deep`);
     }
     if (value === null || value === undefined) return value;
 
     if (typeof value === 'string') {
-        if (value.length > LIMITS.stringLength) {
+        if (value.length > LIMITS.stringLength && !exempt.has(field)) {
             throw new SanitizeError(`${path} exceeds ${LIMITS.stringLength} characters`);
         }
         return value;
@@ -95,7 +95,7 @@ function walk(value, depth, path) {
         if (value.length > LIMITS.arrayLength) {
             throw new SanitizeError(`${path} exceeds ${LIMITS.arrayLength} items`);
         }
-        return value.map((item, i) => walk(item, depth + 1, `${path}[${i}]`));
+        return value.map((item, i) => walk(item, depth + 1, `${path}[${i}]`, `${field}[]`, exempt));
     }
 
     if (typeof value === 'object') {
@@ -108,7 +108,13 @@ function walk(value, depth, path) {
         const out = {};
         for (const key of keys) {
             if (isUnsafeKey(key)) continue;
-            out[key] = walk(value[key], depth + 1, `${path}.${key}`);
+            out[key] = walk(
+                value[key],
+                depth + 1,
+                `${path}.${key}`,
+                field === '' ? key : `${field}.${key}`,
+                exempt
+            );
         }
         return out;
     }
@@ -119,10 +125,22 @@ function walk(value, depth, path) {
 /**
  * Recursively strip unsafe keys and enforce the structural limits.
  * Returns `{ value }`, or `{ error }` with a message naming the offending path.
+ *
+ * `longStringPaths` names fields that are exempt from the `stringLength` cap
+ * alone — every other limit still applies, and the byte cap in
+ * readBoundedText() still bounds the request as a whole. Paths are written
+ * relative to the body root (`settings.pin.image`), with `[]` for an array
+ * level (`rows[].address`). Only exempt a field whose own validator applies a
+ * real cap of its own: a base64 pin image is legitimately far longer than
+ * 5,000 characters, so the generic cap would reject a payload the route means
+ * to accept.
+ *
+ * @param {*} value
+ * @param {{ path?: string, longStringPaths?: string[] }} options
  */
-export function sanitizeMongoInput(value, path = 'body') {
+export function sanitizeMongoInput(value, { path = 'body', longStringPaths = [] } = {}) {
     try {
-        return { value: walk(value, 0, path) };
+        return { value: walk(value, 0, path, '', new Set(longStringPaths)) };
     } catch (error) {
         if (error instanceof SanitizeError) return { error: error.message };
         throw error;
