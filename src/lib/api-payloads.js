@@ -27,6 +27,7 @@ const MAX_LENGTHS = {
     website: 2000,
     view_location_url: 2000,
     custom_notes: 5000,
+    photo: 2000,
     default_language: 20,
     default_country: 80,
 };
@@ -163,6 +164,10 @@ const LOCATION_STRINGS = [
     'name', 'locator_id', 'description', 'street', 'city', 'state', 'postal',
     'country', 'location_status', 'phone', 'email', 'website', 'view_location_url',
     'custom_notes',
+    // An image URL (the WordPress plugin sends a Media Library attachment URL).
+    // Capped like `website` — a base64 data URL would blow past both this and
+    // LIMITS.stringLength, so photos set through the API must be hosted.
+    'photo',
 ];
 
 function issuesToErrors(issues) {

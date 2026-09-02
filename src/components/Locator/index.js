@@ -12,7 +12,6 @@ import { FiLink } from "react-icons/fi";
 import { LuFilter, LuPhone, LuClock, LuListFilter, LuMap, LuList, LuMapPin, LuMapPinned, LuArrowRight, LuArrowLeft, LuChevronLeft, LuChevronRight, LuCircleChevronLeft, LuCircleChevronRight, LuX } from "react-icons/lu";
 import { formStyles, resultsStyles, mapStyles, userDefinedStyles, formStyle2Styles, loadingStyles } from './styles';
 import Link from 'next/link';
-import Image from 'next/image';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { COUNTRIES } from '@/utils/constant/countries';
 import { SOCIAL_MEDIA_LINKS } from '@/utils/constant';
@@ -663,9 +662,17 @@ export default function Locator({
                 )}
             </div>
             <div className="details">
-                {location.photo && <div className="locationPhoto">
-                    <Image src={location.photo} alt={location.name} width={355} height={140} />
-                </div>}
+                {location.photo && (
+                    <div className="locationPhoto">
+                        {/* Plain <img>, not next/image: this card is also bundled into the
+                            embedded widget, where there is no Next runtime, and `photo` can
+                            be a merchant-hosted URL (the WordPress plugin sends a Media
+                            Library URL) that /_next/image would refuse without a
+                            remotePatterns entry per domain. */}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={location.photo} alt={location.name} width={355} height={140} />
+                    </div>
+                )}
                 <p className="address"><LuMapPin /> {buildAddress(location)}</p>
                 {location.phone && (
                     <Link href={`tel:${location.phone}`} className="phone">
