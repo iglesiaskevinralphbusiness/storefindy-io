@@ -33,6 +33,10 @@ export default function LocatorWidget({ locator }: LocatorWidgetProps) {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(false);
 	const [data, setData] = useState<LocatorData | null>(null);
+	// Returned alongside the locator, and only when it is configured for Mapbox
+	// on an entitled plan (see /api/get-locator). Empty for every other locator,
+	// which is what keeps the default Leaflet map keyless.
+	const [mapboxToken, setMapboxToken] = useState('');
 	const [available_countries, setAvailableCountries] = useState<string[]>([]);
 	const [settings, setSettings] = useState<LocatorData['settings']>({});
 	const [features, setFeatures] = useState<LocatorData['features']>({});
@@ -64,6 +68,7 @@ export default function LocatorWidget({ locator }: LocatorWidgetProps) {
 				setData(locator);
 				setSettings(generateSettingsDefault(settings));
 				setFeatures(generateFeaturesDefault(locator));
+				setMapboxToken(data.mapbox_token ?? '');
 				setAvailableCountries(data.countries);
 				setLoading(false);
 			})
@@ -120,6 +125,7 @@ export default function LocatorWidget({ locator }: LocatorWidgetProps) {
 			
 			// features settings
 			features={features}
+			mapbox_token={mapboxToken}
 			apiOrigin={getWidgetApiOrigin()}
 		/>
 	</>;

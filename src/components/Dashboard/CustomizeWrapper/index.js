@@ -11,7 +11,11 @@ import { FaDesktop, FaMobileScreenButton } from "react-icons/fa6";
 import { generateSettingsDefault, generateFeaturesDefault } from '@/utils/helpers';
 import LimitReached from '@/components/LimitReached';
 
-export default function CustomizeWrapper({ data, available_countries, onPreview=false, demo=false }) {
+// `mapbox_token` is resolved server-side by the page (see utils/mapbox-token.js)
+// and is empty unless the owner's plan may use Mapbox. It is gated on the plan
+// alone rather than on the saved `map_library`, because the sidebar can flip to
+// Mapbox and back without saving and the preview below has to follow.
+export default function CustomizeWrapper({ data, available_countries, onPreview=false, demo=false, mapbox_token='' }) {
     const { settings } = data;
 
     const [viewMode, setViewMode] = useState('desktop');
@@ -79,6 +83,7 @@ export default function CustomizeWrapper({ data, available_countries, onPreview=
                     isInactive={data.status}
                     inactiveForm={<Inactive />}
                     user_plan={data.user_plan}
+                    mapbox_token={mapbox_token}
 
                     // locator data
                     locator_id={data._id}

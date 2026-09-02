@@ -4,6 +4,7 @@ import { dbConnect } from '@/config/mongo.config';
 import { UserModel, LocatorModel, LocationModel } from '@/mongo';
 import { serializeForClient, getCurrentHourCode, getUserPlan } from '@/utils/helpers';
 import { plans } from '@/utils/constant/pricing';
+import { getMapboxTokenForLocator } from '@/utils/mapbox-token';
 import { userAgent } from "next/server";
 
 // This endpoint returns a locator's public configuration so the embeddable
@@ -118,5 +119,11 @@ export async function GET(request, { params }) {
             status: inactiveIds.includes(String(locator._id)) ? 'inactive' : 'active',
         }),
         countries: serializeForClient(countries),
+        // mapbox-gl needs the access token in the browser, but it is not a
+        // NEXT_PUBLIC_* variable: baking it into public/widgets.js would hand
+        // the same token to every embed on every plan. It is returned here
+        // instead, and only for a locator actually configured for Mapbox on a
+        // plan entitled to it — every other locator gets an empty string.
+        mapbox_token: getMapboxTokenForLocator(locator, user_plan),
     });
 }

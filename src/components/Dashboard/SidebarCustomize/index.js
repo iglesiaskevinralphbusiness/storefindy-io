@@ -24,6 +24,15 @@ import {
 import { MdFilterList } from "react-icons/md";
 import styles from './SidebarCustomize.module.scss';
 import { MAP_STYLE_OPTIONS, DEFAULT_MAP_STYLE } from '@/utils/constant/map-styles';
+import {
+    MAPBOX_STYLE_OPTIONS,
+    MAPBOX_SOURCE_TEMPLATE,
+    MAPBOX_SOURCE_CUSTOM,
+    MAP_LIBRARY_DEFAULT,
+    MAP_LIBRARY_MAPBOX,
+    canUseMapbox,
+    parseMapboxCustomJson,
+} from '@/utils/constant/mapbox-styles';
 import Button from '@/components/Forms/Button';
 import Checkbox from '@/components/Forms/Checkbox';
 import Modal from '@/components/Modal';
@@ -126,6 +135,21 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
     const updateFeatures = (key, value) => {
         setFeatures(prev => ({ ...prev, [key]: value }));
     };
+
+    // --- Map library -------------------------------------------------------
+    // Mapbox is Business-only. `features` has already been read back through
+    // resolveMapLibrarySelection() by generateFeaturesDefault(), so a locator
+    // whose owner has dropped to Free/Pro arrives here as the default library
+    // on Voyager (Default) — the Mapbox radio is simply unavailable rather than
+    // showing a selection the plan can't have. This guard keeps that true for
+    // any state the sidebar itself produces.
+    const mapboxAllowed = canUseMapbox(user_plan);
+    const isMapboxSelected = mapboxAllowed && features.map_library === MAP_LIBRARY_MAPBOX;
+    const isMapboxCustom = features.mapbox_style_source === MAPBOX_SOURCE_CUSTOM;
+    const mapboxStyle = features.mapbox_style || MAPBOX_STYLE_OPTIONS[0].code;
+    const mapboxJsonError = isMapboxSelected && isMapboxCustom
+        ? (parseMapboxCustomJson(features.mapbox_custom_json).error ?? '')
+        : '';
 
     const handleImageUpload = (e) => {
         const file = e.target.files?.[0];
@@ -586,15 +610,117 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                                 isOpen={openSections.mapStyle}
                                 onToggle={() => toggleSection('mapStyle')}
                             >
-                                <p className={styles.sectionDescription}>Choose the base map tiles for your locator. All styles use Leaflet with free, keyless tile providers — no Google Maps or CARTO API key required.</p>
-                                <SelectField
-                                    label="Style"
-                                    // An unset map_style means "default", so show
-                                    // the default style as the current selection.
-                                    value={features.map_style || DEFAULT_MAP_STYLE}
-                                    onChange={(v) => updateFeatures('map_style', v)}
-                                    options={MAP_STYLE_OPTIONS}
-                                />
+                                <p className={styles.sectionDescription}>Choose the map library and base map for your locator.</p>
+
+                                <div className={styles.mapLibraryContainer}>
+                                    {/* Map library — exactly one of the two. The
+                                        radios always stay clickable so the owner
+                                        can switch; it is each branch's own
+                                        settings that are disabled while that
+                                        branch is not the selected one. */}
+                                    <div className={styles.fieldMap}>
+                                        <input
+                                            id="map-library-default"
+                                            type="radio"
+                                            name="map-library"
+                                            checked={!isMapboxSelected}
+                                            onChange={() => updateFeatures('map_library', MAP_LIBRARY_DEFAULT)}
+                                        />
+                                        <label htmlFor="map-library-default">Default Map Library</label>
+                                    </div>
+                                    <div className={styles.fieldContainer}>
+                                        <p className={styles.fieldNote}>Leaflet with free, keyless tile providers — no Google Maps, CARTO or Mapbox API key required.</p>
+                                        <SelectField
+                                            label="Style"
+                                            // An unset map_style means "default", so show
+                                            // the default style as the current selection.
+                                            value={features.map_style || DEFAULT_MAP_STYLE}
+                                            onChange={(v) => updateFeatures('map_style', v)}
+                                            options={MAP_STYLE_OPTIONS}
+                                            disabled={isMapboxSelected}
+                                        />
+                                    </div>
+
+                                    <div className={styles.fieldMap}>
+                                        <input
+                                            id="map-library-mapbox"
+                                            type="radio"
+                                            name="map-library"
+                                            checked={isMapboxSelected}
+                                            onChange={() => updateFeatures('map_library', MAP_LIBRARY_MAPBOX)}
+                                            disabled={!mapboxAllowed}
+                                        />
+                                        <label htmlFor="map-library-mapbox" className={!mapboxAllowed ? styles.labelDisabled : ''}>
+                                            Mapbox {!mapboxAllowed ? <span>(Only available on Business plan)</span> : ''}
+                                        </label>
+                                    </div>
+                                    <div className={styles.fieldContainer}>
+                                        {/* Mapbox style source — again exactly one
+                                            of the two, with the unselected one's
+                                            field disabled. */}
+                                        <div className={styles.fieldMap}>
+                                            <input
+                                                id="mapbox-source-template"
+                                                type="radio"
+                                                name="mapbox-style-source"
+                                                checked={!isMapboxCustom}
+                                                onChange={() => updateFeatures('mapbox_style_source', MAPBOX_SOURCE_TEMPLATE)}
+                                                disabled={!isMapboxSelected}
+                                            />
+                                            <label htmlFor="mapbox-source-template" className={!isMapboxSelected ? styles.labelDisabled : ''}>Mapbox Templates</label>
+                                        </div>
+                                        <div className={styles.fieldContainer}>
+                                            <SelectField
+                                                label="Template"
+                                                value={mapboxStyle}
+                                                onChange={(v) => updateFeatures('mapbox_style', v)}
+                                                options={MAPBOX_STYLE_OPTIONS}
+                                                disabled={!isMapboxSelected || isMapboxCustom}
+                                            />
+                                        </div>
+
+                                        <div className={styles.fieldMap}>
+                                            <input
+                                                id="mapbox-source-custom"
+                                                type="radio"
+                                                name="mapbox-style-source"
+                                                checked={isMapboxCustom}
+                                                onChange={() => updateFeatures('mapbox_style_source', MAPBOX_SOURCE_CUSTOM)}
+                                                disabled={!isMapboxSelected}
+                                            />
+                                            <label htmlFor="mapbox-source-custom" className={!isMapboxSelected ? styles.labelDisabled : ''}>Customize JSON</label>
+                                        </div>
+                                        <div className={styles.fieldContainer}>
+                                            <TextAreaField
+                                                label="Custom JSON"
+                                                value={features.mapbox_custom_json ?? ''}
+                                                onChange={(v) => updateFeatures('mapbox_custom_json', v)}
+                                                placeholder="Paste your Mapbox Custom JSON here"
+                                                disabled={!isMapboxSelected || !isMapboxCustom}
+                                                rows={8}
+                                                // Surfaced as soon as it is typed:
+                                                // mapbox-gl would only render a
+                                                // blank map for a bad document.
+                                                error={mapboxJsonError}
+                                                note="A Mapbox Style Specification v8 document. The map falls back to the Standard template until this is valid."
+                                            />
+                                        </div>
+
+                                        {/* Applies to either style source, so it
+                                            sits outside the template / JSON pair
+                                            rather than under one of them. */}
+                                        <div className={styles.field}>
+                                            <Checkbox
+                                                label="3D map"
+                                                name="mapbox_3d"
+                                                description="Tilt the map so buildings show their height, and let visitors rotate and tilt it themselves. Off keeps the flat, top-down view."
+                                                checked={isMapboxSelected && features.mapbox_3d === true}
+                                                onChange={(v) => updateFeatures('mapbox_3d', v)}
+                                                disabled={!isMapboxSelected}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
                             </Section>
 
                             <Section
@@ -796,6 +922,28 @@ function TextField({ label, value, onChange, placeholder }) {
         <div className={styles.field}>
             <label>{label}</label>
             <input type="text" value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
+        </div>
+    );
+}
+
+// Multi-line counterpart to <TextField />, for values too long for one line —
+// currently the pasted Mapbox style document. `error` is shown in place of
+// `note` so a bad paste explains itself where the field is.
+function TextAreaField({ label, value, onChange, placeholder, disabled = false, rows = 6, note = '', error = '' }) {
+    return (
+        <div className={`${styles.field} ${disabled ? styles.disabled : ''}`}>
+            <label>{label}</label>
+            <textarea
+                value={value}
+                rows={rows}
+                placeholder={placeholder}
+                disabled={disabled}
+                spellCheck={false}
+                onChange={(e) => onChange(e.target.value)}
+            />
+            {error
+                ? <p className={styles.fieldError}>{error}</p>
+                : (note ? <p className={styles.fieldNote}>{note}</p> : null)}
         </div>
     );
 }

@@ -6,6 +6,14 @@
 // `{ status: 'error', errors: { field: message } }`.
 import { z } from 'zod';
 import { isObjectIdString, readBoundedText, sanitizeMongoInput, LIMITS } from '@/lib/api-sanitize';
+import {
+    MAPBOX_STYLES,
+    MAPBOX_SOURCE_TEMPLATE,
+    MAPBOX_SOURCE_CUSTOM,
+    MAPBOX_CUSTOM_JSON_MAX,
+    MAP_LIBRARY_MAPBOX,
+    parseMapboxCustomJson,
+} from '@/utils/constant/mapbox-styles';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -500,6 +508,25 @@ const CUSTOMIZE_FEATURE_FIELDS = [
     'powered_by_storefindy',
 ];
 
+// Validated separately from CUSTOMIZE_FEATURE_FIELDS because these are
+// optional: the endpoint predates Mapbox, so an existing client that omits them
+// must keep working rather than fail a "required" check.
+//
+// Note that over THIS endpoint `mapbox_custom_json` is additionally capped at
+// LIMITS.stringLength (5,000 chars) by sanitizeMongoInput, well below
+// MAPBOX_CUSTOM_JSON_MAX — the same pre-existing per-string cap that already
+// limits `settings.pin.image` here. The dashboard's own save action does not go
+// through that sanitiser, so a full-size style document pasted in the customize
+// sidebar saves fine; only a large document pushed over the REST API is
+// rejected. Raising the cap is a decision about every endpoint, not just this
+// field, so it is left alone.
+const CUSTOMIZE_MAP_LIBRARY_FIELDS = [
+    'map_library',
+    'mapbox_style_source',
+    'mapbox_style',
+    'mapbox_custom_json',
+];
+
 const CUSTOMIZE_HEIGHTS = new Set(['small', 'medium', 'large']);
 const CUSTOMIZE_BORDERS = new Set(['none', 'rounded', 'pill', 'square']);
 const CUSTOMIZE_PIN_TYPES = new Set(['standard', 'custom']);
@@ -726,9 +753,59 @@ export function validateCustomizePayload(body, { plan = 'free' } = {}) {
         }
     }
 
+    // Map library — optional, unlike the fields above, so a client written
+    // against the endpoint before Mapbox existed keeps working: leaving these
+    // out means "the default (Leaflet) library".
+    for (const field of CUSTOMIZE_MAP_LIBRARY_FIELDS) {
+        if (featureSource[field] === undefined) {
+            features[field] = '';
+            continue;
+        }
+        const max = field === 'mapbox_custom_json' ? MAPBOX_CUSTOM_JSON_MAX : 200;
+        const { str, error: fieldError } = customizeString(featureSource[field], field, max);
+        if (fieldError) {
+            errors[field] = fieldError;
+            continue;
+        }
+        features[field] = str;
+    }
+
+    // The one non-string map-library field. Optional for the same reason as the
+    // rest, and false — the flat map — when a client leaves it out.
+    features.mapbox_3d = featureSource.mapbox_3d === undefined
+        ? false
+        : Boolean(featureSource.mapbox_3d);
+
+    if (features.map_library && features.map_library !== MAP_LIBRARY_MAPBOX) {
+        errors.map_library = `Map library must be empty (default) or "${MAP_LIBRARY_MAPBOX}"`;
+    }
+    if (features.mapbox_style_source
+        && ![MAPBOX_SOURCE_TEMPLATE, MAPBOX_SOURCE_CUSTOM].includes(features.mapbox_style_source)) {
+        errors.mapbox_style_source = `Mapbox style source must be "${MAPBOX_SOURCE_TEMPLATE}" or "${MAPBOX_SOURCE_CUSTOM}"`;
+    }
+    if (features.mapbox_style
+        && !MAPBOX_STYLES.some((style) => style.code === features.mapbox_style)) {
+        errors.mapbox_style = 'Mapbox style is not one of the supported templates';
+    }
+    // Only checked when it is the style that would actually be rendered — a
+    // half-finished paste parked behind the template option isn't an error.
+    if (features.map_library === MAP_LIBRARY_MAPBOX
+        && features.mapbox_style_source === MAPBOX_SOURCE_CUSTOM) {
+        const { error: jsonError } = parseMapboxCustomJson(features.mapbox_custom_json);
+        if (jsonError) errors.mapbox_custom_json = jsonError;
+    }
+
     if (Object.keys(errors).length > 0) return { errors };
 
     // Plan gates — same rules as SidebarCustomize.
+    if (plan !== 'business' && features.map_library === MAP_LIBRARY_MAPBOX) {
+        errors.map_library = 'Mapbox is only available on the Business plan';
+    }
+    // Leaflet has no 3D mode, so the flag is meaningless off Mapbox. Cleared
+    // rather than rejected: it is a rendering hint, not a bad request.
+    if (features.map_library !== MAP_LIBRARY_MAPBOX) {
+        features.mapbox_3d = false;
+    }
     if (plan === 'free' && settings.pin.type === 'custom') {
         errors['settings.pin.type'] = 'Custom pin is only available on Pro or Business plans';
     }

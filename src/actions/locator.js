@@ -6,6 +6,7 @@ import { dbConnect } from '@/config/mongo.config';
 import { UserModel, LocatorModel, LocationModel, SubDomainModel } from '@/mongo';
 import { getLocationsInactiveIds } from '@/actions/locations';
 import { serializeForClient, getUserPlan } from '@/utils/helpers';
+import { resolveMapLibrarySelection } from '@/utils/constant/mapbox-styles';
 import { isValidObjectId } from 'mongoose';
 import { plans } from '@/utils/constant/pricing';
 import { queryLocators, queryLocatorById, getInactiveLocatorIds } from '@/lib/locators-query';
@@ -204,9 +205,29 @@ export async function functionSaveCustomizeLocator(locator_id, settings, feature
         return { status: "error", message: 'You are not authorized to update this locator' };
     }
 
+    // Mapbox is Business-only. The sidebar already hides it from other plans,
+    // but that is a client-side gate on a payload this action accepts whole —
+    // so the selection is re-resolved here against the owner's real plan before
+    // anything is written. A non-Business account can only ever persist the
+    // default library on the default style.
+    const user = await UserModel.findOne({ _id: session.user.id }).lean();
+    const user_plan = user ? getUserPlan(String(user._id), user.plan) : 'free';
+    const mapLibrary = resolveMapLibrarySelection(features, user_plan);
+
     // update locator
     const { focused_zoom, dynamic_search, ...restFeatures } = features;
-    await LocatorModel.findByIdAndUpdate(locator_id, { settings, focused_zoom, dynamic_search, ...restFeatures }, { new: true });
+    await LocatorModel.findByIdAndUpdate(locator_id, {
+        settings,
+        focused_zoom,
+        dynamic_search,
+        ...restFeatures,
+        map_style: mapLibrary.map_style,
+        map_library: mapLibrary.map_library,
+        mapbox_style_source: mapLibrary.mapbox_style_source,
+        mapbox_style: mapLibrary.mapbox_style,
+        mapbox_custom_json: mapLibrary.mapbox_custom_json,
+        mapbox_3d: mapLibrary.mapbox_3d,
+    }, { new: true });
 
     // return the updated locator
     return { status: "success", message: 'Locator settings and features updated successfully' };

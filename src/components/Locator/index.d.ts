@@ -15,6 +15,8 @@ export type LocatorProps = {
 	filters?: unknown[];
 	settings?: Record<string, unknown>;
 	features?: Record<string, unknown>;
+	/** Mapbox access token, injected server-side only for a locator whose plan may use Mapbox. */
+	mapbox_token?: string;
 	show_search_bar?: boolean;
 	show_filters?: boolean;
 	show_radius?: boolean;

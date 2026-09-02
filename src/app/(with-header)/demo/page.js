@@ -1,6 +1,7 @@
 import { getLocatorByIdDemoPage, getAvailableCountriesBasedOnLocationsDemoPage } from '@/actions/demo';
 import CustomizeWrapper from '@/components/Dashboard/CustomizeWrapper';
 import { notFound } from 'next/navigation';
+import { getMapboxTokenForCustomize } from '@/utils/mapbox-token';
 
 export const metadata = {
     title: 'Store Locator Demo | Store Findy',
@@ -23,5 +24,8 @@ export default async function DemoPage() {
         available_countries={available_countries}
         onPreview={preview === '1'}
         demo={true}
+        // getLocatorByIdDemoPage() reports the demo locator as `business`, so
+        // the demo can exercise the Mapbox options like a paying account.
+        mapbox_token={getMapboxTokenForCustomize(locator.user_plan)}
     />;
 }

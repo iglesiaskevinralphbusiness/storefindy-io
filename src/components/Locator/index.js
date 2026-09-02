@@ -18,12 +18,17 @@ import { SOCIAL_MEDIA_LINKS } from '@/utils/constant';
 import { getSearchRadiiValues, formatDistanceDisplay, kmToMiles } from '@/utils/distance';
 import { WIDGET_API_ORIGIN } from '@/utils/widget-api-origin';
 import { getLocatorLabels, formatLocationsFound, dayLabelKey } from '@/utils/constant/locator-languages';
+import { resolveMapLibrarySelection } from '@/utils/constant/mapbox-styles';
 
 import SearchSuggest from './SearchSuggest';
 
 // Leaflet touches `window`, so the map is loaded lazily and only rendered after
 // mount. React.lazy works in both the Next.js bundle and the esbuild widget bundle.
 const LocatorMap = lazy(() => import('./LocatorMap'));
+// The Mapbox renderer is only reached by locators that opt into it
+// (`map_library: 'mapbox'`, Business plan), so it — and mapbox-gl behind it —
+// stay out of the default map's path entirely.
+const LocatorMapbox = lazy(() => import('./LocatorMapbox'));
 
 // Maps JS Date.getDay() (0 = Sunday) to the schema's hours keys.
 const DAY_KEYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -261,6 +266,10 @@ export default function Locator({
     // Theme / labels
     settings = {},
     features = {},
+    // Mapbox access token, injected server-side and only for a locator whose
+    // plan may use Mapbox (see utils/mapbox-token.js). Empty for every other
+    // locator, which is what keeps the default Leaflet map keyless.
+    mapbox_token = '',
     apiOrigin = WIDGET_API_ORIGIN,
 }) {
     const labels = getLocatorLabels(default_language);
@@ -268,6 +277,17 @@ export default function Locator({
     if(isInactive === 'inactive') {
         return inactiveForm;
     }
+
+    // Which map library this locator actually renders with. Mapbox is
+    // Business-only, so a Free/Pro locator still carrying a Mapbox selection
+    // (a lapsed subscription, a plan change) resolves back to the default
+    // library on Voyager (Default) here as well as in the customize sidebar —
+    // this is the last gate before the map is drawn, so the embedded widget
+    // cannot render Mapbox for a plan that isn't entitled to it. A missing
+    // token means the same fallback.
+    const mapLibrary = resolveMapLibrarySelection(features, user_plan);
+    const isMapboxMap = mapLibrary.isMapbox && !!mapbox_token;
+    const MapRenderer = isMapboxMap ? LocatorMapbox : LocatorMap;
 
 
     // Configured defaults — the source of truth for the map's first load and for
@@ -1024,7 +1044,13 @@ export default function Locator({
                 </div>
                 <div className={'locator-map' + (showListMap === 'map' ? ' mobile-tab-content-active' : ' mobile-tab-content-inactive')}>
                     <Suspense fallback={<div className="map-loading">Loading map…</div>}>
-                        <LocatorMap
+                        {/* The two renderers take the same props — pins, popups,
+                            radius, dynamic search all behave identically — so
+                            the only thing the map library changes is the base
+                            map itself. `mapStyle` is the Leaflet tile preset;
+                            `mapboxSelection` carries the template / custom-JSON
+                            choice. */}
+                        <MapRenderer
                             locations={locations}
                             center={center}
                             recenterCenter={recenterCenter}
@@ -1038,13 +1064,17 @@ export default function Locator({
                             pinTextSize={settings.pin.text_size}
                             pinType={settings.pin.type}
                             pinImage={settings.pin.image}
-                            mapStyle={features.map_style}
+                            mapStyle={mapLibrary.map_style}
                             activeId={activeId}
                             focusedZoom={features.focused_zoom}
                             dynamicSearch={features.dynamic_search}
                             onMove={handleMapMove}
                             onSelect={setActiveId}
                             renderPopup={(loc, index) => renderLocationCard(loc, index, { showStoreHoursToggle: false })}
+                            {...(isMapboxMap && {
+                                mapboxToken: mapbox_token,
+                                mapboxSelection: mapLibrary,
+                            })}
                         />
                     </Suspense>
                     {features.powered_by_storefindy !== true && (

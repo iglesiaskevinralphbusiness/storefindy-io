@@ -93,6 +93,18 @@ const locatorSchema = new mongoose.Schema({
     focused_zoom: { type: Boolean, required: false, default: true },
     dynamic_search: { type: Boolean, required: false, default: true },
     map_style: { type: String, required: false, default: '' },
+    map_library: { type: String, required: false, default: '' }, // when empty, it will use the default map library, if mapbox, it will use mapbox
+    // Only read when map_library === 'mapbox'. 'template' picks one of Mapbox's
+    // published styles (`mapbox_style`); 'custom' renders the pasted Mapbox
+    // Style Specification document in `mapbox_custom_json`. See
+    // utils/constant/mapbox-styles.js.
+    mapbox_style_source: { type: String, required: false, default: '' },
+    mapbox_style: { type: String, required: false, default: '' },
+    mapbox_custom_json: { type: String, required: false, default: '' },
+    // Tilts the camera and lets the visitor rotate/pitch it, so extruded
+    // buildings read as 3D. Off by default: a locator stays the flat, top-down
+    // map it has always been unless the owner opts in.
+    mapbox_3d: { type: Boolean, required: false, default: false },
 
     // CUSTOM UI
     settings: {

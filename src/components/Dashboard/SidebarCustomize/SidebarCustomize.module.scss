@@ -160,6 +160,7 @@
     }
 
     select,
+    textarea,
     input[type='text'] {
         width: 100%;
         padding: 9px 10px;
@@ -173,10 +174,37 @@
             border-color: #185FA5;
         }
     }
+
+    textarea {
+        // The pasted Mapbox style document: monospace so bracket nesting is
+        // readable, and resizable vertically only so it can't break the
+        // sidebar's width.
+        box-sizing: border-box;
+        resize: vertical;
+        min-height: 120px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
     &.disabled {
         opacity: 0.6;
         cursor: not-allowed;
     }
+}
+
+// Used both inside a .field (below its input) and on its own inside a
+// .fieldContainer, so these live at the top level rather than nested.
+.fieldNote {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #9e9e9e;
+}
+
+.fieldError {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #b91c1c;
 }
 
 .colorPicker {
@@ -342,5 +370,58 @@
         color: #9e9e9e;
         font-size: 12px;
         margin-bottom: 8px;
+    }
+}
+
+// Map Style section: the default-library / Mapbox choice and, nested one level
+// deeper, Mapbox's own template / custom-JSON choice. Reuses the radio + rule
+// layout the Map Pin section established so the two read the same, and nests
+// cleanly because .fieldContainer draws its own left rule.
+.mapLibraryContainer {
+    .fieldMap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 16px;
+
+        input[type='radio'] {
+            flex-shrink: 0;
+            margin: 0;
+        }
+
+        label {
+            margin: 0;
+            font-size: 13px;
+            color: #5F5E5A;
+
+            span {
+                color: #9e9e9e;
+                font-size: 12px;
+            }
+        }
+    }
+
+    .fieldContainer {
+        padding-top: 14px;
+        margin-left: 20px;
+        margin-bottom: 14px;
+        border-left: 3px solid #f1eded;
+
+        // A note that stands on its own (rather than under a field's input)
+        // needs the horizontal padding .field would have given it.
+        > .fieldNote {
+            margin-top: 0;
+            padding: 0 16px 10px;
+        }
+
+        // The inner (Mapbox template / custom JSON) block sits flush against
+        // its parent's rule instead of adding a second gutter of its own.
+        .fieldContainer {
+            margin-bottom: 0;
+        }
+    }
+
+    .labelDisabled {
+        color: #9e9e9e;
     }
 }

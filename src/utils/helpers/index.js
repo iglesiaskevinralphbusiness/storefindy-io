@@ -1,3 +1,5 @@
+import { resolveMapLibrarySelection } from '@/utils/constant/mapbox-styles';
+
 export function serializeForClient(data) {
     return JSON.parse(JSON.stringify(data));
 }
@@ -97,6 +99,14 @@ export function generateSettingsDefault(settings) {
 }
 
 export function generateFeaturesDefault(data) {
+    // Mapbox is Business-only. Reading the selection back through the resolver
+    // means a locator whose owner has since dropped to Free/Pro loads as the
+    // default library on Voyager (Default) — in the customize sidebar, in the
+    // preview, and in the embedded widget alike. Because this runs before the
+    // sidebar's "unsaved changes" baseline is taken, the downgrade shows up as
+    // the current state rather than as a phantom edit.
+    const mapLibrary = resolveMapLibrarySelection(data, data.user_plan);
+
     return {
         //
         show_map_radius_indicator: data.show_map_radius_indicator,
@@ -105,7 +115,13 @@ export function generateFeaturesDefault(data) {
         focused_zoom: data.focused_zoom,
         dynamic_search: data.dynamic_search,
         // Empty string means "use the map's default style" (see resolveMapStyle).
-        map_style: data.map_style ?? '',
+        map_style: mapLibrary.map_style,
+        // Empty string means "use the default (Leaflet) map library".
+        map_library: mapLibrary.map_library,
+        mapbox_style_source: mapLibrary.mapbox_style_source,
+        mapbox_style: mapLibrary.mapbox_style,
+        mapbox_custom_json: mapLibrary.mapbox_custom_json,
+        mapbox_3d: mapLibrary.mapbox_3d,
 
         //
         show_search_bar: data.show_search_bar,

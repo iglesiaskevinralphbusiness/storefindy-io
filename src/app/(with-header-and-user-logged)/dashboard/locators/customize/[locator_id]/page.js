@@ -1,6 +1,7 @@
 import { getLocatorById, getAvailableCountriesBasedOnLocations } from '@/actions/locator';
 import { notFound } from 'next/navigation';
 import CustomizeWrapper from '@/components/Dashboard/CustomizeWrapper';
+import { getMapboxTokenForCustomize } from '@/utils/mapbox-token';
 
 export const metadata = {
     title: 'Customize Locator | Store Findy',
@@ -21,5 +22,8 @@ export default async function LocatorsCustomizePage({ params, searchParams }) {
         data={locator}
         available_countries={available_countries}
         onPreview={preview === '1'}
+        // Empty unless this locator's plan may use Mapbox — the live preview
+        // needs the token before `map_library` has ever been saved.
+        mapbox_token={getMapboxTokenForCustomize(locator.user_plan)}
     />;
 }

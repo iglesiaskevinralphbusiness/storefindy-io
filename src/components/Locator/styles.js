@@ -398,9 +398,30 @@ export const mapStyles = `
 }
 
 /* Map pin popup — mirrors the result <li> layout so the bubble shows the same
-   UI and information as the list item. */
+   UI and information as the list item. The two renderers wrap it in their own
+   bubble (.leaflet-popup-content / .mapboxgl-popup-content), so both get the
+   same inner padding and the card itself is styled once below. */
 .leaflet-popup-content {
     margin: 14px 16px;
+}
+.mapboxgl-popup-content {
+    padding: 14px 16px;
+    border-radius: 12px;
+    box-shadow: 0 3px 14px rgba(0, 0, 0, 0.4);
+}
+.mapboxgl-popup-close-button {
+    width: 24px;
+    height: 24px;
+    font-size: 18px;
+    line-height: 1;
+    color: #5b5b5b;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+.mapboxgl-popup-close-button:hover {
+    background: transparent;
+    color: #000;
 }
 .locator-popup-card {
     font-size: 13px;
@@ -637,7 +658,8 @@ export const formStyle2Styles = `
         height: auto;
         max-height: 255px;
     }
-    .form-style-3 .leaflet-left {
+    .form-style-3 .leaflet-left,
+    .form-style-3 .mapboxgl-ctrl-top-left {
         left: unset;
         right: 10px;
     }

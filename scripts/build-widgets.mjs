@@ -51,6 +51,19 @@ const leafletCssResult = await build({
 });
 const leafletCss = leafletCssResult.outputFiles[0].text;
 
+// Same treatment for mapbox-gl's stylesheet (used by locators on
+// `map_library: 'mapbox'`). Only the ~25KB CSS is bundled here — the ~800KB
+// library itself is fetched from Mapbox's CDN on demand, see
+// __MAPBOX_FROM_CDN__ below.
+const mapboxCssResult = await build({
+	entryPoints: [resolve(root, 'node_modules/mapbox-gl/dist/mapbox-gl.css')],
+	bundle: true,
+	minify: !dev,
+	loader: { '.png': 'dataurl', '.svg': 'dataurl' },
+	write: false,
+});
+const mapboxCss = mapboxCssResult.outputFiles[0].text;
+
 /** @type {import('esbuild').BuildOptions} */
 const config = {
 	entryPoints: [resolve(root, 'src/widgets/index.tsx')],
@@ -75,8 +88,29 @@ const config = {
 		'process.env.NODE_ENV': JSON.stringify(dev ? 'development' : 'production'),
 		// Leaflet's CSS, inlined so index.tsx can inject it into the shadow root.
 		'process.env.__LEAFLET_CSS__': JSON.stringify(leafletCss),
+		// mapbox-gl's CSS, injected into the shadow root the same way.
+		'process.env.__MAPBOX_CSS__': JSON.stringify(mapboxCss),
 		...publicDefines,
 	},
+	plugins: [
+		{
+			// Keep mapbox-gl itself out of the bundle. esbuild emits a single
+			// IIFE and cannot code-split, so a bundled `import('mapbox-gl')`
+			// inlines all ~800KB into widgets.js for every embed whether or not
+			// the locator uses Mapbox (measured: 557KB -> 2.4MB). The shim
+			// fetches the library from Mapbox's CDN on demand instead.
+			//
+			// The filter matches only the BARE specifier, so the
+			// `mapbox-gl/dist/mapbox-gl.css` import above still resolves to the
+			// real package and the stylesheet stays bundled.
+			name: 'mapbox-gl-from-cdn',
+			setup(pluginBuild) {
+				pluginBuild.onResolve({ filter: /^mapbox-gl$/ }, () => ({
+					path: resolve(root, 'src/widgets/mapbox-gl-cdn.js'),
+				}));
+			},
+		},
+	],
 	logLevel: 'info',
 };
 
