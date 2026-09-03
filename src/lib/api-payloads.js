@@ -36,6 +36,7 @@ const MAX_LENGTHS = {
     view_location_url: 2000,
     custom_notes: 5000,
     photo: 2000,
+    icon: 2000,
     default_language: 20,
     default_country: 80,
 };
@@ -47,6 +48,66 @@ const MAX_FILTER_LENGTH = 120;
 const MAX_HOLIDAYS = 100;
 const MAX_SOCIAL_LINKS = 30;
 const MAX_TIME_LENGTH = 20;
+
+/* --------------------------------------------------------------------- *
+ * Inline images
+ *
+ * Every image on a location or a locator is stored as a base64 data URL in the
+ * document itself — there is no file store, so the string *is* the image. The
+ * dashboard produces one with FileReader; the WordPress plugin does the same.
+ * ------------------------------------------------------------------ */
+
+/** The formats every image field accepts. */
+const IMAGE_DATA_PREFIXES = [
+    'data:image/png;base64,',
+    'data:image/svg+xml;base64,',
+    'data:image/gif;base64,',
+    'data:image/jpeg;base64,',
+];
+
+/**
+ * Character cap for a base64 payload of `bytes`. Base64 spends 4 characters on
+ * every 3 bytes; the slack covers the `data:` prefix and the padding.
+ */
+const base64Chars = (bytes) => Math.ceil((bytes * 4) / 3) + 200;
+
+/** Byte limits, matching the client-side checks so both reject the same files. */
+const IMAGE_MAX_BYTES = {
+    icon: 500 * 1024,
+    photo: 1024 * 1024,
+    pin: 500 * 1024,
+};
+
+const IMAGE_MAX_LABELS = { icon: '500KB', photo: '1MB', pin: '500KB' };
+
+/**
+ * A base64 image for `field`, or a hosted URL.
+ *
+ * The URL form is legacy: the plugin used to store a Media Library URL in
+ * `photo`, so those values are still accepted — re-saving one of those
+ * locations must not fail on a field the merchant never touched.
+ */
+function validateImageString(value, field, label = field) {
+    if (value === '' || value === undefined || value === null) return { str: '' };
+    if (typeof value !== 'string') return { error: `${label} must be a string` };
+
+    const str = value.trim();
+    if (str === '') return { str: '' };
+
+    if (str.startsWith('data:')) {
+        if (!IMAGE_DATA_PREFIXES.some((prefix) => str.startsWith(prefix))) {
+            return { error: `${label} must be a PNG, SVG, GIF, or JPEG data URL` };
+        }
+        if (str.length > base64Chars(IMAGE_MAX_BYTES[field])) {
+            return { error: `${label} exceeds the ${IMAGE_MAX_LABELS[field]} limit` };
+        }
+        return { str };
+    }
+
+    const max = MAX_LENGTHS[field] ?? DEFAULT_MAX_LENGTH;
+    if (str.length > max) return { error: `${label} cannot exceed ${max} characters` };
+    return { str };
+}
 
 /** Trim a value to a string and report whether it busts the field's cap. */
 function boundedString(value, field) {
@@ -172,11 +233,28 @@ const LOCATION_STRINGS = [
     'name', 'locator_id', 'description', 'street', 'city', 'state', 'postal',
     'country', 'location_status', 'phone', 'email', 'website', 'view_location_url',
     'custom_notes',
-    // An image URL (the WordPress plugin sends a Media Library attachment URL).
-    // Capped like `website` — a base64 data URL would blow past both this and
-    // LIMITS.stringLength, so photos set through the API must be hosted.
-    'photo',
 ];
+
+// Validated by validateImageString() rather than the plain cap above, because a
+// base64 image runs to hundreds of thousands of characters:
+//   icon  — the per-location map pin. Empty means "use the locator's pin",
+//           see iconForLocation() in src/components/Locator/pin-icons.js.
+//   photo — the banner on the store card.
+const LOCATION_IMAGE_FIELDS = ['icon', 'photo'];
+
+/**
+ * Both image fields, for readJsonBody()'s `longStringPaths`. Without this the
+ * generic 5,000-character cap rejects every inline image before
+ * validateLocationPayload() can apply the real per-field byte limit.
+ */
+export const LOCATION_LONG_STRING_PATHS = [...LOCATION_IMAGE_FIELDS];
+
+/**
+ * Body cap for the two location writes. An icon at its 500KB limit is ~683KB of
+ * base64 and a photo at its 1MB limit is ~1.4MB, so a location carrying both
+ * needs room the 256KB default cannot give.
+ */
+export const LOCATION_BODY_MAX_BYTES = 3 * 1024 * 1024;
 
 function issuesToErrors(issues) {
     const errors = {};
@@ -351,6 +429,13 @@ export function validateLocationPayload(body, { partial = false } = {}) {
     }
     for (const field of LOCATION_BOOLEANS) {
         if (body[field] !== undefined) form[field] = Boolean(body[field]);
+    }
+    for (const field of LOCATION_IMAGE_FIELDS) {
+        if (body[field] === undefined) continue;
+
+        const { str, error } = validateImageString(body[field], field);
+        if (error) errors[field] = error;
+        else form[field] = str;
     }
 
     // `locator_id` is checked for shape here so a malformed value fails as a
@@ -540,14 +625,6 @@ const CUSTOMIZE_PIN_TYPES = new Set(['standard', 'custom']);
 const CUSTOMIZE_PIN_SIZES = new Set(['small', 'medium', 'large']);
 const CUSTOMIZE_FORM_STYLES = new Set(['style-1', 'style-2', 'style-3']);
 
-const PIN_IMAGE_MAX_B64 = Math.ceil((500 * 1024 * 4) / 3) + 200;
-const PIN_IMAGE_PREFIXES = [
-    'data:image/png;base64,',
-    'data:image/svg+xml;base64,',
-    'data:image/gif;base64,',
-    'data:image/jpeg;base64,',
-];
-
 const SETTINGS_TOP = ['height', 'background', 'text_color', 'font_family', 'font_size', 'border', 'border_color'];
 const SETTINGS_GROUPS = {
     searchInput: ['border', 'background', 'text_color', 'border_color', 'placeholder'],
@@ -604,16 +681,18 @@ function customizeString(value, field, max = 200) {
     return { str };
 }
 
+/**
+ * The locator's custom pin. Unlike a location's `icon`/`photo` this has only
+ * ever been a data URL, so a bare URL is rejected rather than accepted as the
+ * legacy form.
+ */
 function validatePinImage(value) {
-    if (value === '' || value === undefined || value === null) return { str: '' };
-    if (typeof value !== 'string') return { error: 'Pin image must be a string' };
-    if (value.length > PIN_IMAGE_MAX_B64) {
-        return { error: 'Pin image exceeds the 500KB limit' };
-    }
-    if (!PIN_IMAGE_PREFIXES.some((prefix) => value.startsWith(prefix))) {
+    const { str, error } = validateImageString(value, 'pin', 'Pin image');
+    if (error) return { error };
+    if (str !== '' && !str.startsWith('data:')) {
         return { error: 'Pin image must be a PNG, SVG, GIF, or JPEG data URL' };
     }
-    return { str: value };
+    return { str };
 }
 
 function validateSettings(settings, errors) {

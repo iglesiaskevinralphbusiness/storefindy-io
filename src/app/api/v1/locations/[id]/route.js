@@ -10,7 +10,12 @@ import {
     withServerError,
 } from '@/lib/api-auth';
 import { withRateLimitHeaders } from '@/lib/api-rate-limit';
-import { readJsonBody, validateLocationPayload } from '@/lib/api-payloads';
+import {
+    LOCATION_BODY_MAX_BYTES,
+    LOCATION_LONG_STRING_PATHS,
+    readJsonBody,
+    validateLocationPayload,
+} from '@/lib/api-payloads';
 import { serializeForClient } from '@/utils/helpers';
 
 // REST equivalent of getLocationById() — src/actions/locations.js
@@ -51,7 +56,12 @@ export async function PUT(request, { params }) {
     const owned = await requireOwnedLocation(auth.user_id, id);
     if (owned.error) return owned.error;
 
-    const { body, errors: bodyErrors } = await readJsonBody(request);
+    // Raised body cap + the image exemption: `icon` and `photo` are stored as
+    // base64 data URLs, so they are far longer than the generic caps allow.
+    const { body, errors: bodyErrors } = await readJsonBody(request, {
+        maxBytes: LOCATION_BODY_MAX_BYTES,
+        longStringPaths: LOCATION_LONG_STRING_PATHS,
+    });
     if (bodyErrors) return jsonValidationError(bodyErrors);
 
     const { form, errors } = validateLocationPayload(body, { partial: true });
