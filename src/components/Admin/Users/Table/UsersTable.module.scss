@@ -208,6 +208,29 @@
     white-space: nowrap;
 }
 
+// Same pill, but the locator has a recorded embed URL, so the name opens it.
+.locatorLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+    color: #185FA5;
+    transition: background 0.15s ease, color 0.15s ease;
+
+    svg {
+        width: 10px;
+        height: 10px;
+        flex-shrink: 0;
+    }
+
+    &:hover,
+    &:focus-visible {
+        background: #e7eff8;
+        color: #10406f;
+        text-decoration: underline;
+    }
+}
+
 .statusBadge {
     display: inline-flex;
     align-items: center;

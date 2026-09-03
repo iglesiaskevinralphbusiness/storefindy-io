@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import styles from './UsersTable.module.scss';
-import { LuArrowUpDown, LuUsers, LuRefreshCw } from 'react-icons/lu';
+import { LuArrowUpDown, LuUsers, LuRefreshCw, LuExternalLink } from 'react-icons/lu';
 import { mongooseFormatTimeAgo } from '@/utils/helpers';
 import { plans } from '@/utils/constant/pricing';
 import { syncAdminUserPlan } from '@/actions/admin';
@@ -140,7 +140,23 @@ export default function UsersTable({ data = [], sort, order }) {
                                         <td>
                                             {locator?.name ? (
                                                 <div className={styles.locatorCell}>
-                                                    <span className={styles.locatorPill}>{locator.name}</span>
+                                                    {locator.embeded_website_url ? (
+                                                        // The page the widget was last seen embedded on, recorded
+                                                        // by the widget itself. Merchant-supplied, so it opens in
+                                                        // a new tab with the referrer withheld.
+                                                        <a
+                                                            className={`${styles.locatorPill} ${styles.locatorLink}`}
+                                                            href={locator.embeded_website_url}
+                                                            target="_blank"
+                                                            rel="noreferrer noopener"
+                                                            title={locator.embeded_website_url}
+                                                        >
+                                                            {locator.name}
+                                                            <LuExternalLink />
+                                                        </a>
+                                                    ) : (
+                                                        <span className={styles.locatorPill}>{locator.name}</span>
+                                                    )}
                                                     <span
                                                         className={`${styles.statusBadge} ${locator.status === 'active' ? styles.active : styles.inactive}`}
                                                         title={locator.status === 'inactive' ? "Beyond the user's plan locator limit." : undefined}
