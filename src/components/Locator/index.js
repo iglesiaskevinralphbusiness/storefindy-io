@@ -247,6 +247,26 @@ async function reverseGeocode(lat, lng) {
     }
 }
 
+// The full URL of the page this widget is embedded on. The widget mounts inline
+// (a custom element with a shadow root), so `window.location` is already the
+// host page. The iframe branch is only a safety net for a merchant who wraps the
+// embed themselves: the parent's URL when it is same-origin, else the referrer.
+function getEmbeddedWebsiteUrl() {
+    if (typeof window === 'undefined') return '';
+    try {
+        if (window.top !== window.self) {
+            try {
+                return window.top.location.href;
+            } catch {
+                return document.referrer || window.location.href;
+            }
+        }
+        return window.location.href;
+    } catch {
+        return '';
+    }
+}
+
 export default function Locator({
     isDemo = false,
     // active/Inactive
@@ -449,6 +469,24 @@ export default function Locator({
             setMessage('Something went wrong while searching. Please try again.');
         }
     };
+
+    // Record the page this locator is embedded on. Only for real embeds — the
+    // dashboard preview (isDemo) renders the same component and must not
+    // overwrite the merchant's live embed URL with a storefindy.com page.
+    useEffect(() => {
+        if (isDemo || !locator_id) return;
+        const url = getEmbeddedWebsiteUrl();
+        if (!url) return;
+        // Same canonical-host reasoning as runSearch: post straight to the `www`
+        // host so the CORS headers survive.
+        fetch(`${apiOrigin}/api/locators/embed-url`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ locator_id, url }),
+        }).catch(() => {
+            // Analytics only — a failure here must never break the widget.
+        });
+    }, [locator_id, isDemo, apiOrigin]);
 
     // Optionally center the search on the visitor's location when the widget
     // loads. When the country dropdown offers a real choice (2+ options), also

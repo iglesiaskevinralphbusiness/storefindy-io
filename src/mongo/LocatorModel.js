@@ -60,6 +60,7 @@ const locatorSchema = new mongoose.Schema({
     // ANALYTICS
     views: { type: [viewsSchema], default: [] },
     views_count: { type: Number, default: 0 },
+    embeded_website_url: { type: String, required: false, default: '' },
 
     // SETTINGS
     // basic information
