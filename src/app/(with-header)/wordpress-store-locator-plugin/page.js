@@ -289,9 +289,9 @@ const related = [
     {
         icon: TbShoppingBag,
         title: 'Shopify Store Locator App',
-        badge: 'Coming soon',
-        desc: 'Add an interactive store locator to your Shopify store. Find a retailer, dealer, or stockist near your customers.',
-        href: null,
+        badge: 'On the App Store',
+        desc: 'Add an interactive store locator to your Shopify store with a theme app block — no code. Find a retailer, dealer, or stockist near your customers.',
+        href: '/shopify-store-locator-app',
     },
     {
         icon: TbBrandHtml5,

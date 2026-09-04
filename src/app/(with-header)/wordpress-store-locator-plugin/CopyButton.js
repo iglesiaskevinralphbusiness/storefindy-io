@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import styles from './SinglePage.module.scss';
+import styles from './WordpressSinglePage.module.scss';
 
 export default function CopyButton({ text }) {
     const [copied, setCopied] = useState(false);

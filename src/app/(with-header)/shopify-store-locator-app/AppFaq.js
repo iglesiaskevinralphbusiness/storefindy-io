@@ -1,9 +1,9 @@
 'use client';
 import { useState } from 'react';
 import { TbPlus } from 'react-icons/tb';
-import styles from './WordpressSinglePage.module.scss';
+import styles from './ShopifySinglePage.module.scss';
 
-export default function PluginFaq({ items }) {
+export default function AppFaq({ items }) {
     const [openFaq, setOpenFaq] = useState(null);
 
     return (
