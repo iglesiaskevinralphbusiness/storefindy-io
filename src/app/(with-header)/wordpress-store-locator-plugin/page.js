@@ -21,7 +21,7 @@ import {
     TbWorld,
     TbUserPlus,
 } from 'react-icons/tb';
-import styles from './SinglePage.module.scss';
+import styles from './WordpressSinglePage.module.scss';
 import PluginFaq from './PluginFaq';
 import CopyButton from './CopyButton';
 import { SITE_URL } from '@/utils/constant/jsonld';
