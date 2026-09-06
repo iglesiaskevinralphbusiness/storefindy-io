@@ -6,6 +6,12 @@ import { dbConnect } from '@/config/mongo.config';
 import { UserModel, LocatorModel, LocationModel, SubDomainModel, SupportTicketModel, BugReportModel } from '@/mongo';
 import { getInactiveLocationIds } from '@/lib/locations-query';
 import { queryShopifyShops } from '@/lib/shopify-shops-query';
+import {
+    queryShopifyBugReports,
+    queryShopifyBugReport,
+    setShopifyBugReportStatus,
+    removeShopifyBugReport,
+} from '@/lib/shopify-bug-reports-query';
 import { getInactiveLocatorIds } from '@/lib/locators-query';
 import { serializeForClient } from '@/utils/helpers';
 import { isValidObjectId } from 'mongoose';
@@ -626,4 +632,54 @@ export async function deleteBugReport(bugId) {
     }
 
     return { status: 'success', message: 'Bug report deleted.' };
+}
+
+
+/*
+ * Bug reports filed from inside the Shopify app.
+ *
+ * The reports live in the Shopify app's own database (DATABASE_URL_SHOPIFY) and
+ * are filed by merchants, who have no account on this site. The admin check is
+ * still against THIS site's session — same admin, two inboxes.
+ */
+async function requireAdminSession() {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    if (session.user.id !== process.env.USER_ID_ADMIN) {
+        notFound();
+    }
+
+    return session;
+}
+
+export async function getAdminShopifyBugReports(page = 1, rows = 50, sort = 'created_at', order = 'desc') {
+    await requireAdminSession();
+
+    return queryShopifyBugReports({ page, rows, sort, order });
+}
+
+export async function getAdminShopifyBugReport(bugId) {
+    await requireAdminSession();
+
+    return queryShopifyBugReport(bugId);
+}
+
+export async function updateShopifyBugReportStatus(bugId, status) {
+    await requireAdminSession();
+
+    const nextStatus = (status || '').toString().trim();
+    if (!BUG_REPORT_STATUSES.includes(nextStatus)) {
+        return { status: 'error', message: 'Invalid status.' };
+    }
+
+    return setShopifyBugReportStatus(bugId, nextStatus);
+}
+
+export async function deleteShopifyBugReport(bugId) {
+    await requireAdminSession();
+
+    return removeShopifyBugReport(bugId);
 }

@@ -98,6 +98,14 @@ export default function SidebarAdmin() {
                                 </div>
                             </Link>
                         </li>
+                        <li className={isRootLinkActive('/admin/shopify-reported-bugs')}>
+                            <Link href="/admin/shopify-reported-bugs">
+                                <div>
+                                    <LuBug />
+                                    <span>Shopify Reported Bugs</span>
+                                </div>
+                            </Link>
+                        </li>
                         <li className={isRootLinkActive('/admin/help-and-support-messages')}>
                             <Link href="/admin/help-and-support-messages">
                                 <div>

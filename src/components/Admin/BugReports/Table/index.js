@@ -44,7 +44,27 @@ function getSeverityClass(severity) {
     return styles.medium;
 }
 
-export default function BugReportsTable({ data = [], sort, order }) {
+/*
+ * Shared by /admin/reported-bugs and /admin/shopify-reported-bugs. The two
+ * screens render the same report — the schemas are identical by design — but
+ * they live in different databases, so the caller supplies the server actions
+ * that read and triage its own. Defaults are the main site's, which is what the
+ * original page already passed implicitly.
+ */
+export default function BugReportsTable({
+    data = [],
+    sort,
+    order,
+    // Shopify reports carry the shop they came from; site reports have no
+    // equivalent, so the column is opt-in.
+    showShop = false,
+    actions = {},
+}) {
+    const {
+        getBugReport = getAdminBugReport,
+        updateStatus = updateBugReportStatus,
+        removeBugReport = deleteBugReport,
+    } = actions;
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -64,7 +84,7 @@ export default function BugReportsTable({ data = [], sort, order }) {
     const handleView = async (bug) => {
         setLoadingBug(true);
         try {
-            const result = await getAdminBugReport(bug._id);
+            const result = await getBugReport(bug._id);
             if (result.status === 'success') {
                 setSelectedBug(result.item);
             } else {
@@ -86,7 +106,7 @@ export default function BugReportsTable({ data = [], sort, order }) {
 
         setUpdatingStatus(true);
         try {
-            const result = await updateBugReportStatus(selectedBug._id, nextStatus);
+            const result = await updateStatus(selectedBug._id, nextStatus);
             if (result.status === 'success') {
                 toast.success(result.message);
                 setSelectedBug({ ...selectedBug, status: nextStatus });
@@ -106,7 +126,7 @@ export default function BugReportsTable({ data = [], sort, order }) {
 
         setDeleting(true);
         try {
-            const result = await deleteBugReport(deleteBug._id);
+            const result = await removeBugReport(deleteBug._id);
             if (result.status === 'success') {
                 toast.success(result.message);
                 if (selectedBug?._id === deleteBug._id) {
@@ -134,6 +154,7 @@ export default function BugReportsTable({ data = [], sort, order }) {
                                 <th onClick={() => handleSort('reference')}>
                                     Reference <LuArrowUpDown />
                                 </th>
+                                {showShop && <th className={styles.plainHeader}>Shop</th>}
                                 <th onClick={() => handleSort('email')}>
                                     Email <LuArrowUpDown />
                                 </th>
@@ -157,7 +178,7 @@ export default function BugReportsTable({ data = [], sort, order }) {
                         <tbody>
                             {data.length === 0 ? (
                                 <tr>
-                                    <td colSpan={9}>
+                                    <td colSpan={showShop ? 10 : 9}>
                                         <div className={styles.emptyState}>
                                             <LuBug />
                                             <p>No bug reports yet.</p>
@@ -171,6 +192,9 @@ export default function BugReportsTable({ data = [], sort, order }) {
                                         className={bug.status === 'open' ? styles.openRow : ''}
                                     >
                                         <td className={styles.reference}>{bug.reference || '—'}</td>
+                                        {showShop && (
+                                            <td className={styles.shop}>{bug.shop || '—'}</td>
+                                        )}
                                         <td className={styles.email}>{bug.email || '—'}</td>
                                         <td>{bug.subject || '—'}</td>
                                         <td>
@@ -229,6 +253,7 @@ export default function BugReportsTable({ data = [], sort, order }) {
                 <BugReportDetailView
                     bug={selectedBug}
                     showUserId={true}
+                    showShop={showShop}
                     footer={selectedBug && (
                         <>
                             {selectedBug.status === 'open' ? (

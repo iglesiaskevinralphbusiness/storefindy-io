@@ -42,7 +42,7 @@ function DetailRow({ label, children }) {
     );
 }
 
-export default function BugReportDetailView({ bug, footer = null, showUserId = false }) {
+export default function BugReportDetailView({ bug, footer = null, showUserId = false, showShop = false }) {
     if (!bug) return null;
 
     return (
@@ -59,6 +59,12 @@ export default function BugReportDetailView({ bug, footer = null, showUserId = f
                             {bug.status === 'open' ? 'Open' : 'Fixed'}
                         </span>
                     </DetailRow>
+                    {showShop && (
+                        // Shopify reports only. `user_id` there is a ShopModel._id,
+                        // which is unreadable on its own — this is the same owner
+                        // in the form the admin can act on.
+                        <DetailRow label="Shop">{displayValue(bug.shop)}</DetailRow>
+                    )}
                     {showUserId && (
                         <DetailRow label="User ID">{displayValue(bug.user_id)}</DetailRow>
                     )}

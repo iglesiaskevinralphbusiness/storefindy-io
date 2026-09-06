@@ -90,9 +90,25 @@
     background: #fff8f6;
 }
 
+// A header with nothing to sort by.
+.plainHeader {
+    cursor: default !important;
+
+    &:hover {
+        color: #636363 !important;
+    }
+}
+
 .reference {
     font-weight: 600;
     color: #1a1a1a;
+    white-space: nowrap;
+}
+
+// Shopify reports only — the *.myshopify.com domain the report came from.
+.shop {
+    color: #555;
+    font-size: 12px;
     white-space: nowrap;
 }
 
