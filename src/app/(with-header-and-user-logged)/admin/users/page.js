@@ -14,7 +14,6 @@ export default async function AdminUsersPage({ searchParams }) {
     } = await searchParams;
 
     const usersData = await getAdminUsers(page, rows, sort, order);
-    console.log(usersData.items);
 
     return (
         <div className={styles.admin}>

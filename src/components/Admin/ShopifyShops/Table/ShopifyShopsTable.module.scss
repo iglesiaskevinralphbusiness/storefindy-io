@@ -1,0 +1,438 @@
+// Same table shell as components/Admin/Users/Table — the two admin lists sit one
+// menu item apart and should read as one screen.
+.tableWrap {
+    overflow: hidden;
+    background: #fff;
+    border: 0.5px solid #e4e4e4;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+}
+
+.tableScroll {
+    overflow-x: auto;
+
+    &::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: #ddd;
+        border-radius: 4px;
+    }
+}
+
+.tableWrap {
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    thead {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #f1f1f1;
+
+        tr {
+            border-bottom: 0.5px solid #e4e4e4;
+        }
+    }
+
+    th {
+        padding: 12px;
+        font-size: 12px;
+        font-weight: 500;
+        color: #636363;
+        text-align: left;
+        white-space: nowrap;
+        user-select: none;
+        cursor: pointer;
+
+        &:hover {
+            color: #1a1a1a;
+        }
+
+        svg {
+            display: inline-block;
+            font-size: 11px;
+            margin-left: 3px;
+            vertical-align: middle;
+        }
+    }
+
+    td {
+        padding: 10px 12px;
+        font-size: 13px;
+        color: #333;
+        border-bottom: 0.5px solid #f5f5f3;
+        vertical-align: top;
+    }
+
+    tbody tr {
+        &:last-child td {
+            border-bottom: none;
+        }
+        &:hover td {
+            background: #fafcff;
+        }
+    }
+}
+
+// A header with nothing to sort by.
+.plainHeader {
+    cursor: default !important;
+
+    &:hover {
+        color: #636363 !important;
+    }
+}
+
+.locatorsGroup {
+    text-align: center !important;
+    border-left: 0.5px solid #e4e4e4;
+    cursor: default !important;
+
+    &:hover {
+        color: #636363 !important;
+    }
+}
+
+.subHeader {
+    cursor: default !important;
+    border-left: 0.5px solid #e4e4e4;
+
+    &:first-of-type {
+        border-left: 0.5px solid #e4e4e4;
+    }
+
+    &:hover {
+        color: #636363 !important;
+    }
+}
+
+.shopCell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 220px;
+}
+
+.shopTop {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.shop {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 500;
+    color: #1a1a1a;
+    text-decoration: none;
+
+    svg {
+        width: 11px;
+        height: 11px;
+        flex-shrink: 0;
+        color: #999;
+    }
+
+    &:hover,
+    &:focus-visible {
+        color: #185FA5;
+        text-decoration: underline;
+
+        svg {
+            color: #185FA5;
+        }
+    }
+}
+
+.shopMeta {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 11px;
+    color: #777;
+}
+
+.shopName {
+    color: #555;
+}
+
+.shopEmail {
+    color: #888;
+
+    &::before {
+        content: '·';
+        margin-right: 6px;
+        color: #ccc;
+    }
+}
+
+.adminLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    align-self: flex-start;
+    font-size: 10px;
+    color: #185FA5;
+    text-decoration: none;
+
+    svg {
+        width: 9px;
+        height: 9px;
+    }
+
+    &:hover,
+    &:focus-visible {
+        text-decoration: underline;
+    }
+}
+
+.planBadge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+    border: 1px solid transparent;
+
+    &.free {
+        background: #fffbe6;
+        border-color: #ffe54c;
+        color: #171717;
+    }
+
+    &.pro {
+        background: #171717;
+        border-color: #171717;
+        color: #ffe54c;
+    }
+
+    &.business {
+        background: #ede9fe;
+        border-color: #d6cbfa;
+        color: #635bff;
+    }
+}
+
+.date {
+    font-size: 12px !important;
+    color: #666;
+    white-space: nowrap;
+}
+
+// Two or three short lines in one cell — install state and its date, billing
+// state and its renewal.
+.stackCell {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.muted {
+    color: #aaa;
+}
+
+// The shop's subscription state as Shopify Billing reports it.
+.subStatus {
+    display: inline-flex;
+    align-items: center;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 10px;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.statusActive {
+    background: #eaf3de;
+    color: #3b6d11;
+}
+
+.statusPending {
+    background: #fff4e0;
+    color: #a35b00;
+}
+
+.statusStopped {
+    background: #fdeaea;
+    color: #b03030;
+}
+
+.testBadge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 8px;
+    background: #f1efe8;
+    color: #8a7a4a;
+    white-space: nowrap;
+}
+
+// Progress through the app's five-step onboarding guide.
+.setupCell {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    cursor: help;
+}
+
+.setupCount {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #666;
+
+    svg {
+        width: 11px;
+        height: 11px;
+    }
+
+    &.setupDone {
+        color: #3b6d11;
+    }
+}
+
+.setupDots {
+    display: inline-flex;
+    gap: 3px;
+}
+
+.setupDot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #e0e0e0;
+
+    &.setupDotDone {
+        background: #3b6d11;
+    }
+}
+
+.views {
+    color: #888;
+    font-size: 11px;
+}
+
+.locatorCell {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.locatorPill {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: #f0f0ee;
+    color: #555;
+    white-space: nowrap;
+}
+
+// Same pill, but the locator has a recorded embed URL, so the name opens it.
+.locatorLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+    color: #185FA5;
+    transition: background 0.15s ease, color 0.15s ease;
+
+    svg {
+        width: 10px;
+        height: 10px;
+        flex-shrink: 0;
+    }
+
+    &:hover,
+    &:focus-visible {
+        background: #e7eff8;
+        color: #10406f;
+        text-decoration: underline;
+    }
+}
+
+.statusBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+    white-space: nowrap;
+
+    &.active {
+        background: #eaf3de;
+        color: #3b6d11;
+    }
+
+    &.inactive {
+        background: #f1efe8;
+        color: #888;
+        cursor: help;
+    }
+}
+
+.badgeDot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.locationCounts {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 11px;
+    line-height: 1.3;
+}
+
+.locationTotal {
+    color: #333;
+    font-weight: 500;
+}
+
+.locationActive {
+    color: #3b6d11;
+}
+
+.locationInactive {
+    color: #888;
+}
+
+.emptyState {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 40px 20px;
+    text-align: center;
+    color: #bbb;
+
+    > svg {
+        font-size: 36px;
+        margin-bottom: 10px;
+    }
+    p {
+        margin-bottom: 10px;
+        font-size: 13px;
+    }
+}

@@ -5,6 +5,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { dbConnect } from '@/config/mongo.config';
 import { UserModel, LocatorModel, LocationModel, SubDomainModel, SupportTicketModel, BugReportModel } from '@/mongo';
 import { getInactiveLocationIds } from '@/lib/locations-query';
+import { queryShopifyShops } from '@/lib/shopify-shops-query';
 import { getInactiveLocatorIds } from '@/lib/locators-query';
 import { serializeForClient } from '@/utils/helpers';
 import { isValidObjectId } from 'mongoose';
@@ -247,6 +248,27 @@ export async function getAdminUsers(page=1, rows=10, sort='created_at', order='a
         session_user_id: session.user.id,
         admin_user_id: process.env.USER_ID_ADMIN,
     };
+}
+
+/*
+ * Shops that have installed the Shopify app.
+ *
+ * Reads the Shopify app's own database (DATABASE_URL_SHOPIFY), not this site's:
+ * the two apps keep separate shops/users, and a Shopify merchant has no account
+ * here. The admin check below is still against THIS site's session — the admin
+ * is the same person either way.
+ */
+export async function getAdminShopifyShops(page = 1, rows = 50, sort = 'created_at', order = 'desc') {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    if (session.user.id !== process.env.USER_ID_ADMIN) {
+        notFound();
+    }
+
+    return queryShopifyShops({ page, rows, sort, order });
 }
 
 export async function syncAdminUserPlan(userId) {

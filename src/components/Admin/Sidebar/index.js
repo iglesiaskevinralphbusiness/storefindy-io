@@ -4,7 +4,7 @@ import styles from './AdminSidebar.module.scss';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { FaAngleUp } from "react-icons/fa6";
-import { LuChevronLeft, LuChevronRight, LuHouse, LuPlus, LuPalette, LuCodeXml, LuList, LuUpload, LuUser, LuBookUser, LuKeyRound, LuBell, LuAppWindow, LuFileQuestion, LuBug, LuBookOpen, LuCircleUser, LuMapPin, LuGlobe } from "react-icons/lu";
+import { LuChevronLeft, LuChevronRight, LuHouse, LuPlus, LuPalette, LuCodeXml, LuList, LuUpload, LuUser, LuBookUser, LuKeyRound, LuBell, LuAppWindow, LuFileQuestion, LuBug, LuBookOpen, LuCircleUser, LuMapPin, LuGlobe, LuStore } from "react-icons/lu";
 import { VscGraphLine } from "react-icons/vsc";
 import { IoMapOutline } from "react-icons/io5";
 import { HiOutlineSquares2X2 } from "react-icons/hi2";
@@ -75,6 +75,14 @@ export default function SidebarAdmin() {
                                 <div>
                                     <LuHouse />
                                     <span>All Users</span>
+                                </div>
+                            </Link>
+                        </li>
+                        <li className={isRootLinkActive('/admin/shopify-shops')}>
+                            <Link href="/admin/shopify-shops">
+                                <div>
+                                    <LuStore />
+                                    <span>Shopify Shops</span>
                                 </div>
                             </Link>
                         </li>
