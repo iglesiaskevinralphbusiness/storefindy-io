@@ -3,11 +3,7 @@ import { useState, useEffect } from 'react';
 import styles from './AdminSidebar.module.scss';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { FaAngleUp } from "react-icons/fa6";
-import { LuChevronLeft, LuChevronRight, LuHouse, LuPlus, LuPalette, LuCodeXml, LuList, LuUpload, LuUser, LuBookUser, LuKeyRound, LuBell, LuAppWindow, LuFileQuestion, LuBug, LuBookOpen, LuCircleUser, LuMapPin, LuGlobe, LuStore } from "react-icons/lu";
-import { VscGraphLine } from "react-icons/vsc";
-import { IoMapOutline } from "react-icons/io5";
-import { HiOutlineSquares2X2 } from "react-icons/hi2";
+import { LuChevronLeft, LuChevronRight, LuHouse, LuShieldCheck, LuUsers, LuStore, LuBug, LuLifeBuoy, LuMailSearch, LuSend, LuCircleUser } from "react-icons/lu";
 import { useSelector } from 'react-redux';
 
 export default function SidebarAdmin() {
@@ -61,7 +57,7 @@ export default function SidebarAdmin() {
                         <li className={isRootLinkActive('/admin')}>
                             <Link href="/admin">
                                 <div>
-                                    <LuHouse />
+                                    <LuShieldCheck />
                                     <span>Admin</span>
                                 </div>
                             </Link>
@@ -73,7 +69,7 @@ export default function SidebarAdmin() {
                         <li className={isRootLinkActive('/admin/users')}>
                             <Link href="/admin/users">
                                 <div>
-                                    <LuHouse />
+                                    <LuUsers />
                                     <span>All Users</span>
                                 </div>
                             </Link>
@@ -93,7 +89,7 @@ export default function SidebarAdmin() {
                         <li className={isRootLinkActive('/admin/reported-bugs')}>
                             <Link href="/admin/reported-bugs">
                                 <div>
-                                    <LuHouse />
+                                    <LuBug />
                                     <span>Bugs Reported</span>
                                 </div>
                             </Link>
@@ -101,7 +97,7 @@ export default function SidebarAdmin() {
                         <li className={isRootLinkActive('/admin/shopify-reported-bugs')}>
                             <Link href="/admin/shopify-reported-bugs">
                                 <div>
-                                    <LuBug />
+                                    <LuStore />
                                     <span>Shopify Reported Bugs</span>
                                 </div>
                             </Link>
@@ -109,7 +105,7 @@ export default function SidebarAdmin() {
                         <li className={isRootLinkActive('/admin/help-and-support-messages')}>
                             <Link href="/admin/help-and-support-messages">
                                 <div>
-                                    <LuHouse />
+                                    <LuLifeBuoy />
                                     <span>Help And Support Msgs</span>
                                 </div>
                             </Link>
@@ -121,7 +117,7 @@ export default function SidebarAdmin() {
                         <li className={isRootLinkActive('/admin/contact-email-finder')}>
                             <Link href="/admin/contact-email-finder">
                                 <div>
-                                    <LuGlobe />
+                                    <LuMailSearch />
                                     <span>Contact Email Finder</span>
                                 </div>
                             </Link>
@@ -129,7 +125,7 @@ export default function SidebarAdmin() {
                         <li className={isRootLinkActive('/admin/contact-email-sender')}>
                             <Link href="/admin/contact-email-sender">
                                 <div>
-                                    <LuGlobe />
+                                    <LuSend />
                                     <span>Email Sender</span>
                                 </div>
                             </Link>
