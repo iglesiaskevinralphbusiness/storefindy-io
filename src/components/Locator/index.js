@@ -22,6 +22,31 @@ import { resolveMapLibrarySelection } from '@/utils/constant/mapbox-styles';
 
 import SearchSuggest from './SearchSuggest';
 
+// Shown when the visitor clicks the locate icon but the browser won't hand over
+// a position. A denial can only be undone in the browser's own site settings,
+// so the copy points there rather than offering a retry.
+const LOCATE_DENIED_MESSAGE =
+    'Location access is blocked. Allow location permission for this site in your browser settings, then try again.';
+const LOCATE_UNAVAILABLE_MESSAGE =
+    "We couldn't get your current location. Please try again.";
+
+// How close the map has to be to the visitor's position before it counts as
+// already showing it — loose enough to absorb the drift between two GPS fixes,
+// tight enough that a pan down the street brings the icon back.
+const SAME_PLACE_METERS = 100;
+
+// Great-circle distance between two [lat, lng] pairs, in metres.
+function metersBetween([lat1, lng1], [lat2, lng2]) {
+    const R = 6371000;
+    const toRad = (deg) => (deg * Math.PI) / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+    return 2 * R * Math.asin(Math.min(1, Math.sqrt(a)));
+}
+
 // Leaflet touches `window`, so the map is loaded lazily and only rendered after
 // mount. React.lazy works in both the Next.js bundle and the esbuild widget bundle.
 const LocatorMap = lazy(() => import('./LocatorMap'));
@@ -375,6 +400,18 @@ export default function Locator({
     const [showFilters, setShowFilters] = useState(false);
     const [openHours, setOpenHours] = useState({});
     const [showListMap, setShowListMap] = useState('list');
+    // --- Locate-me state (the icon inside the search box) ---------------------
+    // The visitor's own coordinates, once geolocation has produced a fix.
+    const [userCoords, setUserCoords] = useState(null);
+    // Where the map is centered: the search center after every recentering
+    // search, and the viewport center as soon as the visitor pans or drops the
+    // search marker (reported before the debounced search even fires).
+    const [mapCenter, setMapCenter] = useState(defaultCenter);
+    // 'granted' | 'denied' | 'prompt', or null when the Permissions API can't
+    // tell us — which is treated the same as "not granted yet".
+    const [geoPermission, setGeoPermission] = useState(null);
+    const [locating, setLocating] = useState(false);
+    const [locateMessage, setLocateMessage] = useState('');
     // The open/closed indicator is time-sensitive, so it is re-stamped every
     // minute rather than frozen at first render — a locator left open on a
     // screen shouldn't still claim "Open" an hour after closing time.
@@ -405,6 +442,16 @@ export default function Locator({
         const delta = item.getBoundingClientRect().top - list.getBoundingClientRect().top;
         list.scrollBy({ top: delta, behavior: 'smooth' });
     }, [activeId]);
+
+    // Selecting a result zooms the map onto that pin, moving the view off the
+    // visitor's position — so the locate icon has to reappear. Only applies when
+    // focused_zoom is on; without it, selecting a result leaves the view alone.
+    useEffect(() => {
+        if (!features.focused_zoom || !activeId) return;
+        const loc = locations.find((l) => l._id === activeId);
+        if (typeof loc?.latitude !== 'number' || typeof loc?.longitude !== 'number') return;
+        setMapCenter([loc.latitude, loc.longitude]);
+    }, [activeId, locations, features.focused_zoom]);
 
     // Single entry point for every search (text, filter, radius, map-drag).
     // `override` is merged onto the latest params so callers only pass what
@@ -455,7 +502,12 @@ export default function Locator({
                 setCenter([data.center.lat, data.center.lng]);
                 // `recenterCenter` is what actually moves the map view, so we
                 // only update it when a recenter was requested.
-                if (recenter) setRecenterCenter([data.center.lat, data.center.lng]);
+                if (recenter) {
+                    setRecenterCenter([data.center.lat, data.center.lng]);
+                    // The view is about to jump there, so the locate icon's
+                    // "am I already on the visitor?" test has to follow it.
+                    setMapCenter([data.center.lat, data.center.lng]);
+                }
             }
             if (data.status === 'success' && items.length > 0) {
                 setStatus('success');
@@ -488,6 +540,34 @@ export default function Locator({
         });
     }, [locator_id, isDemo, apiOrigin]);
 
+    // Track the geolocation permission so the locate icon can behave correctly
+    // before the visitor ever clicks it: granted means we can hide the icon once
+    // the map is on them, anything else means keep it visible. The `change`
+    // listener catches the visitor granting or revoking it in browser settings
+    // while the widget is open. Safari has no queryable geolocation permission,
+    // so the state simply stays null there and the icon always shows.
+    useEffect(() => {
+        if (typeof navigator === 'undefined' || !navigator.permissions?.query) return;
+        let status = null;
+        let cancelled = false;
+        const sync = () => setGeoPermission(status.state);
+        navigator.permissions
+            .query({ name: 'geolocation' })
+            .then((result) => {
+                if (cancelled) return;
+                status = result;
+                sync();
+                status.addEventListener('change', sync);
+            })
+            .catch(() => {
+                // Not queryable in this browser — leave the state unknown.
+            });
+        return () => {
+            cancelled = true;
+            if (status) status.removeEventListener('change', sync);
+        };
+    }, []);
+
     // Optionally center the search on the visitor's location when the widget
     // loads. When the country dropdown offers a real choice (2+ options), also
     // default it to the visitor's geolocated country (if it's one of the
@@ -498,6 +578,10 @@ export default function Locator({
         if (detect_location && typeof navigator !== 'undefined' && navigator.geolocation) {
             const onSuccess = async (pos) => {
                 const { latitude, longitude } = pos.coords;
+                // A fix can only come from a granted permission, which is also
+                // how we learn the state in browsers without the Permissions API.
+                setGeoPermission('granted');
+                setUserCoords([latitude, longitude]);
                 let country;
                 if (hasCountryChoices) {
                     const geo = await reverseGeocode(latitude, longitude);
@@ -517,6 +601,8 @@ export default function Locator({
                     (err) => {
                         if (canRetry && err && err.code === err.POSITION_UNAVAILABLE) {
                             request(false);
+                        } else if (err && err.code === err.PERMISSION_DENIED) {
+                            setGeoPermission('denied');
                         }
                         // On terminal failure we keep the locator's default-country
                         // view (defaultCenter) — same as when detect_location is off.
@@ -554,6 +640,10 @@ export default function Locator({
     const dragTimer = useRef(null);
     const handleMapMove = (c, z) => {
         setZoom(z);
+        // Immediately, not in the debounced block below: panning off the
+        // visitor's position should bring the locate icon back at once rather
+        // than 600ms plus an API round trip later.
+        setMapCenter([c.lat, c.lng]);
         if (dragTimer.current) clearTimeout(dragTimer.current);
         dragTimer.current = setTimeout(async () => {
             const geo = await reverseGeocode(c.lat, c.lng);
@@ -570,6 +660,64 @@ export default function Locator({
             // Don't recenter: the map is already where the user dragged it.
             runSearch(override, { recenter: false, method: 'map-move' });
         }, 600);
+    };
+
+    // The locate icon in the search box moves the map to the visitor's own
+    // position. It hides only once we know the map is already there, which takes
+    // both a granted permission and a fix to compare against — so a visitor who
+    // hasn't allowed location (or a browser that can't tell us) always sees it,
+    // and clicking it is what surfaces the permission prompt or the notice.
+    const atUserLocation =
+        geoPermission === 'granted' &&
+        !!userCoords &&
+        !!mapCenter &&
+        metersBetween(mapCenter, userCoords) <= SAME_PLACE_METERS;
+    const showLocateIcon = !atUserLocation;
+
+    const handleLocate = () => {
+        setLocateMessage('');
+        if (typeof navigator === 'undefined' || !navigator.geolocation) {
+            setLocateMessage(LOCATE_UNAVAILABLE_MESSAGE);
+            return;
+        }
+        setLocating(true);
+        navigator.geolocation.getCurrentPosition(
+            async (pos) => {
+                const { latitude, longitude } = pos.coords;
+                setLocating(false);
+                setGeoPermission('granted');
+                setUserCoords([latitude, longitude]);
+                // Hide the icon straight away — the search that follows will
+                // confirm the same center a moment later.
+                setMapCenter([latitude, longitude]);
+                // Mirror the position into the search box and the country
+                // dropdown, exactly as a map drag does.
+                const geo = await reverseGeocode(latitude, longitude);
+                const override = {
+                    method: 'geolocation',
+                    lat: latitude,
+                    lng: longitude,
+                    q: geo?.label || '',
+                };
+                if (geo?.countryCode && availableCodes.includes(geo.countryCode)) {
+                    override.country = geo.countryCode;
+                }
+                setZoom(defaultZoom);
+                runSearch(override);
+            },
+            (err) => {
+                setLocating(false);
+                if (err && err.code === err.PERMISSION_DENIED) {
+                    setGeoPermission('denied');
+                    setLocateMessage(LOCATE_DENIED_MESSAGE);
+                } else {
+                    setLocateMessage(LOCATE_UNAVAILABLE_MESSAGE);
+                }
+            },
+            // A deliberate click deserves a precise fix, unlike the passive
+            // first-load detection, which favours speed.
+            { timeout: 10000, maximumAge: 60000, enableHighAccuracy: true }
+        );
     };
 
     const toggleFilter = (value) => {
@@ -894,6 +1042,12 @@ export default function Locator({
                                         color: settings.searchInput.text_color,
                                         borderRadius: getBorderStyle(settings.searchInput.border),
                                     }}
+                                    locateIconStyle={{
+                                        color: settings.searchInput.border_color, // color of icon will be same with border color of input
+                                    }}
+                                    showLocate={showLocateIcon}
+                                    onLocate={handleLocate}
+                                    locating={locating}
                                 />
                                 <button
                                     type="submit"
@@ -921,7 +1075,21 @@ export default function Locator({
                                     </button>
                                 )}
                             </div>
-                            
+
+                            {locateMessage && (
+                                <div className="locate-notice" role="alert">
+                                    <span>{locateMessage}</span>
+                                    <button
+                                        type="button"
+                                        className="btn-locate-notice-close"
+                                        onClick={() => setLocateMessage('')}
+                                        aria-label="Dismiss"
+                                    >
+                                        <LuX />
+                                    </button>
+                                </div>
+                            )}
+
                             <div className="other-inputs">
                                 <div className="country-control" style={ countryOptions.length > 1 ? { display: 'flex', flex: 1 } : { display: 'none', flex: 1 }}>
                                     <label htmlFor="locator-country">Country</label>

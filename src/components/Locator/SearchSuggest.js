@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Highlighter from 'react-highlight-words';
+import { IoMdLocate } from "react-icons/io";
 
 // Address autocomplete for the locator search box. Suggestions come from Photon
 // (https://photon.komoot.io) — a free, no-API-key, OpenStreetMap-based geocoder
@@ -18,6 +19,10 @@ const PHOTON_URL = 'https://photon.komoot.io/api/';
 const MAX_SUGGESTIONS = 5;
 const DEBOUNCE_MS = 150;
 const MIN_QUERY_LENGTH = 2;
+
+// Doubles as the hover tooltip and the button's accessible name, so pointer and
+// screen-reader users are told the same thing.
+export const LOCATE_LABEL = 'Move to current location';
 
 // Cache query -> condensed suggestions so re-typing/editing never re-hits the
 // network. Module-scoped so it persists across re-renders and remounts.
@@ -64,6 +69,13 @@ export default function SearchSuggest({
     onSelect,
     placeholder,
     inputStyle,
+    locateIconStyle,
+    // The locate button is owned by the parent: it decides whether the map is
+    // already sitting on the visitor's position (icon hidden) or not (shown),
+    // and what clicking it does.
+    showLocate = false,
+    onLocate,
+    locating = false,
     className = 'input-search',
 }) {
     const [suggestions, setSuggestions] = useState([]);
@@ -187,6 +199,18 @@ export default function SearchSuggest({
 
     return (
         <div className="search-suggest" ref={wrapRef}>
+            {showLocate && (
+                <button
+                    type="button"
+                    className={`search-suggest-locate${locating ? ' locating' : ''}`}
+                    onClick={onLocate}
+                    disabled={locating}
+                    aria-label={LOCATE_LABEL}
+                >
+                    <IoMdLocate className="search-suggest-icon" style={locateIconStyle} aria-hidden="true" />
+                    <span className="search-suggest-tooltip" role="tooltip">{LOCATE_LABEL}</span>
+                </button>
+            )}
             <input
                 type="text"
                 role="combobox"

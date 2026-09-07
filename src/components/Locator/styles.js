@@ -8,11 +8,102 @@ export const formStyles = `
     position: relative;
     flex: 1;
 }
+.locator-sidebar .inputs .search-suggest-locate {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 2px;
+    border: none;
+    background: transparent;
+    color: inherit;
+    line-height: 0;
+    cursor: pointer;
+}
+.locator-sidebar .inputs .search-suggest-locate:disabled {
+    cursor: default;
+    opacity: 0.6;
+}
+.locator-sidebar .inputs .search-suggest-icon {
+    display: block;
+    font-size: 16px;
+    color: #000;
+}
+/* Spins while the browser is acquiring a fix, so a slow GPS lookup still looks
+   like something is happening. */
+.locator-sidebar .inputs .search-suggest-locate.locating .search-suggest-icon {
+    animation: search-suggest-locate-spin 1s linear infinite;
+}
+@keyframes search-suggest-locate-spin {
+    to { transform: rotate(360deg); }
+}
+.locator-sidebar .inputs .search-suggest-tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    right: 0;
+    z-index: 1001;
+    padding: 5px 8px;
+    border-radius: 4px;
+    background-color: #111;
+    color: #fff;
+    font-family: inherit;
+    font-size: 12px;
+    line-height: 1.3;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.12s ease;
+    pointer-events: none;
+}
+.locator-sidebar .inputs .search-suggest-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    right: 6px;
+    border: 4px solid transparent;
+    border-top-color: #111;
+}
+.locator-sidebar .inputs .search-suggest-locate:hover .search-suggest-tooltip,
+.locator-sidebar .inputs .search-suggest-locate:focus-visible .search-suggest-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+.locator-sidebar form .locate-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    background-color: #fef3c7;
+    color: #92400e;
+    font-size: 90%;
+    line-height: 1.4;
+}
+.locator-sidebar form .locate-notice > span {
+    flex: 1;
+}
+.locator-sidebar form .locate-notice .btn-locate-notice-close {
+    flex: none;
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font-size: 14px;
+    cursor: pointer;
+}
 .locator-sidebar .inputs .input-search {
     flext: 1;
     width: 100%;
     height: 40px;
-    padding: 0 15px;
+    padding: 0 25px 0 8px;
     border: 1px solid #000;
     font-size: 100%;
     outline: none;
