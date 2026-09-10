@@ -280,10 +280,26 @@ Walmart Supercenter,New York,NY,US,40.7128,-74.0060,+1-212-000-0000,store@exampl
                             </div>
                             <ul>
                                 <li>Download the pre-formatted template — it has every supported column ready for Excel or Google Sheets.</li>
-                                <li><strong>Required columns:</strong> <code>name</code>, <code>city</code>, <code>state</code>, <code>country</code>, <code>lat</code>, <code>lng</code>. <strong>Optional:</strong> <code>phone</code>, <code>email</code>, <code>website</code>.</li>
+                                <li><strong>Required columns:</strong> <code>name</code>, <code>city</code>, <code>state</code>, <code>country</code>, <code>lat</code>, <code>lng</code>.</li>
+                                <li><strong>Optional columns:</strong> <code>street</code>, <code>postal</code>, <code>phone</code>, <code>email</code>, <code>website</code>, <code>location_status</code>, <code>filters</code>, <code>hours_mon</code>…<code>hours_sun</code>, <code>holidays</code>, <code>view_location_url</code>, <code>social_media_links</code>, <code>published</code>, <code>show_opening_hours</code>, <code>custom_notes</code>. Leave any of them out (or blank) and the location is saved with that field’s default.</li>
                                 <li>Files must be <strong>.csv</strong> and under <strong>5&nbsp;MB</strong>.</li>
                                 <li>On Map Fields, match each detected column to a Storefindy field (or skip the ones you don’t need).</li>
                                 <li>The Preview step flags each row as <strong>Ready</strong>, <strong>Warning</strong>, or <strong>Error</strong>. Rows missing a required value or with non-numeric coordinates are skipped; an unrecognized country falls back to the United States.</li>
+                            </ul>
+                            <h4><TbCheck /> Format of the optional columns</h4>
+                            <p>
+                                These columns hold more than plain text, so they have a format. A value that
+                                doesn’t match is <strong>never</strong> saved as-is: the row still imports, that one
+                                field keeps its default, and the Preview step highlights the cell and says why.
+                            </p>
+                            <ul>
+                                <li><code>location_status</code> — <code>open</code>, <code>temporarily_closed</code>, or <code>coming_soon</code>.</li>
+                                <li><code>hours_mon</code> … <code>hours_sun</code> — one column per day: <code>09:00-21:00</code> (<code>9am - 9pm</code> works too), <code>closed</code>, or <code>24 hours</code>. Days you leave out keep the default 8–5 schedule.</li>
+                                <li><code>holidays</code> — <code>2026-12-24~2026-12-26~09:00-13:00</code> for a range, <code>2026-12-25~closed</code> for one day. Separate several with <code>|</code>.</li>
+                                <li><code>filters</code> — the locator’s own filters, separated by <code>|</code>. A filter the locator doesn’t define is dropped, because the widget could never surface it — add it under Edit Locator first.</li>
+                                <li><code>social_media_links</code> — <code>facebook=https://facebook.com/yourstore</code>, several separated by <code>|</code>. A link on a well-known domain can skip the <code>facebook=</code> part.</li>
+                                <li><code>published</code>, <code>show_opening_hours</code> — <code>true</code> or <code>false</code> (<code>yes</code>/<code>no</code> and <code>1</code>/<code>0</code> are accepted).</li>
+                                <li><code>website</code>, <code>view_location_url</code> — full URLs, including <code>http://</code> or <code>https://</code>.</li>
                             </ul>
                         </section>
 

@@ -24,6 +24,15 @@ import { IMPORT_MODES, buildImportDocs, writeImportDocs } from '@/lib/import-csv
 //     ]
 //   }
 //
+// A record may also carry any of the optional columns in CSV_OPTIONAL_FIELDS
+// (src/lib/csv-import-fields.js) — location_status, filters, hours_mon…hours_sun,
+// holidays, view_location_url, social_media_links, published, show_opening_hours,
+// custom_notes. Each is accepted either in its CSV string form ("08:00-17:00",
+// "facebook=https://…") or in the JSON form the rest of this API uses (a real
+// boolean, an array of filters, a whole `hours` object) — parseOptionalLocationFields()
+// takes both. A value it can't parse doesn't fail the record: the field falls
+// back to its default and the reason comes back in `issues`.
+//
 // DELIBERATELY UNDOCUMENTED. Like /api/v1/billing-status, this route is not
 // listed in ENDPOINT_GROUPS on /dashboard/api-access: it exists so the WordPress
 // plugin's "Import CSV" screen can do what the dashboard wizard does, and its
@@ -45,7 +54,12 @@ export async function POST(request) {
     // reject imports the dashboard accepts. The per-string, per-object and
     // array-length caps in sanitizeMongoInput() are unchanged, which is what
     // keeps `records` bounded at LIMITS.arrayLength rows per request.
-    const { body, errors: bodyErrors } = await readJsonBody(request, { maxBytes: 1024 * 1024 });
+    //
+    // 4MB rather than the 1MB this used to be: a record now carries up to 26
+    // columns (hours per day, holidays, social links, custom notes) where it once
+    // carried 11 short ones, so a full 500-row batch of rich records no longer
+    // fits in 1MB. The row cap, not the byte cap, is what is meant to bound this.
+    const { body, errors: bodyErrors } = await readJsonBody(request, { maxBytes: 4 * 1024 * 1024 });
     if (bodyErrors) return jsonValidationError(bodyErrors);
 
     const errors = {};
@@ -73,9 +87,12 @@ export async function POST(request) {
     return withServerError(async () => {
         // Rows that fail validation are counted and dropped, exactly as the
         // dashboard wizard does — one bad row must not fail the whole file.
-        const { docs, skipped } = buildImportDocs(records, {
+        const { docs, skipped, issues } = buildImportDocs(records, {
             user_id: auth.user_id,
             locator_id: body.locator_id,
+            // Filters are the locator's own categories; anything else is dropped
+            // with an issue, since the widget's filter bar is built from this list.
+            allowed_filters: Array.isArray(owned.locator.filters) ? owned.locator.filters : [],
         });
 
         if (docs.length === 0) {
@@ -98,6 +115,12 @@ export async function POST(request) {
             updated,
             skipped,
             total: records.length,
+            // Optional values that couldn't be parsed into the type the schema
+            // declares. The record still imported with that field defaulted, so
+            // this is the only place a caller learns the value was rejected.
+            // Capped so a badly-formed file can't return more than it sent.
+            issue_count: issues.length,
+            issues: issues.slice(0, 50),
             // Echoed so a client that chunks a large file can confirm the cap it
             // has to split on without hard-coding it.
             max_records_per_request: LIMITS.arrayLength,

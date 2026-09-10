@@ -16,6 +16,7 @@ import {
     FaLine,
     FaSkype
 } from 'react-icons/fa';
+import { SOCIAL_MEDIA } from './social-media';
 
 export const LOCALES = [
 	{ code: 'en', label: 'English' },
@@ -92,24 +93,31 @@ export const MAXIMUM_RESULTS_SHOWN = [
 	{ code: '999999', label: 'All results' },
 ];
 
-export const SOCIAL_MEDIA_LINKS = [
-	{ code: 'facebook', label: 'Facebook', color: '#1877F2', icon: <FaFacebook color="#1877F2" /> },
-	{ code: 'twitter', label: 'Twitter', color: '#1DA1F2', icon: <FaTwitter color="#1DA1F2" /> },
-	{ code: 'instagram', label: 'Instagram', color: '#E4405F', icon: <FaInstagram color="#E4405F" /> },
-    { code: 'linkedin', label: 'LinkedIn', color: '#0A66C2', icon: <FaLinkedin color="#0A66C2" /> },
-    { code: 'youtube', label: 'YouTube', color: '#FF0000', icon: <FaYoutube color="#FF0000" /> },
-    { code: 'tiktok', label: 'TikTok', color: '#010101', icon: <FaTiktok color="#010101" /> },
-    { code: 'pinterest', label: 'Pinterest', color: '#BD081C', icon: <FaPinterest color="#BD081C" /> },
-    { code: 'snapchat', label: 'Snapchat', color: '#FFFC00', icon: <FaSnapchat color="#FFFC00" /> },
-    { code: 'reddit', label: 'Reddit', color: '#FF4500', icon: <FaReddit color="#FF4500" /> },
-    { code: 'telegram', label: 'Telegram', color: '#26A5E4', icon: <FaTelegram color="#26A5E4" /> },
-    { code: 'whatsapp', label: 'WhatsApp', color: '#25D366', icon: <FaWhatsapp color="#25D366" /> },
-    { code: 'viber', label: 'Viber', color: '#7360F2', icon: <FaViber color="#7360F2" /> },
-    { code: 'weibo', label: 'Weibo', color: '#E6162D', icon: <FaWeibo color="#E6162D" /> },
-    { code: 'qq', label: 'QQ', color: '#12B7F5', icon: <FaQq color="#12B7F5" /> },
-    { code: 'line', label: 'Line', color: '#06C755', icon: <FaLine color="#06C755" /> },
-    { code: 'skype', label: 'Skype', color: '#00AFF0', icon: <FaSkype color="#00AFF0" /> },
-];
+// Icon per network code. The list itself — codes, labels and colours — lives in
+// ./social-media so server code can read it without importing react-icons.
+const SOCIAL_MEDIA_ICONS = {
+	facebook: FaFacebook,
+	twitter: FaTwitter,
+	instagram: FaInstagram,
+	linkedin: FaLinkedin,
+	youtube: FaYoutube,
+	tiktok: FaTiktok,
+	pinterest: FaPinterest,
+	snapchat: FaSnapchat,
+	reddit: FaReddit,
+	telegram: FaTelegram,
+	whatsapp: FaWhatsapp,
+	viber: FaViber,
+	weibo: FaWeibo,
+	qq: FaQq,
+	line: FaLine,
+	skype: FaSkype,
+};
+
+export const SOCIAL_MEDIA_LINKS = SOCIAL_MEDIA.map(({ code, label, color }) => {
+	const Icon = SOCIAL_MEDIA_ICONS[code];
+	return { code, label, color, icon: <Icon color={color} /> };
+});
 
 
 

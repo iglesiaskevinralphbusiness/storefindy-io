@@ -383,6 +383,13 @@
         font-size: 12px;
     }
 }
+/* The optional list runs to twenty-odd columns, so it scrolls inside the box
+   rather than pushing the upload zone off the screen. */
+.colList {
+    max-height: 210px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
 .colItem {
     display: flex;
     align-items: flex-start;
@@ -626,10 +633,14 @@
 }
 .notesBox {
     margin-top: 14px;
+    margin-bottom: 18px;
     background: #fff8f0;
     border: 1px solid #f5c6bb;
     border-radius: 8px;
     padding: 12px 14px;
+    // Also rendered inside the centred success box, where the notes still read
+    // as a list rather than as a centred paragraph.
+    text-align: left;
     .notesBoxTitle {
         font-size: 12px;
         font-weight: 600;
@@ -695,6 +706,12 @@
     font-size: 11px;
     color: #5a8a22;
     margin-top: 2px;
+}
+/* The "saved with defaults" note sits inside the centred success box, so its
+   text is pulled back to the left where a list is readable. */
+.successIssue {
+    text-align: left;
+    margin-top: 4px !important;
 }
 .successActions {
     display: flex;

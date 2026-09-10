@@ -200,13 +200,6 @@ export default function LocationsTable({ data=[], sort, order }) {
                                             onMouseLeave={hideTooltip}
                                             onClick={() => router.push(`/dashboard/locations/edit-location/${l._id}`)}
                                         ><LuPencil /></button>
-                                        <button
-                                            className={styles.actBtn}
-                                            aria-label="View on map"
-                                            onMouseEnter={(e) => showTooltip(e, 'View on map')}
-                                            onMouseLeave={hideTooltip}
-                                            onClick={() => handleClickViewMap(l)}
-                                        ><LuMap /></button>
                                         {
                                             l.published ? <>
                                                     <button
