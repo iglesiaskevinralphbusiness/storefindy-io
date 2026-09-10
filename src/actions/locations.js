@@ -303,7 +303,9 @@ export async function getLocationById(location_id) {
 }
 
 // Bulk-import locations from a parsed CSV into a single locator.
-// `records` is the client-mapped rows: { name, city, state, country, lat, lng, phone?, email?, website? }.
+// `records` is the client-mapped rows: the required { name, city, state,
+// country, lat, lng } plus any of the optional columns listed in
+// CSV_OPTIONAL_FIELDS (src/lib/csv-import-fields.js), each still a raw string.
 // `mode` controls how the rows are applied to the locator's existing locations —
 // see IMPORT_MODES in src/lib/import-csv.js, which also holds the row validation
 // and the writes, shared with POST /api/v1/locations/import-csv.
@@ -333,9 +335,12 @@ export async function importCSV(locatorId, mode, records) {
     }
 
     // Re-validate every row server-side; build full location docs for the valid ones.
-    const { docs, skipped } = buildImportDocs(records, {
+    // `allowed_filters` is the locator's own filter list — a location tagged with
+    // anything else could never be filtered to in the widget, so those are dropped.
+    const { docs, skipped, issues } = buildImportDocs(records, {
         user_id: session.user.id,
         locator_id: locatorId,
+        allowed_filters: Array.isArray(locator.filters) ? locator.filters : [],
     });
 
     if (docs.length === 0) {
@@ -357,6 +362,13 @@ export async function importCSV(locatorId, mode, records) {
             updated,
             skipped,
             total: records.length,
+            // Cells the server couldn't parse into the type the schema declares.
+            // Those rows still imported, with the field left at its default — the
+            // wizard shows the same warnings before the import, this reports what
+            // the server actually decided. Capped so a bad file can't return a
+            // payload larger than the import itself.
+            issue_count: issues.length,
+            issues: issues.slice(0, 50),
         };
     } catch (error) {
         console.log(error);

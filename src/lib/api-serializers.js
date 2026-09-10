@@ -13,7 +13,11 @@ const HIDDEN_LOCATOR_FIELDS = [
     'distance_unit',
     'search_radius',
     'maximum_results_shown',
-    'filters',
+    // NOTE: `filters` is deliberately NOT hidden. It is the locator's own list of
+    // categories, and a location's `filters` may only contain values from it —
+    // POST/PUT /locations and the CSV import all drop anything else. Without it
+    // in the response a client (the WordPress plugin's import wizard, say) has no
+    // way to know which values it is allowed to send.
     // widget features
     'show_search_bar',
     'detect_location',

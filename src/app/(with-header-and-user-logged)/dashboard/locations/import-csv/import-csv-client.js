@@ -10,11 +10,20 @@ import {
 } from 'react-icons/lu';
 import Sidebar from '@/components/Dashboard/Sidebar';
 import Button from '@/components/Forms/Button';
+import LimitReached from '@/components/LimitReached';
 import Link from 'next/link';
 import { toast } from 'react-toastify';
 import { getLocators } from '@/actions/locator';
 import { importCSV } from '@/actions/locations';
 import { COUNTRIES } from '@/utils/constant/countries';
+import {
+    CSV_FIELD_HINTS,
+    CSV_FIELD_LABELS,
+    CSV_OPTIONAL_FIELDS,
+    CSV_SYNONYMS,
+    buildCsvTemplate,
+    parseOptionalLocationFields,
+} from '@/lib/csv-import-fields';
 import styles from '../../Dashboard.module.scss';
 import csv from './ImportCsv.module.scss';
 
@@ -215,23 +224,50 @@ const PLACE_TYPES = ['Downtown', 'Grand Mall', 'City Plaza', 'Town Center', 'Mar
 // Build a staging CSV (used only on localhost) of US-only locations — one row per city.
 // Each row keeps the city's real street/postal aligned to its exact lat/lng so the
 // store-locator "Get Directions" button resolves to the correct place.
-const STAGING_DATA = (() => {
-    const header = 'name,street,city,state,postal,country,lat,lng,phone,email,website';
+//
+// The optional columns are filled in too, and varied across the rows, so a
+// localhost import exercises every parser in csv-import-fields.js rather than
+// only the address ones.
+const STAGING_ROWS = US_CITIES.map((c, idx) => {
+    const place = PLACE_TYPES[idx % PLACE_TYPES.length];
     const slug = (s) => s.toLowerCase().replace(/[^a-z]+/g, '');
-    const website = 'https://www.storefindy.com';
-    const lines = [header];
-    US_CITIES.forEach((c, idx) => {
-        const place = PLACE_TYPES[idx % PLACE_TYPES.length];
-        const name = `StoreFindy ${c.city} ${place}`;
-        // US-formatted phone: +1 (AAA) 555-XXXX
-        const area = String(200 + (idx % 700));
-        const phone = `+1 (${area}) 555-${String(1000 + idx).slice(-4)}`;
+    // US-formatted phone: +1 (AAA) 555-XXXX
+    const area = String(200 + (idx % 700));
+    // Every third row closes on Sunday, every fifth opens late — enough variety
+    // to see the hours parser at work in the preview.
+    const late = idx % 5 === 0;
+    return {
+        name: `StoreFindy ${c.city} ${place}`,
+        street: c.street,
+        city: c.city,
+        state: c.state,
+        postal: c.postal,
+        country: 'United States',
+        lat: c.lat,
+        lng: c.lng,
+        phone: `+1 (${area}) 555-${String(1000 + idx).slice(-4)}`,
         // idx keeps the local-part unique across duplicate city names (e.g. two "Columbus").
-        const email = `storefindy.${slug(c.city)}${idx}@example.com`;
-        lines.push(`${name},${c.street},${c.city},${c.state},${c.postal},United States,${c.lat},${c.lng},${phone},${email},${website}`);
-    });
-    return lines.join('\n');
-})();
+        email: `storefindy.${slug(c.city)}${idx}@example.com`,
+        website: 'https://www.storefindy.com',
+        location_status: idx % 11 === 0 ? 'coming_soon' : 'open',
+        filters: '',
+        hours_mon: late ? '10:00-20:00' : '08:00-17:00',
+        hours_tue: late ? '10:00-20:00' : '08:00-17:00',
+        hours_wed: late ? '10:00-20:00' : '08:00-17:00',
+        hours_thu: late ? '10:00-20:00' : '08:00-17:00',
+        hours_fri: late ? '10:00-22:00' : '08:00-18:00',
+        hours_sat: '10:00-16:00',
+        hours_sun: idx % 3 === 0 ? 'closed' : '11:00-15:00',
+        holidays: idx % 7 === 0 ? '2026-12-24~2026-12-26~09:00-13:00|2026-12-25~closed' : '',
+        view_location_url: `https://www.storefindy.com/stores/${slug(c.city)}${idx}`,
+        social_media_links: idx % 4 === 0
+            ? 'facebook=https://facebook.com/storefindy|instagram=https://instagram.com/storefindy'
+            : '',
+        published: 'true',
+        show_opening_hours: 'true',
+        custom_notes: idx % 9 === 0 ? 'Open late on Fridays.' : '',
+    };
+});
 
 // Resolve a raw CSV country value to a Storefindy country code.
 // Returns { code, matched }; unmatched values fall back to DEFAULT_COUNTRY.
@@ -241,15 +277,26 @@ function resolveCountry(raw) {
     return code ? { code, matched: true } : { code: DEFAULT_COUNTRY, matched: false };
 }
 
-// Storefindy fields the CSV maps onto.
+// Storefindy fields the CSV maps onto. The optional list, its labels, its format
+// hints and its parsing rules all come from src/lib/csv-import-fields.js — the
+// same module the server re-validates with, so the preview below and the import
+// itself can never disagree about what a cell means.
 const REQUIRED_FIELDS = ['name', 'street', 'city', 'state', 'country', 'lat', 'lng'];
-const OPTIONAL_FIELDS = ['postal', 'phone', 'email', 'website'];
+const OPTIONAL_FIELDS = CSV_OPTIONAL_FIELDS;
 const SF_FIELDS = [...REQUIRED_FIELDS, ...OPTIONAL_FIELDS];
 
 const FIELD_LABELS = {
     name: 'Store name', street: 'Street address', city: 'City', state: 'State / Province', country: 'Country',
     lat: 'Latitude (decimal)', lng: 'Longitude (decimal)',
-    postal: 'Postal / ZIP code', phone: 'Phone number', email: 'Email address', website: 'Website URL',
+    ...CSV_FIELD_LABELS,
+};
+
+// What each column has to look like — shown next to the column name on the
+// upload step so the format is visible before the file is built, not after.
+const FIELD_HINTS = {
+    name: 'Store name', street: 'Street address', city: 'City', state: 'State / Province', country: 'Country name or 2-letter code',
+    lat: 'Latitude (decimal)', lng: 'Longitude (decimal)',
+    ...CSV_FIELD_HINTS,
 };
 
 // Header synonyms used to auto-match a CSV column to a Storefindy field.
@@ -261,11 +308,43 @@ const SYNONYMS = {
     country: ['country', 'nation'],
     lat: ['lat', 'latitude'],
     lng: ['lng', 'lon', 'long', 'longitude'],
-    postal: ['postal', 'postal_code', 'postalcode', 'zip', 'zipcode', 'zip_code', 'postcode', 'post_code'],
-    phone: ['phone', 'phone_no', 'phone_number', 'tel', 'telephone', 'mobile'],
-    email: ['email', 'email_addr', 'email_address', 'mail'],
-    website: ['website', 'web', 'url', 'site', 'homepage'],
+    ...CSV_SYNONYMS,
 };
+
+// Sample values for the template's `filters` column. A filter only means
+// something if the target locator already defines it — the widget's filter bar is
+// built from that list — so downloadTemplate() prefers the selected locator's own
+// filters and falls back to these only when it hasn't defined any yet.
+const SAMPLE_FILTERS = ['Free Wifi', 'Free Parking', 'Wheelchair Accessible'];
+
+// The two sample rows in the downloadable template — one filling in every
+// optional column, one showing that leaving them blank is fine.
+// `filters` is left empty here and filled in by downloadTemplate(), which is
+// where the selected locator is known.
+const TEMPLATE_ROWS = [
+    {
+        name: 'SM Mall of Asia', street: 'Seaside Blvd', city: 'Pasay City', state: 'Metro Manila',
+        postal: '1300', country: 'Philippines', lat: '14.5353', lng: '120.9822',
+        phone: '+63 2 8556 0100', email: 'sm@sm.ph', website: 'https://sm.ph',
+        location_status: 'open', filters: '',
+        hours_mon: '09:00-21:00', hours_tue: '09:00-21:00', hours_wed: '09:00-21:00',
+        hours_thu: '09:00-21:00', hours_fri: '10:00-22:00', hours_sat: '10:00-22:00', hours_sun: 'closed',
+        holidays: '2026-12-24~2026-12-26~09:00-13:00|2026-12-25~closed',
+        view_location_url: 'https://sm.ph/branches/mall-of-asia',
+        social_media_links: 'facebook=https://facebook.com/smsupermalls|instagram=https://instagram.com/smsupermalls',
+        published: 'true', show_opening_hours: 'true',
+        custom_notes: 'Parking available at the north wing.',
+    },
+    {
+        name: 'Robinsons Galleria', street: 'EDSA cor Ortigas Ave', city: 'Quezon City', state: 'Metro Manila',
+        postal: '1100', country: 'Philippines', lat: '14.5856', lng: '121.0567',
+        phone: '+63 2 8633 9888', email: '', website: 'https://robinsons.ph',
+        location_status: 'coming_soon', filters: '',
+        hours_mon: '', hours_tue: '', hours_wed: '', hours_thu: '', hours_fri: '', hours_sat: '', hours_sun: '',
+        holidays: '', view_location_url: '', social_media_links: '',
+        published: 'false', show_opening_hours: 'false', custom_notes: '',
+    },
+];
 
 const STEP_HINTS = [
     'Select your locator and import mode',
@@ -376,8 +455,23 @@ function ImportWizard({ locators }) {
     const selectedLocator = locators.find(l => l._id === locatorId);
     const selectedLocatorName = selectedLocator?.name ?? '';
 
-    // Per-row validation: error if a required field is missing or lat/lng isn't numeric;
-    // warning if an optional field is blank.
+    // A location's filters have to be filters the target locator defines —
+    // that list is what the widget's filter bar is built from.
+    const allowedFilters = useMemo(
+        () => (Array.isArray(selectedLocator?.filters) ? selectedLocator.filters : []),
+        [selectedLocator]
+    );
+
+    // Which Storefindy fields the CSV actually supplies. An optional field the
+    // user never mapped isn't "missing" — it just isn't part of this import — so
+    // only mapped columns are worth warning about.
+    const mappedFields = useMemo(() => new Set(Object.values(mapping).filter(Boolean)), [mapping]);
+
+    // Per-row validation. Error (row is skipped) if a required field is missing
+    // or lat/lng isn't numeric. Warning (row still imports) if a mapped optional
+    // cell is blank, if the country didn't match, or if an optional value can't
+    // be parsed into the type the schema wants — parseOptionalLocationFields()
+    // decides that last one, and the server re-runs the very same check.
     const evaluated = useMemo(() => rows.map(row => {
         // Map the parsed row to a { field: value } object using the current mapping.
         const obj = {};
@@ -407,19 +501,28 @@ function ImportWizard({ locators }) {
         if (countryUnmatched) {
             issues.push(`Country "${countryRaw}" didn't match our list — defaulting to ${CODE_TO_LABEL.get(DEFAULT_COUNTRY)}`);
         }
-        const missingOptional = OPTIONAL_FIELDS.filter(f => !obj[f]);
+
+        // Typed optional columns: status, filters, hours, holidays, links, flags.
+        // A value that can't be parsed doesn't cost the row — the field is left
+        // at its default — but the user is told exactly which cell and why.
+        const { issues: typedIssues } = parseOptionalLocationFields(obj, { allowedFilters });
+        // field -> reason, so the preview can both flag the cell and explain it on hover.
+        const invalidFields = new Map(typedIssues.map(i => [i.field, i.message]));
+        for (const { message } of typedIssues) issues.push(`${message} — the default will be used`);
+
+        const missingOptional = OPTIONAL_FIELDS.filter(f => mappedFields.has(f) && !obj[f]);
         if (missingOptional.length) {
-            issues.push(`Missing optional field(s): ${missingOptional.map(f => FIELD_LABELS[f]).join(', ')}`);
+            issues.push(`Empty optional field(s): ${missingOptional.map(f => FIELD_LABELS[f]).join(', ')}`);
         }
 
         let status = 'ok';
         if (missingRequired.length || (obj.lat && isNaN(Number(obj.lat))) || (obj.lng && isNaN(Number(obj.lng)))) {
             status = 'err';
-        } else if (countryUnmatched || missingOptional.length) {
+        } else if (countryUnmatched || typedIssues.length || missingOptional.length) {
             status = 'warn';
         }
-        return { obj, status, countryRaw, countryUnmatched, issues };
-    }), [rows, mapping, headers]);
+        return { obj, status, countryRaw, countryUnmatched, issues, invalidFields };
+    }), [rows, mapping, headers, allowedFilters, mappedFields]);
 
     const counts = useMemo(() => ({
         ok: evaluated.filter(r => r.status === 'ok').length,
@@ -427,6 +530,9 @@ function ImportWizard({ locators }) {
         err: evaluated.filter(r => r.status === 'err').length,
         // Rows whose country couldn't be matched and fell back to the default.
         countryUnmatched: evaluated.filter(r => r.status !== 'err' && r.countryUnmatched).length,
+        // Rows carrying at least one optional value we couldn't parse — imported,
+        // but with that field left at its default.
+        invalid: evaluated.filter(r => r.status !== 'err' && r.invalidFields.size > 0).length,
     }), [evaluated]);
 
     const validRows = counts.ok + counts.warn;
@@ -459,15 +565,25 @@ function ImportWizard({ locators }) {
         handleFile(e.dataTransfer.files?.[0]);
     }
 
+    // The template header is SF_FIELDS in order: the seven required columns
+    // first — unchanged, so a file built from an older template still maps —
+    // then every optional column, including the new ones.
     function downloadTemplate() {
-        const data =
-            'name,street,city,state,postal,country,lat,lng,phone,email,website\n' +
-            'SM Mall of Asia,Seaside Blvd,Pasay City,Metro Manila,1300,Philippines,14.5353,120.9822,+63 2 8556 0100,sm@sm.ph,https://sm.ph\n' +
-            'Robinsons Galleria,EDSA cor Ortigas Ave,Quezon City,Metro Manila,1100,Philippines,14.5856,121.0567,+63 2 8633 9888,,https://robinsons.ph';
-        const stagingData = STAGING_DATA;
+        const base = process.env.NEXT_PUBLIC_ROOT_URL === 'http://localhost:3000' ? STAGING_ROWS : TEMPLATE_ROWS;
+
+        // Fill `filters` with the selected locator's OWN filters, so the template
+        // imports without warnings; the samples stand in for a locator that has
+        // none defined yet, where they show the format and the preview then says
+        // which filters the locator is missing.
+        const pool = allowedFilters.length ? allowedFilters : SAMPLE_FILTERS;
+        const rows = base.map((row, i) => ({
+            ...row,
+            // Alternate rows so both shapes are visible: several filters, then one.
+            filters: i % 2 === 0 ? pool.slice(0, 3).join('|') : (pool[0] ?? ''),
+        }));
 
         const a = document.createElement('a');
-        a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(process.env.NEXT_PUBLIC_ROOT_URL === 'http://localhost:3000' ? stagingData : data);
+        a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(buildCsvTemplate(SF_FIELDS, rows));
         a.download = 'storefindy_template.csv';
         a.click();
     }
@@ -533,6 +649,18 @@ function ImportWizard({ locators }) {
                             <div className={csv.successStatLabel}>Skipped (error)</div>
                         </div>
                     </div>
+                    {result?.issue_count > 0 && (
+                        <div className={csv.notesBox}>
+                            <div className={csv.notesBoxTitle}><LuCircleAlert /> Saved with defaults</div>
+                            <p>
+                                {result.issue_count} optional value(s) couldn&apos;t be read and were saved with their
+                                default instead. Edit the location to set them, or fix the cells and re-import.
+                            </p>
+                            {result.issues?.slice(0, 5).map((issue, i) => (
+                                <p key={i} className={csv.successIssue}>• Row {issue.row} — {issue.message}</p>
+                            ))}
+                        </div>
+                    )}
                     <div className={csv.successActions}>
                         <Button value="View All Locations" icon={<LuList />} primary onClick={() => router.push('/dashboard/locations')} />
                         <Button value="Import Another CSV" icon={<LuCloudUpload />} onClick={reset} />
@@ -637,21 +765,28 @@ function ImportWizard({ locators }) {
                     <div className={csv.columnsGrid}>
                         <div className={`${csv.colBox} ${csv.required}`}>
                             <div className={csv.colBoxTitle}><LuAsterisk /> Required Columns</div>
-                            {REQUIRED_FIELDS.map(f => (
-                                <div key={f} className={csv.colItem}>
-                                    <span className={csv.colName}>{f}</span>
-                                    <span className={csv.colDesc}>{FIELD_LABELS[f]}</span>
-                                </div>
-                            ))}
+                            <div className={csv.colList}>
+                                {REQUIRED_FIELDS.map(f => (
+                                    <div key={f} className={csv.colItem}>
+                                        <span className={csv.colName}>{f}</span>
+                                        <span className={csv.colDesc}>{FIELD_HINTS[f]}</span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                         <div className={`${csv.colBox} ${csv.optional}`}>
-                            <div className={csv.colBoxTitle}><LuCircleDashed /> Optional Columns</div>
-                            {OPTIONAL_FIELDS.map(f => (
-                                <div key={f} className={csv.colItem}>
-                                    <span className={csv.colName}>{f}</span>
-                                    <span className={csv.colDesc}>{FIELD_LABELS[f]}</span>
-                                </div>
-                            ))}
+                            <div className={csv.colBoxTitle}>
+                                <LuCircleDashed /> Optional Columns
+                                <span className={csv.badgeInfo}>Leave blank to use the default</span>
+                            </div>
+                            <div className={csv.colList}>
+                                {OPTIONAL_FIELDS.map(f => (
+                                    <div key={f} className={csv.colItem}>
+                                        <span className={csv.colName}>{f}</span>
+                                        <span className={csv.colDesc}>{FIELD_HINTS[f]}</span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -734,7 +869,7 @@ function ImportWizard({ locators }) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {evaluated.slice(0, 10).map(({ obj, status, countryRaw, countryUnmatched, issues }, i) => (
+                                {evaluated.slice(0, 10).map(({ obj, status, countryRaw, countryUnmatched, issues, invalidFields }, i) => (
                                     <tr key={i} className={status === 'ok' ? csv.rowOk : status === 'warn' ? csv.rowWarn : csv.rowErr}>
                                         <td className={csv.rowIndex}>{i + 1}</td>
                                         <td>
@@ -749,7 +884,7 @@ function ImportWizard({ locators }) {
                                         </td>
                                         {SF_FIELDS.map(f => {
                                             const v = obj[f];
-                                            const invalid = (f === 'lat' || f === 'lng') && v && isNaN(Number(v));
+                                            const invalid = ((f === 'lat' || f === 'lng') && v && isNaN(Number(v))) || invalidFields.has(f);
                                             const countryWarn = f === 'country' && countryUnmatched;
                                             const cls = invalid ? csv.cellInvalid
                                                 : countryWarn ? csv.cellInvalid
@@ -776,7 +911,15 @@ function ImportWizard({ locators }) {
                                                     </td>
                                                 );
                                             }
-                                            return <td key={f} className={cls}>{v || '—'}</td>;
+                                            return (
+                                                <td
+                                                    key={f}
+                                                    className={cls}
+                                                    title={invalidFields.get(f)}
+                                                >
+                                                    {v || '—'}
+                                                </td>
+                                            );
                                         })}
                                     </tr>
                                 ))}
@@ -789,7 +932,8 @@ function ImportWizard({ locators }) {
                             <p>
                                 {counts.err > 0 && <>• <strong>{counts.err}</strong> row(s) have missing required fields or an invalid latitude/longitude — they will be <strong>skipped</strong>.<br /></>}
                                 {counts.countryUnmatched > 0 && <>• <strong>{counts.countryUnmatched}</strong> row(s) have a country that doesn&apos;t match our country list — they will default to <strong>{CODE_TO_LABEL.get(DEFAULT_COUNTRY)}</strong>. Use the full country name (e.g. <em>Philippines</em>) or its 2-letter code (e.g. <em>ph</em>).<br /></>}
-                                {counts.warn > 0 && <>• <strong>{counts.warn}</strong> row(s) are missing optional fields or have an unmatched country — they will still be <strong>imported</strong>.<br /></>}
+                                {counts.invalid > 0 && <>• <strong>{counts.invalid}</strong> row(s) have an optional value we couldn&apos;t read — those cells are highlighted above, and hovering the row status says why. The row still imports, but that field is saved with its <strong>default</strong> value. Fix the cell in your CSV and re-upload to keep it.<br /></>}
+                                {counts.warn > 0 && <>• <strong>{counts.warn}</strong> row(s) have empty optional fields, an unmatched country, or a value we couldn&apos;t read — they will still be <strong>imported</strong>.<br /></>}
                                 • <strong>{validRows} valid row(s)</strong> will be added to <strong>{selectedLocatorName}</strong>.
                             </p>
                         </div>
