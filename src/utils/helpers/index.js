@@ -108,6 +108,17 @@ export function generateFeaturesDefault(data) {
     const mapLibrary = resolveMapLibrarySelection(data, data.user_plan);
 
     return {
+        // Search & results. These live on the locator itself and are also
+        // editable on Edit Locator; the customize sidebar edits them too so the
+        // live preview beside it reflects a radius change immediately, and so
+        // the AI configurator can reach every setting the sidebar shows.
+        // functionSaveCustomizeLocator() re-validates them against the same
+        // option lists the Edit Locator form offers.
+        distance_unit: data.distance_unit,
+        search_radius: Number(data.search_radius),
+        maximum_results_shown: Number(data.maximum_results_shown),
+        default_zoom_level: Number(data.default_zoom_level),
+
         //
         show_map_radius_indicator: data.show_map_radius_indicator,
         show_map_pin_number: data.show_map_pin_number,

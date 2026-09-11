@@ -37,6 +37,9 @@ import Button from '@/components/Forms/Button';
 import Checkbox from '@/components/Forms/Checkbox';
 import Modal from '@/components/Modal';
 import { toast } from 'react-toastify';
+import { MAXIMUM_RESULTS_SHOWN, ZOOM_LEVELS } from '@/utils/constant';
+import { DISTANCE_UNITS, getSearchRadiiOptions, convertDistance } from '@/utils/distance';
+import AIWidgetConfigurator from '@/components/ai/AIWidgetConfigurator';
 
 const ALLOWED_IMAGE_TYPES = ['image/png', 'image/svg+xml', 'image/gif', 'image/jpeg'];
 const MAX_IMAGE_SIZE = 500 * 1024; // 500KB
@@ -135,6 +138,23 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
     const updateFeatures = (key, value) => {
         setFeatures(prev => ({ ...prev, [key]: value }));
     };
+
+    // --- Search & results ---------------------------------------------------
+    // Switching the unit converts the radius to its counterpart preset, exactly
+    // as the Edit Locator form does — otherwise "10 miles" would silently become
+    // "10 kilometers". Both writes happen in one setState so the pair is never
+    // momentarily inconsistent (the live preview reads them together).
+    const handleDistanceUnitChange = (unit) => {
+        setFeatures(prev => (
+            prev.distance_unit === unit ? prev : {
+                ...prev,
+                distance_unit: unit,
+                search_radius: Number(convertDistance(Number(prev.search_radius), prev.distance_unit, unit)),
+            }
+        ));
+    };
+
+    const searchRadiiOptions = getSearchRadiiOptions(features.distance_unit);
 
     // --- Map library -------------------------------------------------------
     // Mapbox is Business-only. `features` has already been read back through
@@ -753,6 +773,37 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                             </Section>
                         </div>
                         <div className={styles.settings}>
+                            <AIWidgetConfigurator
+                                settings={settings}
+                                setSettings={setSettings}
+                                features={features}
+                                setFeatures={setFeatures}
+                                user_plan={user_plan}
+                            />
+                            <SelectField
+                                label="Default Zoom Level"
+                                value={String(features.default_zoom_level ?? '')}
+                                onChange={(v) => updateFeatures('default_zoom_level', Number(v))}
+                                options={ZOOM_LEVELS}
+                            />
+                            <SelectField
+                                label="Distance Unit"
+                                value={features.distance_unit ?? 'mi'}
+                                onChange={handleDistanceUnitChange}
+                                options={DISTANCE_UNITS}
+                            />
+                            <SelectField
+                                label="Search Radius"
+                                value={String(features.search_radius ?? '')}
+                                onChange={(v) => updateFeatures('search_radius', Number(v))}
+                                options={searchRadiiOptions}
+                            />
+                            <SelectField
+                                label="Maximum Results Shown"
+                                value={String(features.maximum_results_shown ?? '')}
+                                onChange={(v) => updateFeatures('maximum_results_shown', Number(v))}
+                                options={MAXIMUM_RESULTS_SHOWN}
+                            />
                             <SelectField
                                 label="Form Style"
                                 value={features.form_style}

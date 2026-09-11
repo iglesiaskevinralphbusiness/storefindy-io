@@ -31,6 +31,7 @@ import styles from './page.module.scss';
 import { plans } from '@/utils/constant/pricing';
 import { faqs } from '@/utils/constant/faqs';
 import FaqHome from '@/components/FaqHome';
+import AIDocsAssistant from '@/components/ai/AIDocsAssistant';
 import FadeIn from '@/components/FadeIn';
 import Image from 'next/image';
 import { buildSocialMetadata } from '@/utils/constant/seo';
@@ -486,5 +487,10 @@ export default async function Home() {
                 </div>
             </FadeIn>
         </div>
+
+        {/* Floating "Ask AI" helper, answering from the Storefindy
+            documentation. Read-only, and it loads nothing until a visitor
+            actually opens it, so it costs a normal page view nothing. */}
+        <AIDocsAssistant />
     </>);
 }

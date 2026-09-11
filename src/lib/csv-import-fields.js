@@ -230,8 +230,16 @@ function parseBooleanValue(raw) {
     return { error: true };
 }
 
-/** A clock time in any of `17:00`, `5pm`, `5:30 PM`, `08:00` — normalised to 24-hour `HH:MM`. */
-function parseTimeOfDay(raw) {
+/**
+ * A clock time in any of `17:00`, `5pm`, `5:30 PM`, `08:00` — normalised to
+ * 24-hour `HH:MM`.
+ *
+ * Exported for src/lib/ai/rules/hours.js, which expands a free-text schedule
+ * ("Mon-Fri 9-6") into the per-day cells this module then validates. It reads
+ * the times with the very same function, so the expansion can never produce a
+ * time spelling that the validation below would reject.
+ */
+export function parseTimeOfDay(raw) {
     const str = normalize(raw).replace(/\./g, '').replace(/\s+/g, '');
     const match = /^(\d{1,2})(?::(\d{2}))?(am|pm)?$/.exec(str);
     if (!match) return null;

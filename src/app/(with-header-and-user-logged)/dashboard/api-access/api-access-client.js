@@ -129,7 +129,7 @@ const ENDPOINT_GROUPS = [
                 method: 'GET',
                 tone: 'get',
                 path: '/locators',
-                desc: 'Returns every locator in your account, each with its total location count and plan-based status. Responds with a plain array — there is no wrapper object. Map defaults, search settings, filters, widget display settings and the per-day analytics rows are all omitted from locator responses.',
+                desc: 'Returns every locator in your account, each with its total location count and plan-based status. Responds with a plain array — there is no wrapper object. The default country, the widget display settings and the per-day analytics rows are omitted from locator responses; the search settings and filters are returned, so an editing client can prefill a form from them.',
                 response: `[
   {
     "_id": "685fd0b41c9a2f8e5d7b3c22",
@@ -137,6 +137,11 @@ const ENDPOINT_GROUPS = [
     "name": "Main Store Locator",
     "description": "All our retail branches",
     "default_language": "en",
+    "default_zoom_level": 10,
+    "distance_unit": "mi",
+    "search_radius": 25,
+    "maximum_results_shown": 10,
+    "filters": ["Pharmacy", "Drive-through"],
     "views_count": 1280,
     "createdAt": "2026-06-01T08:00:00.000Z",
     "updatedAt": "2026-07-01T12:00:00.000Z",
@@ -150,7 +155,7 @@ const ENDPOINT_GROUPS = [
                 method: 'GET',
                 tone: 'get',
                 path: '/locators/:id',
-                desc: 'Returns a single locator by ID, plus the owning account plan. Responds 404 when the ID is malformed or the locator belongs to another account. Map defaults, search settings, filters, widget display settings, the per-day analytics rows and user_id are all omitted here.',
+                desc: 'Returns a single locator by ID, plus the owning account plan. Responds 404 when the ID is malformed or the locator belongs to another account. The default country, the widget display settings, the per-day analytics rows and user_id are omitted here; the search settings and filters are returned, so an editing client can prefill a form from them rather than from its own cache.',
                 params: [
                     { name: 'id', in: 'path', type: 'string', required: true, desc: 'The locator ID e.g. 685fd0b41c9a2f8e5d7b3c22' },
                 ],
@@ -159,6 +164,11 @@ const ENDPOINT_GROUPS = [
   "name": "Main Store Locator",
   "description": "All our retail branches",
   "default_language": "en",
+  "default_zoom_level": 10,
+  "distance_unit": "mi",
+  "search_radius": 25,
+  "maximum_results_shown": 10,
+  "filters": ["Pharmacy", "Drive-through"],
   "views_count": 1280,
   "createdAt": "2026-06-01T08:00:00.000Z",
   "updatedAt": "2026-07-01T12:00:00.000Z",
@@ -171,18 +181,21 @@ const ENDPOINT_GROUPS = [
                 method: 'POST',
                 tone: 'post',
                 path: '/locators',
-                desc: 'Creates a new locator. Only name is required — every other field falls back to the default shown below. The show_* and powered_by_storefindy flags are accepted but write-only: they are not echoed back in any locator response. Locators beyond your plan limit are still created, but report status "inactive".',
+                desc: 'Creates a new locator. Only name is required — every other field falls back to the default shown below. The default_country, show_* and powered_by_storefindy fields are accepted but write-only: they are not echoed back in any locator response. Locators beyond your plan limit are still created, but report status "inactive".',
                 payload: `{
   "name": "My New Locator",         // required
   "description": "",                // optional
   "default_language": "en",         // optional — default "en"
 
-  // Everything below is write-only: accepted here, never echoed back.
-  "default_country": "us",          // optional — ISO code, default "us"
+  // Read back on GET /locators and GET /locators/:id.
   "default_zoom_level": 10,         // optional — default 10
-  "search_radius": 10,              // optional — miles, default 10
+  "distance_unit": "mi",            // optional — "mi" or "km", default "mi"
+  "search_radius": 10,              // optional — in distance_unit, default 10
   "maximum_results_shown": 10,      // optional — default 10
   "filters": [],                    // optional — array of filter labels
+
+  // Everything below is write-only: accepted here, never echoed back.
+  "default_country": "us",          // optional — ISO code, default "us"
   "show_search_bar": true,          // optional — default true
   "detect_location": true,          // optional — default true
   "show_filters": false,            // optional — default false
@@ -223,9 +236,9 @@ const ENDPOINT_GROUPS = [
                 payload: `{
   "name": "Updated Name",           // optional — cannot be empty if sent
   "description": "Updated copy",    // optional
-  "search_radius": 25,              // optional — write-only, not echoed back
-  "show_filters": true,             // optional — write-only, not echoed back
-  "filters": ["Pharmacy"]           // optional — write-only, not echoed back
+  "search_radius": 25,              // optional — read back on GET
+  "filters": ["Pharmacy"],          // optional — read back on GET
+  "show_filters": true              // optional — write-only, not echoed back
 }`,
                 curlBody: `{
     "name": "Updated Name",

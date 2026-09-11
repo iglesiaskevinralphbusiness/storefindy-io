@@ -91,10 +91,18 @@ export default function CustomizeWrapper({ data, available_countries, onPreview=
                     available_countries={available_countries}
 
                     // default settings
+                    //
+                    // Search & results now come from `featuresData` rather than
+                    // the saved locator, so changing the radius or the unit in
+                    // the sidebar re-renders this preview immediately — the same
+                    // way every other sidebar control already behaves.
+                    // `maximum_results_shown` is not passed: the search API caps
+                    // the result set from the saved locator, so it only takes
+                    // effect once the sidebar's changes are saved.
                     form_style={data.form_style}
-                    search_radius={data.search_radius}
-                    distance_unit={data.distance_unit}
-                    default_zoom_level={data.default_zoom_level}
+                    search_radius={featuresData.search_radius}
+                    distance_unit={featuresData.distance_unit}
+                    default_zoom_level={featuresData.default_zoom_level}
                     detect_location={data.detect_location}
                     default_country={data.default_country}
                     default_language={data.default_language}
