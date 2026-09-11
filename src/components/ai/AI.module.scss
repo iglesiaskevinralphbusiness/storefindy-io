@@ -1,0 +1,342 @@
+// Shared styling for every AI panel, so the CSV cleaner, the widget
+// configurator, the locations filter and the documentation assistant read as
+// one feature rather than four. Matches the dashboard's existing card language
+// (white surface, #e4e4e4 hairline, 10px radius) with one accent reserved for
+// AI so a merchant can always tell which parts of the page are suggestions.
+
+$accent: #6d3bf5;
+$accent-soft: #f4f0ff;
+$accent-line: #e3dafd;
+$line: #e4e4e4;
+$muted: #636363;
+$ok: #17803d;
+$warn: #a15c07;
+$warn-soft: #fff8eb;
+$err: #b42318;
+
+.panel {
+    border: 0.5px solid $accent-line;
+    background: linear-gradient(180deg, $accent-soft 0%, #fff 60px);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 16px;
+}
+
+.head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f1f1f;
+
+    svg {
+        color: $accent;
+        flex: 0 0 auto;
+        font-size: 15px;
+    }
+}
+
+.desc {
+    font-size: 12px;
+    line-height: 1.5;
+    color: $muted;
+    margin: 8px 0 12px;
+}
+
+/* ---------- input ---------- */
+
+.prompt {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+}
+
+.promptField {
+    flex: 1 1 auto;
+    min-width: 0;
+
+    textarea,
+    input[type='text'] {
+        width: 100%;
+        resize: vertical;
+        font: inherit;
+        font-size: 13px;
+        line-height: 1.5;
+        color: #1f1f1f;
+        background: #fff;
+        border: 0.5px solid $line;
+        border-radius: 8px;
+        padding: 9px 11px;
+
+        &:focus {
+            outline: none;
+            border-color: $accent;
+            box-shadow: 0 0 0 3px rgba(109, 59, 245, 0.12);
+        }
+
+        &::placeholder {
+            color: #9a9a9a;
+        }
+
+        &:disabled {
+            background: #fafafa;
+            color: #9a9a9a;
+        }
+    }
+}
+
+.examples {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.example {
+    font-size: 11px;
+    color: $muted;
+    background: #fff;
+    border: 0.5px solid $line;
+    border-radius: 20px;
+    padding: 5px 10px;
+    cursor: pointer;
+    text-align: left;
+
+    &:hover {
+        border-color: $accent;
+        color: $accent;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: default;
+    }
+}
+
+/* ---------- progress ---------- */
+
+.progress {
+    margin-top: 12px;
+}
+
+.progressHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 11px;
+    color: $muted;
+    margin-bottom: 6px;
+}
+
+.progressTrack {
+    height: 4px;
+    border-radius: 4px;
+    background: #eee;
+    overflow: hidden;
+}
+
+.progressBar {
+    height: 100%;
+    background: $accent;
+    border-radius: 4px;
+    transition: width 0.2s ease;
+}
+
+// Used when a download reports no total length: a sliding sliver instead of a
+// bar that would otherwise sit at 0% and look stuck.
+.progressBar.indeterminate {
+    width: 35% !important;
+    animation: slide 1.1s ease-in-out infinite;
+}
+
+@keyframes slide {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(300%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .progressBar.indeterminate {
+        animation: none;
+        width: 100% !important;
+        opacity: 0.4;
+    }
+}
+
+/* ---------- messages ---------- */
+
+.note,
+.error,
+.warning {
+    font-size: 12px;
+    line-height: 1.5;
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin-top: 12px;
+}
+
+.note {
+    color: $muted;
+    background: #fafafa;
+    border: 0.5px solid $line;
+}
+
+.warning {
+    color: $warn;
+    background: $warn-soft;
+    border: 0.5px solid #f3e0bd;
+}
+
+.error {
+    color: $err;
+    background: #fef3f2;
+    border: 0.5px solid #fbd6d2;
+}
+
+/* ---------- change list ---------- */
+
+.changes {
+    margin-top: 12px;
+    border: 0.5px solid $line;
+    border-radius: 8px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.changesHead {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 11px;
+    background: #fafafa;
+    border-bottom: 0.5px solid $line;
+    font-size: 11px;
+    font-weight: 600;
+    color: #1f1f1f;
+}
+
+.changesCount {
+    margin-left: auto;
+    font-weight: 400;
+    color: $muted;
+}
+
+.changeList {
+    max-height: 260px;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar { width: 4px; }
+    &::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+}
+
+.change {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 11px;
+    border-bottom: 0.5px solid #f2f2f2;
+    font-size: 12px;
+
+    &:last-child { border-bottom: none; }
+}
+
+.changeCheck {
+    margin-top: 2px;
+    flex: 0 0 auto;
+    accent-color: $accent;
+}
+
+.changeBody {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.changeLabel {
+    color: #1f1f1f;
+    font-weight: 500;
+}
+
+.changeValues {
+    margin-top: 2px;
+    color: $muted;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    word-break: break-word;
+}
+
+.from {
+    text-decoration: line-through;
+    opacity: 0.65;
+}
+
+.to {
+    color: $ok;
+    font-weight: 500;
+}
+
+.swatch {
+    display: inline-block;
+    width: 11px;
+    height: 11px;
+    border-radius: 3px;
+    border: 0.5px solid rgba(0, 0, 0, 0.2);
+    vertical-align: -1px;
+    margin-right: 4px;
+}
+
+.changeNote {
+    margin-top: 2px;
+    font-size: 11px;
+    color: $warn;
+}
+
+.changeSource {
+    flex: 0 0 auto;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: $accent;
+    background: $accent-soft;
+    border-radius: 20px;
+    padding: 2px 7px;
+    margin-top: 1px;
+}
+
+/* ---------- actions ---------- */
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.rowRef {
+    font-size: 11px;
+    color: $muted;
+    padding: 8px 11px 2px;
+    font-weight: 600;
+    background: #fff;
+}
+
+.unsupported {
+    font-size: 12px;
+    line-height: 1.5;
+    color: $muted;
+    background: #fafafa;
+    border: 0.5px solid $line;
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+
+    svg {
+        flex: 0 0 auto;
+        margin-top: 2px;
+        color: #9a9a9a;
+    }
+}

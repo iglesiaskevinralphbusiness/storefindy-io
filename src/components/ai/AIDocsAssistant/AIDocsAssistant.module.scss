@@ -1,0 +1,507 @@
+// A small help assistant, not a full-screen chatbot: a pill in the corner that
+// opens a 380px panel. On a phone it becomes a bottom sheet, because a floating
+// card would cover the documentation it is quoting.
+
+$accent: #6d3bf5;
+$accent-soft: #f4f0ff;
+$accent-line: #e3dafd;
+$line: #e4e4e4;
+$muted: #636363;
+
+.launcher {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 900;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #fff;
+    background: $accent;
+    border: none;
+    border-radius: 24px;
+    padding: 11px 18px;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(109, 59, 245, 0.28);
+
+    &:hover { background: #5c2fe0; }
+
+    svg { font-size: 16px; }
+}
+
+.panel {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 901;
+    width: 380px;
+    max-width: calc(100vw - 32px);
+    max-height: min(560px, calc(100vh - 48px));
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border: 0.5px solid $line;
+    border-radius: 14px;
+    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.16);
+    overflow: hidden;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    border-bottom: 0.5px solid $line;
+    background: $accent-soft;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f1f1f;
+
+    > svg {
+        color: $accent;
+        font-size: 15px;
+    }
+}
+
+.close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: $muted;
+    cursor: pointer;
+    display: flex;
+    padding: 2px;
+    border-radius: 4px;
+
+    &:hover { color: #1f1f1f; background: rgba(0, 0, 0, 0.05); }
+}
+
+.body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 14px;
+
+    &::-webkit-scrollbar { width: 4px; }
+    &::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+}
+
+.prompt {
+    font-size: 13px;
+    font-weight: 500;
+    color: #1f1f1f;
+    margin-bottom: 10px;
+}
+
+.suggestions {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    button {
+        width: 100%;
+        text-align: left;
+        font-size: 12px;
+        color: #333;
+        background: #fafafa;
+        border: 0.5px solid $line;
+        border-radius: 8px;
+        padding: 8px 11px;
+        cursor: pointer;
+
+        &:hover {
+            border-color: $accent;
+            color: $accent;
+            background: $accent-soft;
+        }
+    }
+}
+
+.scope {
+    margin: 12px 0 0;
+    font-size: 11px;
+    line-height: 1.5;
+    color: #8a8a8a;
+}
+
+/* ---------- answer ---------- */
+
+.asked {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1f1f1f;
+    background: $accent-soft;
+    border-radius: 10px 10px 10px 2px;
+    padding: 8px 11px;
+    margin-bottom: 12px;
+}
+
+.passage {
+    border: 0.5px solid $line;
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+}
+
+.passageHead {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: $accent;
+    font-weight: 600;
+    margin-bottom: 6px;
+
+    span { color: $muted; font-weight: 500; text-transform: none; letter-spacing: 0; }
+}
+
+// The panel renders the documentation page's own block components (DocBlock),
+// but with THIS stylesheet rather than the dashboard's.
+//
+// Two reasons. The dashboard's doc styles are all nested inside
+// `.documentation`, so they never applied to a panel that isn't inside that
+// element — notes, code headers, plan pills and FAQ entries were rendering
+// unstyled. And importing Dashboard.module.scss to get them would have pulled
+// 160KB of dashboard CSS into every page the assistant appears on, including
+// the public home page. So the handful of block classes DocBlock actually uses
+// are defined here, at panel scale.
+.passageBody {
+    font-size: 12px;
+    line-height: 1.6;
+    color: #333;
+
+    p { margin: 0 0 8px; }
+    p:last-child { margin-bottom: 0; }
+
+    ul {
+        margin: 0 0 8px;
+        padding-left: 16px;
+    }
+    li { margin-bottom: 4px; }
+
+    h4 {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #1f1f1f;
+        margin: 10px 0 6px;
+
+        &:first-child { margin-top: 0; }
+    }
+
+    code {
+        font-family: monospace;
+        font-size: 11px;
+        background: #f0f0ee;
+        border-radius: 3px;
+        padding: 1px 4px;
+        color: #555;
+    }
+}
+
+/* ---------- DocBlock classes, panel-scaled ---------- */
+
+.docTable {
+    width: 100%;
+    font-size: 11px;
+    border-collapse: collapse;
+    display: block;
+    overflow-x: auto;
+    margin: 0 0 8px;
+
+    th {
+        font-size: 10px;
+        font-weight: 600;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        background: #fafaf8;
+        text-align: left;
+    }
+
+    th, td {
+        border: 0.5px solid $line;
+        padding: 5px 7px;
+        vertical-align: top;
+    }
+
+    td strong { color: #1a1a1a; font-weight: 600; }
+}
+
+.docNote {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 0 0 8px;
+    padding: 8px 10px;
+    font-size: 11px;
+    line-height: 1.55;
+    border-radius: 6px;
+
+    svg { flex-shrink: 0; margin-top: 2px; font-size: 13px; }
+    p { margin: 0; font-size: 11px; }
+
+    &.info {
+        color: #185fa5;
+        background: #f0f6fc;
+        border: 0.5px solid #d6e6f5;
+        p { color: #3f6a94; }
+        svg { color: #185fa5; }
+    }
+    &.tip {
+        color: #3b6d11;
+        background: #eaf3de;
+        border: 0.5px solid #b5d98a;
+        p { color: #4a6d2a; }
+        svg { color: #3b6d11; }
+    }
+    &.warn {
+        color: #92700a;
+        background: #fffbe6;
+        border: 0.5px solid #ffe08a;
+        p { color: #8a6d00; }
+        svg { color: #d9a400; }
+    }
+}
+
+.docCode {
+    background: #1e1e2e;
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 0 0 8px;
+
+    pre {
+        margin: 0;
+        padding: 9px;
+        font-size: 10px;
+        line-height: 1.5;
+        color: #f9fafb;
+        overflow-x: auto;
+    }
+}
+
+.docCodeTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 9px;
+    background: #16162a;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.docCodeLang {
+    font-size: 10px;
+    color: #888;
+    font-family: monospace;
+}
+
+.docCodeDots {
+    display: flex;
+    gap: 4px;
+
+    span {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.16);
+    }
+}
+
+.docSteps {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0 0 8px;
+}
+
+.docStep {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+.docStepNum {
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: $accent-soft;
+    color: $accent;
+    font-size: 10px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.docStepTitle {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1f1f1f;
+}
+
+.docStepDesc {
+    font-size: 11px;
+    color: $muted;
+    line-height: 1.5;
+}
+
+.docPlanRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0 0 8px;
+}
+
+.docPlanPill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 4px 9px;
+    border-radius: 20px;
+    border: 0.5px solid $line;
+    background: #fafaf8;
+    color: #555;
+
+    svg { font-size: 11px; }
+
+    &.free { background: #fffbe6; border-color: #ffe54c; color: #171717; }
+    &.pro { background: #171717; border-color: #171717; color: #ffe54c; }
+    &.biz { background: #ede9fe; border-color: #d6cbfa; color: #635bff; }
+}
+
+.docFaq {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.docFaqItem {
+    padding-bottom: 8px;
+    border-bottom: 0.5px solid #f2f2f2;
+
+    &:last-child { border-bottom: none; padding-bottom: 0; }
+}
+
+.docFaqQ {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #1f1f1f;
+    margin-bottom: 4px;
+
+    svg { flex-shrink: 0; margin-top: 2px; color: $accent; }
+}
+
+.docFaqA {
+    font-size: 11px;
+    line-height: 1.6;
+    color: $muted;
+}
+
+.passageLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: $accent;
+    text-decoration: none;
+    margin-top: 6px;
+
+    &:hover { text-decoration: underline; }
+}
+
+.notFound {
+    font-size: 12px;
+    line-height: 1.6;
+    color: #333;
+    background: #fafafa;
+    border: 0.5px solid $line;
+    border-radius: 10px;
+    padding: 11px 13px;
+
+    p {
+        margin: 8px 0 0;
+        color: $muted;
+    }
+}
+
+/* ---------- footer ---------- */
+
+.footer {
+    display: flex;
+    gap: 8px;
+    padding: 10px 12px;
+    border-top: 0.5px solid $line;
+    background: #fff;
+
+    input {
+        flex: 1 1 auto;
+        min-width: 0;
+        font: inherit;
+        font-size: 13px;
+        color: #1f1f1f;
+        background: #fff;
+        border: 0.5px solid $line;
+        border-radius: 20px;
+        padding: 8px 13px;
+
+        &:focus {
+            outline: none;
+            border-color: $accent;
+            box-shadow: 0 0 0 3px rgba(109, 59, 245, 0.12);
+        }
+
+        &::placeholder { color: #9a9a9a; }
+    }
+
+    button {
+        flex: 0 0 auto;
+        width: 34px;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: $accent;
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+
+        &:hover { background: #5c2fe0; }
+
+        &:disabled {
+            background: #d8d8d8;
+            cursor: default;
+        }
+    }
+}
+
+@media (max-width: 600px) {
+    .launcher {
+        right: 16px;
+        bottom: 16px;
+    }
+
+    // Bottom sheet: the panel quotes the documentation behind it, so it should
+    // sit against an edge rather than float over the middle of the text.
+    .panel {
+        right: 0;
+        left: 0;
+        bottom: 0;
+        width: auto;
+        max-width: none;
+        max-height: 78vh;
+        border-radius: 14px 14px 0 0;
+        border-bottom: none;
+    }
+}

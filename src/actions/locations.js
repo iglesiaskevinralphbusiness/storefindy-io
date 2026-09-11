@@ -267,7 +267,12 @@ export async function getLocationsInactiveIds(user_id){
     return getInactiveLocationIds(user_id);
 }
 
-export async function getLocations(page=1, rows=10, sort='createdAt', order='asc', search='', locators='') {
+/**
+ * `ai` carries the Locations page's natural-language filter as the JSON its URL
+ * parameter holds. It is validated inside queryLocations(); the REST endpoint
+ * never passes it, so GET /api/v1/locations keeps exactly its current contract.
+ */
+export async function getLocations(page=1, rows=10, sort='createdAt', order='asc', search='', locators='', ai='') {
 
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -283,6 +288,7 @@ export async function getLocations(page=1, rows=10, sort='createdAt', order='asc
         order,
         search,
         locators,
+        ai,
     });
 }
 

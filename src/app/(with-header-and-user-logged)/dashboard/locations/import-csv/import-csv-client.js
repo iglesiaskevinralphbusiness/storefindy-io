@@ -24,6 +24,12 @@ import {
     buildCsvTemplate,
     parseOptionalLocationFields,
 } from '@/lib/csv-import-fields';
+import AICsvCleaner, { AIMappingSuggest } from '@/components/ai/AICsvCleaner';
+import {
+    HOURS_TEXT_FIELD,
+    HOURS_TEXT_LABEL,
+    HOURS_TEXT_SYNONYMS,
+} from '@/lib/ai/csv-cleaner';
 import styles from '../../Dashboard.module.scss';
 import csv from './ImportCsv.module.scss';
 
@@ -285,10 +291,19 @@ const REQUIRED_FIELDS = ['name', 'street', 'city', 'state', 'country', 'lat', 'l
 const OPTIONAL_FIELDS = CSV_OPTIONAL_FIELDS;
 const SF_FIELDS = [...REQUIRED_FIELDS, ...OPTIONAL_FIELDS];
 
+// A column can also be mapped to the AI cleaner's free-text hours field. It is
+// NOT a Storefindy field: it never appears in the template, in the preview
+// table, or in what is sent to the server. The cleaner reads it, expands it into
+// `hours_mon`…`hours_sun`, and drops it. Kept out of SF_FIELDS for exactly that
+// reason — that list is the schema, this one is only what the mapping step
+// offers.
+const MAPPABLE_FIELDS = [...SF_FIELDS, HOURS_TEXT_FIELD];
+
 const FIELD_LABELS = {
     name: 'Store name', street: 'Street address', city: 'City', state: 'State / Province', country: 'Country',
     lat: 'Latitude (decimal)', lng: 'Longitude (decimal)',
     ...CSV_FIELD_LABELS,
+    [HOURS_TEXT_FIELD]: HOURS_TEXT_LABEL,
 };
 
 // What each column has to look like — shown next to the column name on the
@@ -297,6 +312,7 @@ const FIELD_HINTS = {
     name: 'Store name', street: 'Street address', city: 'City', state: 'State / Province', country: 'Country name or 2-letter code',
     lat: 'Latitude (decimal)', lng: 'Longitude (decimal)',
     ...CSV_FIELD_HINTS,
+    [HOURS_TEXT_FIELD]: 'A whole week of opening hours in one cell, e.g. Mon-Fri 9-6, Sat 10-4, Closed Sunday',
 };
 
 // Header synonyms used to auto-match a CSV column to a Storefindy field.
@@ -309,6 +325,9 @@ const SYNONYMS = {
     lat: ['lat', 'latitude'],
     lng: ['lng', 'lon', 'long', 'longitude'],
     ...CSV_SYNONYMS,
+    // A single "hours" / "opening_hours" column is a whole week in one cell,
+    // which is the AI cleaner's job rather than any one day column's.
+    [HOURS_TEXT_FIELD]: HOURS_TEXT_SYNONYMS,
 };
 
 // Sample values for the template's `filters` column. A filter only means
@@ -394,7 +413,7 @@ function parseCSV(text) {
 
 function autoMatch(header) {
     const norm = header.trim().toLowerCase().replace(/[\s-]+/g, '_');
-    for (const field of SF_FIELDS) {
+    for (const field of MAPPABLE_FIELDS) {
         if (SYNONYMS[field].includes(norm)) return field;
     }
     return '';
@@ -446,6 +465,14 @@ function ImportWizard({ locators }) {
     const [result, setResult] = useState(null); // server response on success
     const [tooltip, setTooltip] = useState(null); // { top, left, lines } for the status hover tooltip
 
+    // Cells the AI clean-up changed, as `rowIndex -> { field: value }`.
+    // Held apart from `rows` rather than written into it, because the clean-up
+    // can fill in a column the CSV never had (a free-text hours cell expands
+    // into seven day columns that have no position in the parsed array). Layered
+    // over each mapped row below, so the preview, the counts and the import all
+    // see the cleaned data through the code that was already there.
+    const [aiOverrides, setAiOverrides] = useState({});
+
     // Show the status tooltip anchored below the hovered badge (fixed-positioned so it isn't clipped).
     function showTooltip(e, lines) {
         const r = e.currentTarget.getBoundingClientRect();
@@ -467,18 +494,46 @@ function ImportWizard({ locators }) {
     // only mapped columns are worth warning about.
     const mappedFields = useMemo(() => new Set(Object.values(mapping).filter(Boolean)), [mapping]);
 
+    // What the step-3 AI panel works with: the columns autoMatch() left on
+    // "skip", and the fields still free for one of them to claim.
+    const unmappedHeaders = useMemo(
+        () => headers.filter(header => !mapping[header]),
+        [headers, mapping]
+    );
+    const availableFields = useMemo(
+        () => MAPPABLE_FIELDS
+            .filter(field => !mappedFields.has(field))
+            // The model is ranking against a description, not a column name, so
+            // it is given the human label — "Latitude (decimal)" matches a
+            // header called "Lat / Y coordinate" where the bare key would not.
+            .map(field => ({ field, label: FIELD_HINTS[field] ?? FIELD_LABELS[field] ?? field })),
+        [mappedFields]
+    );
+
     // Per-row validation. Error (row is skipped) if a required field is missing
     // or lat/lng isn't numeric. Warning (row still imports) if a mapped optional
     // cell is blank, if the country didn't match, or if an optional value can't
     // be parsed into the type the schema wants — parseOptionalLocationFields()
     // decides that last one, and the server re-runs the very same check.
-    const evaluated = useMemo(() => rows.map(row => {
-        // Map the parsed row to a { field: value } object using the current mapping.
+    // The mapped rows exactly as the file supplies them — including the AI-only
+    // free-text hours column, which the cleaner reads and nothing else does.
+    // This is what the cleaner is given; `evaluated` below is what everything
+    // else sees.
+    const mappedRows = useMemo(() => rows.map(row => {
         const obj = {};
         headers.forEach((h, i) => {
             const field = mapping[h];
             if (field) obj[field] = (row[i] ?? '').trim();
         });
+        return obj;
+    }), [rows, headers, mapping]);
+
+    const evaluated = useMemo(() => mappedRows.map((mapped, rowIndex) => {
+        // Start from the file's own values, then layer the accepted AI
+        // clean-up over them. The free-text hours column is dropped here: it is
+        // not a schema field, so it must not reach validation or the server.
+        const obj = { ...mapped, ...(aiOverrides[rowIndex] ?? {}) };
+        delete obj[HOURS_TEXT_FIELD];
 
         // Resolve the country to a code. Keep the original label for the warning,
         // and store the resolved code (defaulting to "us" when no match is found).
@@ -522,7 +577,7 @@ function ImportWizard({ locators }) {
             status = 'warn';
         }
         return { obj, status, countryRaw, countryUnmatched, issues, invalidFields };
-    }), [rows, mapping, headers, allowedFilters, mappedFields]);
+    }), [mappedRows, aiOverrides, allowedFilters, mappedFields]);
 
     const counts = useMemo(() => ({
         ok: evaluated.filter(r => r.status === 'ok').length,
@@ -555,6 +610,8 @@ function ImportWizard({ locators }) {
             setMapping(auto);
             setFileName(file.name);
             setFileSize(file.size);
+            // A new file invalidates any clean-up accepted for the previous one.
+            setAiOverrides({});
         };
         reader.readAsText(file);
     }
@@ -586,6 +643,25 @@ function ImportWizard({ locators }) {
         a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(buildCsvTemplate(SF_FIELDS, rows));
         a.download = 'storefindy_template.csv';
         a.click();
+    }
+
+    /**
+     * Store the cleaner's result as per-row overrides.
+     *
+     * Only the cells that actually differ are kept, so the preview can show
+     * exactly what the clean-up touched and "Undo" is a single setState.
+     */
+    function applyAiClean(cleanedRows) {
+        const overrides = {};
+        cleanedRows.forEach((cleaned, index) => {
+            const original = mappedRows[index] ?? {};
+            const diff = {};
+            for (const [field, value] of Object.entries(cleaned)) {
+                if ((original[field] ?? '') !== value) diff[field] = value;
+            }
+            if (Object.keys(diff).length) overrides[index] = diff;
+        });
+        setAiOverrides(overrides);
     }
 
     function next() {
@@ -620,6 +696,7 @@ function ImportWizard({ locators }) {
         setMapping({});
         setImported(false);
         setResult(null);
+        setAiOverrides({});
     }
 
     const fmtSize = (b) => b < 1024 ? `${b} B` : b < 1048576 ? `${(b / 1024).toFixed(1)} KB` : `${(b / 1048576).toFixed(1)} MB`;
@@ -802,7 +879,15 @@ function ImportWizard({ locators }) {
                     <p className={csv.cardDesc}>
                         We detected your CSV columns below. Match each to the correct Storefindy field. All{' '}
                         <span className={csv.reqHl}>required</span> fields must be mapped before proceeding.
+                        A column holding a whole week of hours in one cell &mdash; <em>Mon-Fri 9-6, Sat 10-4</em> &mdash;
+                        maps to <code>{HOURS_TEXT_FIELD} (AI)</code>, which the clean-up on the next step
+                        expands into the seven day columns.
                     </p>
+                    <AIMappingSuggest
+                        unmappedHeaders={unmappedHeaders}
+                        availableFields={availableFields}
+                        onApply={(suggestions) => setMapping(m => ({ ...m, ...suggestions }))}
+                    />
                     <table className={csv.mappingTable}>
                         <thead>
                             <tr>
@@ -830,7 +915,11 @@ function ImportWizard({ locators }) {
                                                 onChange={(e) => setMapping(m => ({ ...m, [h]: e.target.value }))}
                                             >
                                                 <option value="">{SKIP}</option>
-                                                {SF_FIELDS.map(f => <option key={f} value={f}>{f}</option>)}
+                                                {MAPPABLE_FIELDS.map(f => (
+                                                    <option key={f} value={f}>
+                                                        {f === HOURS_TEXT_FIELD ? `${f} (AI)` : f}
+                                                    </option>
+                                                ))}
                                             </select>
                                         </td>
                                         <td>
@@ -850,6 +939,13 @@ function ImportWizard({ locators }) {
             {step === 4 && (
                 <div className={csv.card}>
                     <div className={csv.cardTitle}><LuTable /> Preview Import Data</div>
+                    <AICsvCleaner
+                        rows={mappedRows}
+                        allowedFilters={allowedFilters}
+                        applied={Object.keys(aiOverrides).length > 0}
+                        onApply={applyAiClean}
+                        onRevert={() => setAiOverrides({})}
+                    />
                     <div className={csv.previewHeader}>
                         <div className={csv.previewStats}>
                             <div className={`${csv.previewStat} ${csv.ok}`}><LuCircleCheck /> {counts.ok} ready</div>

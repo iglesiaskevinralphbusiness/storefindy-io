@@ -9,6 +9,8 @@ import { serializeForClient, getUserPlan } from '@/utils/helpers';
 import { resolveMapLibrarySelection } from '@/utils/constant/mapbox-styles';
 import { isValidObjectId } from 'mongoose';
 import { plans } from '@/utils/constant/pricing';
+import { MAXIMUM_RESULTS_SHOWN, ZOOM_LEVELS } from '@/utils/constant';
+import { DISTANCE_UNITS, getSearchRadiiValues, convertDistance } from '@/utils/distance';
 import { queryLocators, queryLocatorById, getInactiveLocatorIds } from '@/lib/locators-query';
 import { queryAnalyticsData } from '@/lib/analytics-query';
 import mongoose from "mongoose";
@@ -186,6 +188,49 @@ export async function postDeleteLocator(locator_id) {
     return { status: "success", message: 'Locator deleted successfully' };
 }
 
+/**
+ * Pick the search & results values out of a customize payload, keeping only the
+ * ones that appear in the option lists the forms offer.
+ *
+ * `search_radius` is validated against the list for the unit being saved, so
+ * switching mi -> km and back can't leave a mile value labelled as kilometres.
+ * Anything unrecognised falls back to the locator's current value.
+ *
+ * @param {object} features The `features` half of the customize payload.
+ * @param {object} locator The locator as it stands in the database.
+ */
+function resolveSearchSettings(features, locator) {
+    const unit = DISTANCE_UNITS.some((option) => option.code === features?.distance_unit)
+        ? features.distance_unit
+        : locator.distance_unit;
+
+    const pick = (value, options, fallback) => (
+        options.includes(Number(value)) ? Number(value) : Number(fallback)
+    );
+
+    return {
+        distance_unit: unit,
+        search_radius: pick(
+            features?.search_radius,
+            getSearchRadiiValues(unit),
+            // The saved radius was stored under the unit the locator had before
+            // this save; converting it keeps the fallback meaningful when the
+            // unit is what changed.
+            convertDistance(Number(locator.search_radius), locator.distance_unit, unit)
+        ),
+        maximum_results_shown: pick(
+            features?.maximum_results_shown,
+            MAXIMUM_RESULTS_SHOWN.map((option) => Number(option.code)),
+            locator.maximum_results_shown
+        ),
+        default_zoom_level: pick(
+            features?.default_zoom_level,
+            ZOOM_LEVELS.map((option) => Number(option.code)),
+            locator.default_zoom_level
+        ),
+    };
+}
+
 export async function functionSaveCustomizeLocator(locator_id, settings, features) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -214,6 +259,14 @@ export async function functionSaveCustomizeLocator(locator_id, settings, feature
     const user_plan = user ? getUserPlan(String(user._id), user.plan) : 'free';
     const mapLibrary = resolveMapLibrarySelection(features, user_plan);
 
+    // Search & results settings are editable from the customize sidebar as well
+    // as Edit Locator, and the AI configurator can propose them — so they are
+    // re-checked here against the exact option lists both forms offer. An
+    // unrecognised value keeps whatever the locator already had rather than
+    // being written, because these are required Number paths that mongoose
+    // would otherwise cast a stray string to NaN on.
+    const search = resolveSearchSettings(features, locator);
+
     // update locator
     const { focused_zoom, dynamic_search, ...restFeatures } = features;
     await LocatorModel.findByIdAndUpdate(locator_id, {
@@ -221,6 +274,7 @@ export async function functionSaveCustomizeLocator(locator_id, settings, feature
         focused_zoom,
         dynamic_search,
         ...restFeatures,
+        ...search,
         map_style: mapLibrary.map_style,
         map_library: mapLibrary.map_library,
         mapbox_style_source: mapLibrary.mapbox_style_source,

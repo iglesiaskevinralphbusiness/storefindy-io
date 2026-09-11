@@ -9,6 +9,8 @@ import { getLocations } from '@/actions/locations';
 import { getLocators } from '@/actions/locator';
 import Pagination from '@/components/Pagination';
 import CreateAndIndicator from '@/components/Dashboard/CreateAndIndicator';
+import AILocationFilter from '@/components/ai/AILocationFilter';
+import { FILTER_PARAM, decodeLocationFilters } from '@/lib/ai/location-filter';
 
 export const metadata = {
     title: 'Locations | Store Findy',
@@ -22,11 +24,18 @@ export default async function LocationsPage({ searchParams }) {
         sort='createdAt',
         order='asc',
         search='',
-        locators=''
+        locators='',
+        // The natural-language filter, as the JSON list AILocationFilter puts in
+        // the URL. Validated inside the query; anything malformed is ignored.
+        [FILTER_PARAM]: ai=''
     } = await searchParams;
 
     const locatorsData = await getLocators();
-    const locationsData = await getLocations(page, rows, sort, order, search, locators);
+    const locationsData = await getLocations(page, rows, sort, order, search, locators, ai);
+
+    // The filter chips render server-side from the same list the query ran, so
+    // what the merchant sees described is exactly what was applied.
+    const aiFilters = decodeLocationFilters(ai);
 
     return (
         <>
@@ -44,6 +53,7 @@ export default async function LocationsPage({ searchParams }) {
                             buttonHref="/dashboard/locations/add-location"
                             used={locationsData.used}
                         />
+                        <AILocationFilter locators={locatorsData} active={aiFilters} />
                         <LocationFilter locators={locatorsData} />
                         <LocationsTable data={locationsData.items} sort={sort} order={order} />
                     </div>

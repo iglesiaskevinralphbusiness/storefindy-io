@@ -2,11 +2,13 @@
 // (a "use server" module) so both the dashboard server action `getLocations()`
 // and the public REST route `GET /api/v1/locations` return the exact same shape
 // from the exact same query.
+import mongoose from 'mongoose';
 import { dbConnect } from '@/config/mongo.config';
 import { LocationModel, UserModel } from '@/mongo';
 import { serializeForClient, getUserPlan } from '@/utils/helpers';
 import { plans } from '@/utils/constant/pricing';
 import { redirect } from 'next/navigation';
+import { decodeLocationFilters, filterFieldByName } from '@/lib/ai/location-filter';
 import {
     LIMITS,
     escapeRegex,
@@ -56,6 +58,78 @@ export async function getInactiveLocationIds(user_id) {
 }
 
 /**
+ * Turn a validated filter list into `$match` terms.
+ *
+ * THE SECURITY BOUNDARY FOR THE AI FILTER LIVES HERE.
+ * `decodeLocationFilters()` has already checked the list against the Zod schema
+ * in src/lib/ai/location-filter.js, but this function trusts none of that on its
+ * own: the Mongo *key* comes from `filterFieldByName(...).column` — a constant
+ * in that catalogue — and never from the caller's `field` string, and every
+ * value is used as a value only. A `contains` term is compiled as a regex, so it
+ * is escaped exactly as `search` is, for the same catastrophic-backtracking
+ * reason. There is no branch in which caller-supplied text becomes an operator.
+ *
+ * `status` is the one field with no column: it means "inside or outside the
+ * plan's location allowance", which is derived at read time. It is applied as an
+ * `_id` set built from getInactiveLocationIds().
+ *
+ * @param {Array<{field: string, operator: string, value: any}>} filters
+ * @param {string[]} inactiveIds Location ids that fall outside the plan limit.
+ * @returns {object} Terms to merge into the aggregation's `$match`.
+ */
+function buildFilterTerms(filters, inactiveIds) {
+    const terms = {};
+
+    for (const filter of filters) {
+        const entry = filterFieldByName(filter.field);
+        if (!entry) continue;
+
+        if (filter.field === 'status') {
+            // Strings out of getInactiveLocationIds(); `_id` is an ObjectId, so
+            // they have to be cast or the set would never match anything.
+            const ids = inactiveIds
+                .filter((id) => mongoose.Types.ObjectId.isValid(id))
+                .map((id) => new mongoose.Types.ObjectId(id));
+            const wantsInactive = filter.value === 'inactive';
+            const inverted = filter.operator === 'not_equals';
+            terms._id = (wantsInactive !== inverted) ? { $in: ids } : { $nin: ids };
+            continue;
+        }
+
+        const column = entry.column;
+        if (!column) continue;
+
+        if (entry.kind === 'boolean') {
+            terms[column] = filter.operator === 'not_equals' ? { $ne: filter.value } : filter.value;
+            continue;
+        }
+
+        const value = String(filter.value).trim();
+        if (!value) continue;
+
+        if (entry.kind === 'tag') {
+            // `filters` is an array of strings on the document; Mongo matches an
+            // array against a scalar element-wise, so an exact tag needs no
+            // `$elemMatch`. Case-insensitive so "free wifi" finds "Free Wifi".
+            const pattern = new RegExp(`^${escapeRegex(value)}$`, 'i');
+            terms[column] = filter.operator === 'not_equals' ? { $not: pattern } : pattern;
+            continue;
+        }
+
+        // Text fields.
+        if (filter.operator === 'contains') {
+            terms[column] = { $regex: escapeRegex(value), $options: 'i' };
+        } else if (filter.operator === 'not_equals') {
+            terms[column] = { $not: new RegExp(`^${escapeRegex(value)}$`, 'i') };
+        } else {
+            terms[column] = { $regex: `^${escapeRegex(value)}$`, $options: 'i' };
+        }
+    }
+
+    return terms;
+}
+
+/**
  * Paginated locations for one user, with the parent locator's name, a
  * concatenated address, and a plan-derived active/inactive status.
  *
@@ -67,6 +141,11 @@ export async function getInactiveLocationIds(user_id) {
  * @param {string}        options.order    'asc' | 'desc'.
  * @param {string}        options.search   Free text matched against name/address parts.
  * @param {string}        options.locators Comma-separated locator IDs to filter by.
+ * @param {string}        options.ai       Structured filter list produced by the
+ *   Locations page's natural-language filter, as the JSON its URL parameter
+ *   carries. Validated by decodeLocationFilters() before it is read; anything
+ *   malformed means "no filter". Absent for every other caller, including the
+ *   REST API, which keeps its existing contract.
  */
 export async function queryLocations({
     user_id,
@@ -76,6 +155,7 @@ export async function queryLocations({
     order = 'asc',
     search = '',
     locators = '',
+    ai = '',
 } = {}) {
     // build the query
     //
@@ -112,12 +192,28 @@ export async function queryLocations({
 
     await dbConnect();
 
+    // IDs of the locations beyond the plan's allowance. Needed here rather than
+    // only after the query, because the natural-language filter can ask for
+    // active/inactive, which is a `_json`-free derived value with no column.
+    const inactiveIds = await getInactiveLocationIds(user_id);
+
+    // Natural-language filter, if the page sent one. Re-validated from scratch:
+    // see buildFilterTerms() for why none of this can become a Mongo operator.
+    const aiFilters = decodeLocationFilters(ai);
+    if (aiFilters.length) {
+        Object.assign(match, buildFilterTerms(aiFilters, inactiveIds));
+    }
+
     // pagination — clamped so `$limit`/`$skip` can't be handed an arbitrary
     // number of documents to scan or return.
     const currentPage = toBoundedInt(page, { min: 1, max: LIMITS.page, fallback: 1 });
     const currentRows = toBoundedInt(rows, { min: 1, max: LIMITS.pageSize, fallback: 10 });
 
-    const totalCount = await LocationModel.countDocuments({ user_id });
+    // Counted over the same `match` the results use, so the pager reflects the
+    // filtered set. (It previously counted every location the user owns, which
+    // was invisible while `search` was the only filter and would have been
+    // plainly wrong now that a filter can cut the set to a handful.)
+    const totalCount = await LocationModel.countDocuments(match);
     const totalPages = Math.ceil(totalCount / currentRows);
 
     // sort — whitelisted field, see SORTABLE_FIELDS
@@ -193,8 +289,8 @@ export async function queryLocations({
         { $limit: currentRows }
     ]));
 
-    // inactive ids - set inactive locations that are beyond the plan's limit
-    const inactiveIds = await getInactiveLocationIds(user_id);
+    // Mark the rows that fall beyond the plan's limit (`inactiveIds` was
+    // resolved above, because the filter terms may also depend on it).
     const locationsWithStatus = locations.map(location => ({
         ...location,
         status: inactiveIds.includes(String(location._id)) ? "inactive" : "active"
