@@ -7,17 +7,34 @@
 
 // Widget rendering config, raw analytics rows, and Mongo internals.
 const HIDDEN_LOCATOR_FIELDS = [
-    // default map view and search behaviour
+    // default map view
     'default_country',
-    'default_zoom_level',
-    'distance_unit',
-    'search_radius',
-    'maximum_results_shown',
-    // NOTE: `filters` is deliberately NOT hidden. It is the locator's own list of
-    // categories, and a location's `filters` may only contain values from it —
+    // NOTE: the search settings — `default_zoom_level`, `distance_unit`,
+    // `search_radius` and `maximum_results_shown` — are deliberately NOT hidden.
+    //
+    // They used to be, which forced any API client that edits a locator to keep
+    // its own copy of what it last wrote: the values were writable but not
+    // readable, so a form had nothing to prefill from. The WordPress plugin does
+    // exactly that (`SF_SL_Api::mirrored_fields()`), and a mirror can only ever
+    // be as fresh as the last write it saw. Once the customize sidebar started
+    // editing these four as well, a merchant could change the radius there and
+    // have the plugin's next save silently put the old one back.
+    //
+    // Hiding them was never buying anything either: /api/get-locator returns the
+    // whole locator document to the unauthenticated widget, so these values are
+    // already public to anyone holding a locator ID. They are read-back now so a
+    // client can prefill from the source of truth instead of from a guess.
+    //
+    // `filters` is not hidden for a related reason. It is the locator's own list
+    // of categories, and a location's `filters` may only contain values from it —
     // POST/PUT /locations and the CSV import all drop anything else. Without it
     // in the response a client (the WordPress plugin's import wizard, say) has no
     // way to know which values it is allowed to send.
+    //
+    // The widget feature flags below stay hidden: they have the same staleness
+    // problem, but the plugin reads booleans from its mirror without consulting
+    // the API at all, so un-hiding them would change nothing until that client
+    // is updated too.
     // widget features
     'show_search_bar',
     'detect_location',
