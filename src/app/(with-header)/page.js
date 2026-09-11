@@ -26,6 +26,11 @@ import {
     TbBell,
     TbStar,
     TbWorld,
+    TbSparkles,
+    TbWand,
+    TbListSearch,
+    TbMessageChatbot,
+    TbFileSpreadsheet,
 } from 'react-icons/tb';
 import styles from './page.module.scss';
 import { plans } from '@/utils/constant/pricing';
@@ -55,7 +60,7 @@ const softwareJsonLd = {
     name: 'Storefindy',
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web',
-    description: 'Store locator widget for your website. Fast, map-based, mobile-friendly, and embeddable on any site.',
+    description: 'AI-powered store locator widget for your website. Fast, map-based, mobile-friendly, and embeddable on any site, with AI tools that clean your store list, configure the map from plain language, and answer setup questions.',
     offers: plans.map((plan) => ({
         '@type': 'Offer',
         name: `${plan.name} plan`,
@@ -81,9 +86,9 @@ const wordpressPluginJsonLd = {
     url: 'https://wordpress.org/plugins/storefindy-store-locator/',
 };
 
-const homeTitle = 'Cheapest Store Locator Widget for Your Website — Free Forever Plan | Storefindy';
+const homeTitle = 'AI-Powered Store Locator Widget for Your Website — Free Forever Plan | Storefindy';
 const homeDescription =
-    'Create a store locator for your website in minutes. Fast, map-based, mobile-friendly. Free plan available — no credit card required.';
+    'Create a store locator for your website in minutes. AI cleans your store list, styles the map from a sentence, and answers your questions. Fast, map-based, mobile-friendly. Free plan available — no credit card required.';
 
 export const metadata = {
     title: { absolute: homeTitle },
@@ -112,10 +117,39 @@ const features = [
     { icon: TbDeviceMobile, title: 'Mobile responsive & WCAG compliant', desc: 'The widget adapts perfectly to any screen size. Mobile users get a full-screen map experience optimized for touch and small screens.' },
 ];
 
+// The AI tools, which all live in the merchant's dashboard.
+//
+// Worth being precise about in copy as well as in code: none of this runs on
+// the shopper's side. The embedded widget is exactly as light as it was, which
+// is a selling point rather than a caveat — see the closing note in the section
+// that renders these.
+const aiFeatures = [
+    {
+        icon: TbFileSpreadsheet,
+        title: 'AI cleans your store list',
+        desc: 'Upload the spreadsheet you already have. AI tidies the formatting, turns "Mon-Fri 9-6, Closed Sunday" into proper opening hours, and matches your wording to your own categories. It shows you every change before anything is imported — and it never invents a phone number or an address you did not provide.',
+    },
+    {
+        icon: TbWand,
+        title: 'Design it by describing it',
+        desc: '"Make my store locator dark and show opening hours." AI turns that into a list of exact setting changes, you tick the ones you want, and the live preview updates. Settings you did not mention are never touched, and nothing saves until you say so.',
+    },
+    {
+        icon: TbListSearch,
+        title: 'Find locations in plain language',
+        desc: '"Show unpublished stores in Manila with free wifi." Describe the locations you are looking for instead of setting filters by hand. It only ever narrows what you are looking at — it never changes or deletes anything.',
+    },
+    {
+        icon: TbMessageChatbot,
+        title: 'Ask AI, get a real answer',
+        desc: 'Stuck? Ask a question anywhere in your dashboard and get the answer straight from our documentation, quoted word for word with a link to the full guide. If the documentation does not cover it, it says so instead of guessing.',
+    },
+];
+
 const steps = [
     { num: '1', title: 'Create your free account', desc: 'Sign up in seconds — no credit card required. Your dashboard is ready immediately.' },
-    { num: '2', title: 'Add your store locations', desc: 'Add stores manually on the map or bulk import hundreds of locations from a CSV file.' },
-    { num: '3', title: 'Customize the widget', desc: 'Match your brand colors, pick a map style, and configure features from the visual editor.' },
+    { num: '2', title: 'Add your store locations', desc: 'Add stores manually on the map, or bulk import hundreds from a CSV — with AI cleaning up the spreadsheet as it goes.' },
+    { num: '3', title: 'Customize the widget', desc: 'Match your brand colors, pick a map style, and configure features from the visual editor — or just describe the look you want and let AI set it up.' },
     { num: '4', title: 'Paste the embed code', desc: 'Copy one script tag and paste it into your website. Your store locator is live instantly.' },
 ];
 
@@ -250,10 +284,10 @@ export default async function Home() {
         <div className='wrap'>
             <section className={styles.hero}>
                 <FadeIn immediate>
-                    <h1>Store Locator for Your Website — Beautiful and Fast at the Cheapest Cost</h1>
+                    <h1>AI-Powered Store Locator for Your Website — Beautiful and Fast at the Cheapest Cost</h1>
                 </FadeIn>
                 <FadeIn immediate delay={120}>
-                    <p>Customized to your brand. Live in minutes. No developer, zero complexity — just a store locator that works.</p>
+                    <p>Customized to your brand. Live in minutes. Let AI clean your store list and style the map for you — no developer, zero complexity, just a store locator that works.</p>
                 </FadeIn>
                 <FadeIn immediate delay={220}>
                     <div className={styles.buttonBox}>
@@ -310,6 +344,38 @@ export default async function Home() {
                         </FadeIn>
                     ))}
                 </div>
+            </section>
+
+            {/* AI */}
+            <section className={styles.features} id="ai">
+                <FadeIn>
+                    <div style={{ textAlign: 'center', maxWidth: 700, margin: '0 auto' }}>
+                        <div className={styles.sectionLabel}><TbSparkles aria-hidden="true" /> AI-powered</div>
+                        <div className={styles.sectionTitle}>The tedious parts, done for you</div>
+                        <div className={styles.sectionSub}>
+                            Setting up a store locator is mostly data entry and fiddling with settings.
+                            Storefindy&apos;s AI does both — and shows you exactly what it changed before
+                            anything is saved. Included on every plan, at no extra cost.
+                        </div>
+                    </div>
+                </FadeIn>
+                <div className={styles.featuresGrid}>
+                    {aiFeatures.map(({ icon: Icon, title, desc }, i) => (
+                        <FadeIn key={title} delay={i * 70}>
+                            <div className={styles.featureCard}>
+                                <div className={styles.featureIcon}><Icon aria-hidden="true" /></div>
+                                <div className={styles.featureTitle}>{title}</div>
+                                <div className={styles.featureDesc}>{desc}</div>
+                            </div>
+                        </FadeIn>
+                    ))}
+                </div>
+                <FadeIn delay={300}>
+                    <div className={styles.sectionSub} style={{ textAlign: 'center', maxWidth: 700, margin: '24px auto 0' }}>
+                        <strong>Your storefront stays fast.</strong> Every AI tool lives in your dashboard —
+                        the widget your customers load is exactly as lightweight as it has always been.
+                    </div>
+                </FadeIn>
             </section>
         </div>
         
