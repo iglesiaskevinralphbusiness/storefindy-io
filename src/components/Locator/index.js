@@ -693,6 +693,14 @@ export default function Locator({
         }
     };
 
+    // Running one of the example prompts collapses the catalogue back to the
+    // first two. The visitor has made their choice, and leaving ten sentences
+    // expanded pushes the answer they just asked for off the screen.
+    const runSuggestion = (prompt) => {
+        setShowAllSuggestions(false);
+        runAiSearch(prompt);
+    };
+
     const onAiSubmit = (e) => {
         e.preventDefault();
         runAiSearch();
@@ -1451,7 +1459,7 @@ export default function Locator({
                                                     key={suggestion.key}
                                                     type="button"
                                                     className="ai-suggestion"
-                                                    onClick={() => runAiSearch(suggestion.prompt)}
+                                                    onClick={() => runSuggestion(suggestion.prompt)}
                                                     style={{
                                                         borderColor: aiTheme.border_color,
                                                         color: settings.text_color,
@@ -1546,7 +1554,7 @@ export default function Locator({
                                                     key={suggestion.key}
                                                     type="button"
                                                     className="ai-suggestion"
-                                                    onClick={() => runAiSearch(suggestion.prompt)}
+                                                    onClick={() => runSuggestion(suggestion.prompt)}
                                                     style={{ borderColor: aiTheme.border_color }}
                                                 >
                                                     <LuSparkles />{suggestion.prompt}
