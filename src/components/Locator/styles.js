@@ -244,6 +244,7 @@ export const formStyles = `
     flex-wrap: wrap;
     gap: 6px;
     margin-top: 8px;
+    margin-bottom: 8px;
 }
 .ai-suggestion {
     display: inline-flex;
@@ -267,6 +268,22 @@ export const formStyles = `
 .ai-suggestion svg {
     flex: none;
     margin-top: 2px;
+}
+/* The toggle that reveals the rest of the catalogue. Deliberately the same
+   shape as the prompts it sits beside, but unfilled — it asks a question of the
+   list rather than of the locator. */
+.ai-suggestion.ai-suggestion-more {
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    font-weight: 600;
+}
+.ai-suggestion.ai-suggestion-more svg {
+    margin-top: 0;
+    transition: transform .15s ease;
+}
+.ai-suggestion.ai-suggestion-more[aria-expanded="true"] svg {
+    transform: rotate(180deg);
 }
 .results .ai-retry-title {
     margin-top: 12px;

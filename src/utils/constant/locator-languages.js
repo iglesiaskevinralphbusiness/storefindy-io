@@ -59,6 +59,8 @@ export const LOCATOR_LANGUAGES = {
 		sugDaylightIn: 'Show me stores open during the day from Monday to Friday in {place}',
 		sugNightIn: 'Look for a location open at night in {place}',
 		sugNamed: 'Find the location named “{name}”',
+		aiShowMore: 'Show more',
+		aiShowLess: 'Show less',
 	},
 	fr: {
 		searching: 'Recherche…',
@@ -117,6 +119,8 @@ export const LOCATOR_LANGUAGES = {
 		sugDaylightIn: 'Montre-moi les magasins ouverts en journée du lundi au vendredi à {place}',
 		sugNightIn: 'Cherche un magasin ouvert la nuit à {place}',
 		sugNamed: 'Trouve l’emplacement nommé « {name} »',
+		aiShowMore: 'Voir plus',
+		aiShowLess: 'Voir moins',
 	},
 	es: {
 		searching: 'Buscando…',
@@ -175,6 +179,8 @@ export const LOCATOR_LANGUAGES = {
 		sugDaylightIn: 'Muéstrame las tiendas abiertas durante el día de lunes a viernes en {place}',
 		sugNightIn: 'Busca una tienda abierta por la noche en {place}',
 		sugNamed: 'Encuentra la ubicación llamada «{name}»',
+		aiShowMore: 'Ver más',
+		aiShowLess: 'Ver menos',
 	},
 	de: {
 		searching: 'Suche…',
@@ -233,6 +239,8 @@ export const LOCATOR_LANGUAGES = {
 		sugDaylightIn: 'Zeige mir Filialen in {place}, die tagsüber von Montag bis Freitag geöffnet sind',
 		sugNightIn: 'Suche eine Filiale in {place}, die nachts geöffnet ist',
 		sugNamed: 'Finde den Standort namens „{name}“',
+		aiShowMore: 'Mehr anzeigen',
+		aiShowLess: 'Weniger anzeigen',
 	},
 	it: {
 		searching: 'Ricerca…',
@@ -291,6 +299,8 @@ export const LOCATOR_LANGUAGES = {
 		sugDaylightIn: 'Mostrami i negozi aperti di giorno da lunedì a venerdì a {place}',
 		sugNightIn: 'Cerca un negozio aperto di notte a {place}',
 		sugNamed: 'Trova la sede chiamata «{name}»',
+		aiShowMore: 'Mostra altro',
+		aiShowLess: 'Mostra meno',
 	},
 	pt: {
 		searching: 'A pesquisar…',
@@ -349,6 +359,8 @@ export const LOCATOR_LANGUAGES = {
 		sugDaylightIn: 'Mostre-me as lojas abertas durante o dia de segunda a sexta em {place}',
 		sugNightIn: 'Procure uma loja aberta à noite em {place}',
 		sugNamed: 'Encontre o local chamado «{name}»',
+		aiShowMore: 'Ver mais',
+		aiShowLess: 'Ver menos',
 	},
 	nl: {
 		searching: 'Zoeken…',
@@ -407,6 +419,8 @@ export const LOCATOR_LANGUAGES = {
 		sugDaylightIn: 'Toon winkels in {place} die overdag van maandag tot vrijdag open zijn',
 		sugNightIn: "Zoek een winkel in {place} die 's nachts open is",
 		sugNamed: 'Vind de locatie genaamd “{name}”',
+		aiShowMore: 'Meer tonen',
+		aiShowLess: 'Minder tonen',
 	},
 	ja: {
 		searching: '検索中…',
@@ -465,6 +479,8 @@ export const LOCATOR_LANGUAGES = {
 		sugDaylightIn: '{place}で月曜日から金曜日まで日中に営業している店舗を表示',
 		sugNightIn: '{place}で夜間に営業している店舗を探す',
 		sugNamed: '「{name}」という名前の店舗を探す',
+		aiShowMore: 'もっと見る',
+		aiShowLess: '閉じる',
 	},
 	ko: {
 		searching: '검색 중…',
@@ -523,6 +539,8 @@ export const LOCATOR_LANGUAGES = {
 		sugDaylightIn: '{place}에서 월요일부터 금요일까지 낮에 영업하는 매장 보여줘',
 		sugNightIn: '{place}에서 야간에 영업하는 매장 찾아줘',
 		sugNamed: '“{name}”(이)라는 이름의 매장 찾아줘',
+		aiShowMore: '더 보기',
+		aiShowLess: '접기',
 	},
 	'zh-CN': {
 		searching: '正在搜索…',
@@ -581,6 +599,8 @@ export const LOCATOR_LANGUAGES = {
 		sugDaylightIn: '显示{place}周一到周五白天营业的门店',
 		sugNightIn: '查找{place}晚上营业的门店',
 		sugNamed: '查找名为“{name}”的门店',
+		aiShowMore: '显示更多',
+		aiShowLess: '收起',
 	},
 	'zh-TW': {
 		searching: '正在搜尋…',
@@ -639,6 +659,8 @@ export const LOCATOR_LANGUAGES = {
 		sugDaylightIn: '顯示{place}週一到週五白天營業的門店',
 		sugNightIn: '尋找{place}晚上營業的門店',
 		sugNamed: '尋找名為「{name}」的門店',
+		aiShowMore: '顯示更多',
+		aiShowLess: '收合',
 	},
 	ar: {
 		searching: 'جارٍ البحث…',
@@ -697,6 +719,8 @@ export const LOCATOR_LANGUAGES = {
 		sugDaylightIn: 'اعرض المتاجر المفتوحة في النهار من الاثنين إلى الجمعة في {place}',
 		sugNightIn: 'ابحث عن متجر مفتوح ليلا في {place}',
 		sugNamed: 'ابحث عن الموقع المسمى «{name}»',
+		aiShowMore: 'عرض المزيد',
+		aiShowLess: 'عرض أقل',
 	},
 };
 

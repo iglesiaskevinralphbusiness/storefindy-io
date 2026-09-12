@@ -30,6 +30,9 @@ const LOCATE_DENIED_MESSAGE =
 const LOCATE_UNAVAILABLE_MESSAGE =
     "We couldn't get your current location. Please try again.";
 
+// How many example prompts the AI panel shows before the "show more" button.
+const VISIBLE_SUGGESTIONS = 2;
+
 // How close the map has to be to the visitor's position before it counts as
 // already showing it — loose enough to absorb the drift between two GPS fixes,
 // tight enough that a pan down the street brings the icon back.
@@ -411,6 +414,9 @@ export default function Locator({
     // whichever condition emptied it loosened (see /api/locations/ai-search).
     const [retrySuggestions, setRetrySuggestions] = useState([]);
     const [retryTitle, setRetryTitle] = useState('');
+    // Whether the whole example-prompt catalogue is on show, or just the first
+    // VISIBLE_SUGGESTIONS of it.
+    const [showAllSuggestions, setShowAllSuggestions] = useState(false);
     // Whether the last AI answer was bounded by a distance. A city-wide answer
     // is not, so the map must not draw a circle around its center.
     const [showAiRadius, setShowAiRadius] = useState(true);
@@ -558,9 +564,10 @@ export default function Locator({
     // back to the locator's configured country before it has any results.
     const suggestionPlace = locations[0]?.city || countryView?.label || '';
 
-    // Six of the ten templates fit the sidebar without pushing the results off
-    // the screen; the rest stay in the catalogue for the "try this instead"
-    // buttons an empty answer offers. Raise the second argument to show more.
+    // Every template the locator's data can fill. Only the first two are shown:
+    // the panel sits above the results, and a wall of example sentences pushes
+    // the answers off the screen before the visitor has asked anything. The
+    // rest are one tap away.
     const promptSuggestions = buildPromptSuggestions({
         labels,
         filters,
@@ -568,7 +575,10 @@ export default function Locator({
         radius: defaultRadius,
         unit: distanceUnit,
         name: locations[0]?.name || '',
-    }, 6);
+    });
+    const visibleSuggestions = showAllSuggestions
+        ? promptSuggestions
+        : promptSuggestions.slice(0, VISIBLE_SUGGESTIONS);
 
     /**
      * Ask the AI endpoint a question in the visitor's own words.
@@ -1436,7 +1446,7 @@ export default function Locator({
                                     <div className="ai-search-form-suggestions">
                                         <p>{labels.tryAsking}</p>
                                         <div className="ai-suggestion-list">
-                                            {promptSuggestions.map((suggestion) => (
+                                            {visibleSuggestions.map((suggestion) => (
                                                 <button
                                                     key={suggestion.key}
                                                     type="button"
@@ -1450,6 +1460,21 @@ export default function Locator({
                                                     <LuSparkles />{suggestion.prompt}
                                                 </button>
                                             ))}
+                                            {promptSuggestions.length > VISIBLE_SUGGESTIONS && (
+                                                <button
+                                                    type="button"
+                                                    className="ai-suggestion ai-suggestion-more"
+                                                    onClick={() => setShowAllSuggestions((v) => !v)}
+                                                    aria-expanded={showAllSuggestions}
+                                                    style={{
+                                                        borderColor: aiTheme.border_color,
+                                                        color: settings.text_color,
+                                                    }}
+                                                >
+                                                    {showAllSuggestions ? labels.aiShowLess : labels.aiShowMore}
+                                                    <FaAngleDown />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 )}

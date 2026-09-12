@@ -33,11 +33,14 @@ export function fillTemplate(template, values = {}) {
  * with an empty slot: no filters configured means no "with Free WiFi" chip, and
  * no known city means no "in Manila" chip.
  *
+ * The whole catalogue comes back by default — the panel decides how many of
+ * them to put on screen at once (it shows two, behind a "show more" toggle).
+ *
  * @param {SuggestionContext} context
  * @param {number} [limit] How many to return.
  * @returns {Array<{key: string, prompt: string}>}
  */
-export function buildPromptSuggestions(context, limit = 6) {
+export function buildPromptSuggestions(context, limit = 10) {
     const { labels, filters = [], place = '', radius = 10, unit = 'mi', name = '' } = context;
     const values = { filter: filters[0], place, radius, unit, name };
 
