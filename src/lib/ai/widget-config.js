@@ -38,6 +38,7 @@ const WRAPPER_BORDERS = ['none', ...BORDERS];
 const PIN_TYPES = ['standard', 'custom'];
 const PIN_SIZES = ['small', 'medium', 'large'];
 const FORM_STYLES = ['style-1', 'style-2', 'style-3'];
+const SEARCH_METHODS = ['search-by-address', 'search-by-ai', ''];
 const FONT_FAMILIES = [
     'system-ui, sans-serif', 'Arial, sans-serif', 'Helvetica, sans-serif',
     'Georgia, serif', "'Times New Roman', serif", "'Courier New', monospace",
@@ -81,6 +82,12 @@ export const SETTING_CATALOGUE = [
     { path: 'settings.searchInput.text_color', type: 'color', label: 'Search box text colour', phrases: ['search box text colour', 'colour of what people type'] },
     { path: 'settings.searchInput.border_color', type: 'color', label: 'Search box border colour', phrases: ['search box border colour', 'search field outline colour'] },
     { path: 'settings.searchInput.placeholder', type: 'text', label: 'Search box placeholder', phrases: ['search box placeholder text', 'hint text in the search field'] },
+    
+    // --- Search AI ---
+    { path: 'settings.searchAi.ai_background_start', type: 'color', label: 'AI search box background start', phrases: ['ai search box background start colour', 'ai search field background start'] },
+    { path: 'settings.searchAi.ai_background_end', type: 'color', label: 'AI search box background end', phrases: ['ai search box background end colour', 'ai search field background end'] },
+    { path: 'settings.searchAi.ai_border_color', type: 'color', label: 'AI search box border colour', phrases: ['ai search box border colour', 'ai search field outline colour'] },
+    { path: 'settings.searchAi.ai_placeholder', type: 'text', label: 'AI search box placeholder', phrases: ['ai search box placeholder text', 'hint text in the ai search field'] },
 
     // --- Search button ---
     { path: 'settings.search.border', type: 'enum', options: BORDERS, label: 'Search button border', phrases: ['search button border', 'search button shape'] },
@@ -149,6 +156,7 @@ export const SETTING_CATALOGUE = [
 
     // --- Map & form style ---
     { path: 'features.form_style', type: 'enum', options: FORM_STYLES, plan: 'business', label: 'Form style', phrases: ['the form layout style', 'search form template'] },
+    { path: 'features.search_method', type: 'enum', options: SEARCH_METHODS, label: 'Search method', phrases: ['the search method', 'search by address', 'search by AI'] },
     { path: 'features.map_style', type: 'enum', options: MAP_STYLE_CODES, optionLabels: MAP_STYLE_OPTIONS, label: 'Map style', phrases: ['the map style', 'satellite map', 'dark map tiles', 'terrain map', 'street map look'] },
 
     // --- Search & results ---

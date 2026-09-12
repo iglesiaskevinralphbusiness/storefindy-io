@@ -198,6 +198,7 @@ export async function getAdminUsers(page=1, rows=10, sort='created_at', order='a
                 'locators.mapbox_custom_json': 0,
                 'locators.mapbox_3d': 0,
                 'locators.form_style': 0,
+                'locators.search_method': 0,
                 'locators.maximum_results_shown': 0,
                 'locators.powered_by_storefindy': 0,
                 'locators.search_radius': 0,

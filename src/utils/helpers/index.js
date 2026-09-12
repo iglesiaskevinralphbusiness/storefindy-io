@@ -39,6 +39,12 @@ export function generateSettingsDefault(settings) {
             border_color: settings.searchInput.border_color,
             placeholder: settings.searchInput.placeholder,
         },
+        searchAi: {
+            ai_background_start: settings.searchAi?.ai_background_start, // added ? to avoid undefined error for newly added fields
+            ai_background_end: settings.searchAi?.ai_background_end,
+            ai_border_color: settings.searchAi?.ai_border_color,
+            ai_placeholder: settings.searchAi?.ai_placeholder,
+        },
         search: {
             border: settings.search.border,
             background: settings.search.background,
@@ -123,6 +129,7 @@ export function generateFeaturesDefault(data) {
         show_map_radius_indicator: data.show_map_radius_indicator,
         show_map_pin_number: data.show_map_pin_number,
         form_style: data.form_style,
+        search_method: data.search_method,
         focused_zoom: data.focused_zoom,
         dynamic_search: data.dynamic_search,
         // Empty string means "use the map's default style" (see resolveMapStyle).

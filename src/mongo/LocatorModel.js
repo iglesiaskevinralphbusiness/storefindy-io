@@ -90,6 +90,7 @@ const locatorSchema = new mongoose.Schema({
     // customize settings
     show_map_radius_indicator: { type: Boolean, required: false, default: false },
     show_map_pin_number: { type: Boolean, required: false, default: true },
+    search_method: { type: String, required: false, default: '' }, // search-by-address, search-by-ai, empty string means both
     form_style: { type: String, required: false, default: 'style-1' },
     focused_zoom: { type: Boolean, required: false, default: true },
     dynamic_search: { type: Boolean, required: false, default: true },
@@ -123,6 +124,12 @@ const locatorSchema = new mongoose.Schema({
             text_color: { type: String, default: '#1f1f1f' },
             border_color: { type: String, default: '#000' },
             placeholder: { type: String, default: 'Enter city, state, or postal code' },
+        },
+        searchAi: {
+            ai_placeholder: { type: String, default: 'What are you looking for?' },
+            ai_border_color: { type: String, default: '#e3dafd' },
+            ai_background_start: { type: String, default: '#f4f0ff' },
+            ai_background_end: { type: String, default: '#ffffff' },
         },
         search: { // search button
             border: { type: String, default: 'square' },

@@ -9,7 +9,7 @@ import { TbShoppingBagSearch } from "react-icons/tb";
 import { RiFilterFill } from "react-icons/ri";
 import { IoFilterCircleOutline } from "react-icons/io5";
 import { FiLink } from "react-icons/fi";
-import { LuFilter, LuPhone, LuClock, LuListFilter, LuMap, LuList, LuMapPin, LuMapPinned, LuArrowRight, LuArrowLeft, LuChevronLeft, LuChevronRight, LuCircleChevronLeft, LuCircleChevronRight, LuX } from "react-icons/lu";
+import { LuWandSparkles, LuSparkles, LuFilter, LuPhone, LuClock, LuListFilter, LuMap, LuList, LuMapPin, LuMapPinned, LuArrowRight, LuArrowLeft, LuChevronLeft, LuChevronRight, LuCircleChevronLeft, LuCircleChevronRight, LuX } from "react-icons/lu";
 import { formStyles, resultsStyles, mapStyles, userDefinedStyles, formStyle2Styles, loadingStyles } from './styles';
 import Link from 'next/link';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
@@ -19,7 +19,6 @@ import { getSearchRadiiValues, formatDistanceDisplay, kmToMiles } from '@/utils/
 import { WIDGET_API_ORIGIN } from '@/utils/widget-api-origin';
 import { getLocatorLabels, formatLocationsFound, dayLabelKey } from '@/utils/constant/locator-languages';
 import { resolveMapLibrarySelection } from '@/utils/constant/mapbox-styles';
-
 import SearchSuggest from './SearchSuggest';
 
 // Shown when the visitor clicks the locate icon but the browser won't hand over
@@ -375,6 +374,7 @@ export default function Locator({
     // submitted to the API; `filters` will hold values like ["🏬 Mall", ...].
     const [params, setParams] = useState({
         q: '',
+        ai_q: '',
         lat: null,
         lng: null,
         radius: defaultRadius,
@@ -400,6 +400,7 @@ export default function Locator({
     const [showFilters, setShowFilters] = useState(false);
     const [openHours, setOpenHours] = useState({});
     const [showListMap, setShowListMap] = useState('list');
+    const [showSearchMethod, setShowSearchMethod] = useState('address');
     // --- Locate-me state (the icon inside the search box) ---------------------
     // The visitor's own coordinates, once geolocation has produced a fix.
     const [userCoords, setUserCoords] = useState(null);
@@ -1013,110 +1014,125 @@ export default function Locator({
                         backgroundColor: settings.background,
                     }}
                 >
-                    {features.show_search_bar && (
-                        <form onSubmit={onSubmit}>
-                            <div className="inputs">
-                                <SearchSuggest
-                                    placeholder={settings.searchInput.placeholder}
-                                    value={params.q}
-                                    onChange={(q) => setParams((p) => ({ ...p, q }))}
-                                    onSelect={(s) => {
-                                        // Suggestion carries exact coordinates, so
-                                        // search on those directly rather than
-                                        // re-geocoding the text. Snap back to the
-                                        // configured zoom for the result.
-                                        setZoom(defaultZoom);
-                                        runSearch({
-                                            q: s.label,
-                                            lat: s.lat,
-                                            lng: s.lng,
-                                            ...(s.countryCode && availableCodes.includes(s.countryCode)
-                                                ? { country: s.countryCode }
-                                                : {}),
-                                            method: 'search-suggest',
-                                        });
-                                    }}
-                                    inputStyle={{
-                                        borderColor: settings.searchInput.border_color,
-                                        backgroundColor: settings.searchInput.background,
-                                        color: settings.searchInput.text_color,
-                                        borderRadius: getBorderStyle(settings.searchInput.border),
-                                    }}
-                                    locateIconStyle={{
-                                        color: settings.searchInput.border_color, // color of icon will be same with border color of input
-                                    }}
-                                    showLocate={showLocateIcon}
-                                    onLocate={handleLocate}
-                                    locating={locating}
-                                />
-                                <button
-                                    type="submit"
-                                    className="btn-search"
-                                    style={{
-                                        backgroundColor: settings.search.background,
-                                        color: settings.search.text_color,
-                                        borderRadius: getBorderStyle(settings.search.border),
-                                    }}
+                    {features.show_search_bar && (<>
+
+                        {features.search_method === '' && (<>
+                            <div
+                                className="search-method-selector"
+                                style={{
+                                    backgroundColor: settings.mobileView.background,
+                                    color: settings.mobileView.text_color,
+                                }}
+                            >
+                                <div
+                                    className={'search-tab-item' + (showSearchMethod === 'address' ? ' active' : '')}
+                                    style={showSearchMethod === 'address' ?{
+                                        borderColor: settings.mobileView.active_border_color,
+                                        backgroundColor: settings.mobileView.active_background,
+                                    } : {}}
+                                    onClick={() => setShowSearchMethod('address')}
                                 >
-                                    {getButtonIcon(settings.search.icon)}{settings.search.label}
-                                </button>
-                                {features.show_filters && (
-                                    <button
-                                        type="button"
-                                        className="btn-filter"
-                                        onClick={() => setShowFilters((v) => !v)}
-                                        style={{
-                                            backgroundColor: settings.filter.background,
-                                            color: settings.filter.text_color,
-                                            borderRadius: getBorderStyle(settings.filter.border),
-                                        }}
-                                    >
-                                        {getButtonIcon(settings.filter.icon)}{settings.filter.label}
-                                    </button>
-                                )}
-                            </div>
-
-                            {locateMessage && (
-                                <div className="locate-notice" role="alert">
-                                    <span>{locateMessage}</span>
-                                    <button
-                                        type="button"
-                                        className="btn-locate-notice-close"
-                                        onClick={() => setLocateMessage('')}
-                                        aria-label="Dismiss"
-                                    >
-                                        <LuX />
-                                    </button>
+                                    <LuMap />
+                                    <span>Search by Address</span>
                                 </div>
-                            )}
+                                <div
+                                    className={'search-tab-item' + (showSearchMethod === 'ai' ? ' active' : '')}
+                                    style={showSearchMethod === 'ai' ?{
+                                        borderColor: settings.mobileView.active_border_color,
+                                        backgroundColor: settings.mobileView.active_background,
+                                    } : {}}
+                                    onClick={() => setShowSearchMethod('ai')}
+                                >
+                                    <LuWandSparkles />
+                                    <span>Search with AI</span>
+                                </div>
+                            </div>
+                        </>)}
 
-                            <div className="other-inputs">
-                                <div className="country-control" style={ countryOptions.length > 1 ? { display: 'flex', flex: 1 } : { display: 'none', flex: 1 }}>
-                                    <label htmlFor="locator-country">Country</label>
-                                    <select
-                                        id="locator-country"
-                                        value={params.country}
-                                        onChange={onCountryChange}
-                                        style={{
+                        {(features.search_method === 'search-by-address' || (features.search_method === '' && showSearchMethod === 'address' )) && (<>
+                            <form onSubmit={onSubmit}>
+                                <div className="inputs">
+                                    <SearchSuggest
+                                        placeholder={settings.searchInput.placeholder}
+                                        value={params.q}
+                                        onChange={(q) => setParams((p) => ({ ...p, q }))}
+                                        onSelect={(s) => {
+                                            // Suggestion carries exact coordinates, so
+                                            // search on those directly rather than
+                                            // re-geocoding the text. Snap back to the
+                                            // configured zoom for the result.
+                                            setZoom(defaultZoom);
+                                            runSearch({
+                                                q: s.label,
+                                                lat: s.lat,
+                                                lng: s.lng,
+                                                ...(s.countryCode && availableCodes.includes(s.countryCode)
+                                                    ? { country: s.countryCode }
+                                                    : {}),
+                                                method: 'search-suggest',
+                                            });
+                                        }}
+                                        inputStyle={{
                                             borderColor: settings.searchInput.border_color,
                                             backgroundColor: settings.searchInput.background,
                                             color: settings.searchInput.text_color,
                                             borderRadius: getBorderStyle(settings.searchInput.border),
                                         }}
+                                        locateIconStyle={{
+                                            color: settings.searchInput.border_color, // color of icon will be same with border color of input
+                                        }}
+                                        showLocate={showLocateIcon}
+                                        onLocate={handleLocate}
+                                        locating={locating}
+                                    />
+                                    <button
+                                        type="submit"
+                                        className="btn-search"
+                                        style={{
+                                            backgroundColor: settings.search.background,
+                                            color: settings.search.text_color,
+                                            borderRadius: getBorderStyle(settings.search.border),
+                                        }}
                                     >
-                                        {countryOptions.map((c) => (
-                                            <option key={c.code} value={c.code}>{c.label}</option>
-                                        ))}
-                                    </select>
+                                        {getButtonIcon(settings.search.icon)}{settings.search.label}
+                                    </button>
+                                    {features.show_filters && (
+                                        <button
+                                            type="button"
+                                            className="btn-filter"
+                                            onClick={() => setShowFilters((v) => !v)}
+                                            style={{
+                                                backgroundColor: settings.filter.background,
+                                                color: settings.filter.text_color,
+                                                borderRadius: getBorderStyle(settings.filter.border),
+                                            }}
+                                        >
+                                            {getButtonIcon(settings.filter.icon)}{settings.filter.label}
+                                        </button>
+                                    )}
                                 </div>
 
-                                {features.show_radius && (
-                                    <div className="radius-control">
-                                        <label htmlFor="locator-radius">{labels.radius}</label>
+                                {locateMessage && (
+                                    <div className="locate-notice" role="alert">
+                                        <span>{locateMessage}</span>
+                                        <button
+                                            type="button"
+                                            className="btn-locate-notice-close"
+                                            onClick={() => setLocateMessage('')}
+                                            aria-label="Dismiss"
+                                        >
+                                            <LuX />
+                                        </button>
+                                    </div>
+                                )}
+
+                                <div className="other-inputs">
+                                    <div className="country-control" style={ countryOptions.length > 1 ? { display: 'flex', flex: 1 } : { display: 'none', flex: 1 }}>
+                                        <label htmlFor="locator-country">Country</label>
                                         <select
-                                            id="locator-radius"
-                                            value={params.radius}
-                                            onChange={onRadiusChange}
+                                            id="locator-country"
+                                            value={params.country}
+                                            onChange={onCountryChange}
                                             style={{
                                                 borderColor: settings.searchInput.border_color,
                                                 backgroundColor: settings.searchInput.background,
@@ -1124,52 +1140,116 @@ export default function Locator({
                                                 borderRadius: getBorderStyle(settings.searchInput.border),
                                             }}
                                         >
-                                            {radiusOptions.map((r) => (
-                                                <option key={r} value={r}>{r} {radiusUnitLabel}</option>
+                                            {countryOptions.map((c) => (
+                                                <option key={c.code} value={c.code}>{c.label}</option>
                                             ))}
                                         </select>
                                     </div>
-                                )}
-                            </div>
 
-                            {(features.show_filters && showFilters) && (
-                                <div
-                                    className="filter-panel"
-                                    style={{
-                                        borderColor: settings.filterList.border_color,
-                                        backgroundColor: settings.filterList.background,
-                                    }}
-                                >
-                                    <div className="filter-panel-header">
-                                        <span className="filter-panel-title" style={{ color: settings.filterList.text_color }}>Filters</span>
-                                        <button
-                                            type="button"
-                                            className="btn-filter-close"
-                                            onClick={() => setShowFilters(false)}
-                                            aria-label="Close filters"
-                                            style={{ color: settings.filterList.text_color }}
-                                        >
-                                            <LuX />
-                                        </button>
-                                    </div>
-                                    {filters.map((f) => (
-                                        <label key={f} className="filter-option">
-                                            <input
-                                                type="checkbox"
-                                                checked={params.filters.includes(f)}
-                                                onChange={() => toggleFilter(f)}
-                                            />
-                                            <span style={{ color: settings.filterList.text_color }}>{f}</span>
-                                        </label>
-                                    ))}
-                                    {filters.length === 0 && (
-                                        <p className="filter-empty" style={{ color: settings.filterList.text_color }}>No filters configured.</p>
+                                    {features.show_radius && (
+                                        <div className="radius-control">
+                                            <label htmlFor="locator-radius">{labels.radius}</label>
+                                            <select
+                                                id="locator-radius"
+                                                value={params.radius}
+                                                onChange={onRadiusChange}
+                                                style={{
+                                                    borderColor: settings.searchInput.border_color,
+                                                    backgroundColor: settings.searchInput.background,
+                                                    color: settings.searchInput.text_color,
+                                                    borderRadius: getBorderStyle(settings.searchInput.border),
+                                                }}
+                                            >
+                                                {radiusOptions.map((r) => (
+                                                    <option key={r} value={r}>{r} {radiusUnitLabel}</option>
+                                                ))}
+                                            </select>
+                                        </div>
                                     )}
                                 </div>
-                            )}
-                            
-                        </form>
-                    )}
+
+                                {(features.show_filters && showFilters) && (
+                                    <div
+                                        className="filter-panel"
+                                        style={{
+                                            borderColor: settings.filterList.border_color,
+                                            backgroundColor: settings.filterList.background,
+                                        }}
+                                    >
+                                        <div className="filter-panel-header">
+                                            <span className="filter-panel-title" style={{ color: settings.filterList.text_color }}>Filters</span>
+                                            <button
+                                                type="button"
+                                                className="btn-filter-close"
+                                                onClick={() => setShowFilters(false)}
+                                                aria-label="Close filters"
+                                                style={{ color: settings.filterList.text_color }}
+                                            >
+                                                <LuX />
+                                            </button>
+                                        </div>
+                                        {filters.map((f) => (
+                                            <label key={f} className="filter-option">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={params.filters.includes(f)}
+                                                    onChange={() => toggleFilter(f)}
+                                                />
+                                                <span style={{ color: settings.filterList.text_color }}>{f}</span>
+                                            </label>
+                                        ))}
+                                        {filters.length === 0 && (
+                                            <p className="filter-empty" style={{ color: settings.filterList.text_color }}>No filters configured.</p>
+                                        )}
+                                    </div>
+                                )}
+                            </form>
+                        </>)}
+                        {(features.search_method === 'search-by-ai'  || (features.search_method === '' && showSearchMethod === 'ai' )) && (<>
+                            <form
+                                className="ai-search-form"
+                                style={{
+                                    borderColor: settings.searchAi.ai_border_color,
+                                    backgroundColor: settings.searchAi.ai_background_start,
+                                    backgroundImage: `linear-gradient(to bottom, ${settings.searchAi.ai_background_start}, ${settings.searchAi.ai_background_end})`,
+                                }}
+                            >
+                                <div className="ai-search-form-head">
+                                    <LuWandSparkles />
+                                    <span>Search with AI</span>
+                                </div>
+                                <p className='desc'>Describe what you’re looking for, and we’ll find the right stores.</p>
+                                <textarea
+                                    type="text"
+                                    placeholder={settings.searchAi.ai_placeholder}
+                                    className="ai-search-form-textarea"
+                                    value={params.ai_q}
+                                    onChange={(q) => setParams((p) => ({ ...p, q }))}
+                                    style={{
+                                        borderColor: settings.searchInput.border_color,
+                                        backgroundColor: settings.searchInput.background,
+                                        color: settings.searchInput.text_color,
+                                        borderRadius: getBorderStyle(settings.searchInput.border),
+                                    }}
+                                />
+                                <div className="ai-search-form-suggestions">
+                                    <p>Try asking:</p>
+                                    {/* TODO: Add suggestions */}
+                                </div>
+                                <button
+                                    type="submit"
+                                    className="ai-search-btn-search"
+                                    style={{
+                                        backgroundColor: settings.search.background,
+                                        color: settings.search.text_color,
+                                        borderRadius: getBorderStyle(settings.search.border),
+                                    }}
+                                >
+                                    <LuSparkles />{settings.search.label}
+                                </button>
+                            </form>
+                        </>)}
+                    </>)}
 
                     <div
                         className="mobile-tabs"
@@ -1219,6 +1299,7 @@ export default function Locator({
                         )}
 
                         {features.show_store_list && (
+                            <div className="results-list-container">
                             <ul
                                 className={'results-list' + (showListMap === 'list' ? ' mobile-tab-content-active' : ' mobile-tab-content-inactive')}
                                 ref={listRef}
@@ -1245,6 +1326,7 @@ export default function Locator({
                                     </li>
                                 ))}
                             </ul>
+                            </div>
                         )}
                     </div>
                 </div>

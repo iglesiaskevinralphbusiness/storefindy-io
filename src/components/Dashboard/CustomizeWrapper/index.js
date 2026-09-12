@@ -100,6 +100,7 @@ export default function CustomizeWrapper({ data, available_countries, onPreview=
                     // the result set from the saved locator, so it only takes
                     // effect once the sidebar's changes are saved.
                     form_style={data.form_style}
+                    search_method={data.search_method}
                     search_radius={featuresData.search_radius}
                     distance_unit={featuresData.distance_unit}
                     default_zoom_level={featuresData.default_zoom_level}

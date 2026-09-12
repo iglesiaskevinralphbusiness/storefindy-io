@@ -113,6 +113,7 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
         main: false,
         search: false,
         searchInput: false,
+        searchAi: false,
         filter: false,
         filterList: false,
         pin: false,
@@ -315,6 +316,34 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                                     value={settings.searchInput.placeholder}
                                     placeholder="Enter a location"
                                     onChange={(v) => updateGroup('searchInput', 'placeholder', v)}
+                                />
+                            </Section>
+                            <Section
+                                icon={<LuTextCursorInput />}
+                                title="Search AI"
+                                isOpen={openSections.searchAi}
+                                onToggle={() => toggleSection('searchAi')}
+                            >
+                                <ColorField
+                                    label="AI Background Start"
+                                    value={settings.searchAi.ai_background_start}
+                                    onChange={(v) => updateGroup('searchAi', 'ai_background_start', v)}
+                                />
+                                <ColorField
+                                    label="AI Background End"
+                                    value={settings.searchAi.ai_background_end}
+                                    onChange={(v) => updateGroup('searchAi', 'ai_background_end', v)}
+                                />
+                                <ColorField
+                                    label="AI Border Color"
+                                    value={settings.searchAi.ai_border_color}
+                                    onChange={(v) => updateGroup('searchAi', 'ai_border_color', v)}
+                                />
+                                <TextField
+                                    label="AI Placeholder"
+                                    value={settings.searchAi.ai_placeholder}
+                                    placeholder="Enter anything"
+                                    onChange={(v) => updateGroup('searchAi', 'ai_placeholder', v)}
                                 />
                             </Section>
 
@@ -781,6 +810,28 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                                 user_plan={user_plan}
                             />
                             <SelectField
+                                label="Searching Method"
+                                value={features.search_method}
+                                onChange={(v) => updateFeatures('search_method', v)}
+                                options={[
+                                    { code: 'search-by-address', label: 'Search by Address' },
+                                    { code: 'search-by-ai', label: 'Search by AI' },
+                                    { code: '', label: 'Both' },
+                                ]}
+                            />
+                            <SelectField
+                                label="Form Style"
+                                value={features.form_style}
+                                onChange={(v) => updateFeatures('form_style', v)}
+                                options={[
+                                    { code: 'style-1', label: 'Style 1' },
+                                    { code: 'style-2', label: 'Style 2' },
+                                    { code: 'style-3', label: 'Style 3' },
+                                ]}
+                                note={user_plan !== 'business' ? 'Only available on Business plan' : ''}
+                                disabled={user_plan !== 'business'}
+                            />
+                            <SelectField
                                 label="Default Zoom Level"
                                 value={String(features.default_zoom_level ?? '')}
                                 onChange={(v) => updateFeatures('default_zoom_level', Number(v))}
@@ -803,18 +854,6 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                                 value={String(features.maximum_results_shown ?? '')}
                                 onChange={(v) => updateFeatures('maximum_results_shown', Number(v))}
                                 options={MAXIMUM_RESULTS_SHOWN}
-                            />
-                            <SelectField
-                                label="Form Style"
-                                value={features.form_style}
-                                onChange={(v) => updateFeatures('form_style', v)}
-                                options={[
-                                    { code: 'style-1', label: 'Style 1' },
-                                    { code: 'style-2', label: 'Style 2' },
-                                    { code: 'style-3', label: 'Style 3' },
-                                ]}
-                                note={user_plan !== 'business' ? 'Only available on Business plan' : ''}
-                                disabled={user_plan !== 'business'}
                             />
                             <Checkbox
                                 label="Search bar"
