@@ -137,6 +137,19 @@ function scheduleMatches(location, intent, clock) {
     return true;
 }
 
+/**
+ * The merchant-set trading state, matched exactly.
+ *
+ * Exactly, and never through isTradingClosed(): "coming soon" and "temporarily
+ * closed" are both "not trading", but a shopper who asks for one does not want
+ * the other. A location with no stored state is treated as open, which is what
+ * the import and the location form both default to.
+ */
+function statusMatches(location, intent) {
+    if (!intent.locationStatus) return true;
+    return String(location.location_status || 'open') === intent.locationStatus;
+}
+
 /** A store name the shopper spelled out, matched loosely in both directions. */
 function nameMatches(location, intent) {
     if (!intent.name) return true;
@@ -205,6 +218,7 @@ export function applyLocatorIntent(locations, intent, context = {}) {
                 // drew — which is what catches "near the Eiffel Tower".
                 place: !wantsText || score > 0 || insideBounds(location, bounds),
                 name: nameMatches(location, intent),
+                status: statusMatches(location, intent),
                 filters: filtersMatch(location, intent),
                 schedule: scheduleMatches(location, intent, clock),
                 distance: !wantsDistance || (distance !== null && distance <= radiusMiles),
@@ -214,11 +228,12 @@ export function applyLocatorIntent(locations, intent, context = {}) {
 
     // The order conditions are reported in when several are to blame: the one
     // the shopper is most likely to want relaxed comes first.
-    const KEYS = ['schedule', 'distance', 'filters', 'place', 'name'];
+    const KEYS = ['schedule', 'distance', 'filters', 'status', 'place', 'name'];
     const active = {
         place: wantsText,
         name: !!intent.name,
         filters: intent.filters.length > 0,
+        status: !!intent.locationStatus,
         schedule: intent.hasSchedule,
         distance: wantsDistance,
     };
@@ -242,7 +257,7 @@ export function applyLocatorIntent(locations, intent, context = {}) {
         }
         // Nothing is rescued by dropping one condition, so name the narrowest
         // one the shopper actually asked for.
-        if (!blocked) blocked = ['name', 'place', 'filters', 'schedule', 'distance'].find((key) => active[key]) || null;
+        if (!blocked) blocked = ['name', 'place', 'status', 'filters', 'schedule', 'distance'].find((key) => active[key]) || null;
     }
 
     const results = matching

@@ -52,12 +52,77 @@ const PHRASES = {
         '我附近', '离我最近', '離我最近', '附近的', '附近',
         'بالقرب مني', 'قريب مني', 'القريبة مني', 'الأقرب',
     ]),
+    /*
+     * The merchant-set TRADING STATE — `location_status` on the location, not a
+     * question about opening hours.
+     *
+     * Consumed before the schedule vocabulary below, because every one of these
+     * phrases contains a schedule word that would otherwise swallow it:
+     * "temporarily closed" reads as "closed", "opening soon" reads as "opening".
+     * Losing the distinction is how "locations with coming soon" came back with
+     * the temporarily-closed ones too.
+     */
+    comingSoon: byLength([
+        'coming soon', 'opening soon', 'soon to open', 'not open yet', 'due to open', 'yet to open',
+        'about to open', 'new store', 'new branch', 'future location',
+        'opens soon', 'opening shortly', 'will open soon',
+        'bientôt ouvertes', 'bientôt ouverts', 'bientôt ouverte', 'bientôt ouvert',
+        'bientot ouvertes', 'bientot ouverts', 'bientot ouverte', 'bientot ouvert',
+        'ouvrent bientôt', 'ouvre bientôt', 'ouverture prochaine', 'prochaine ouverture', 'prochainement',
+        'próximamente', 'proximamente', 'próxima apertura', 'proxima apertura', 'apertura próxima',
+        'abrirá pronto', 'abrirán pronto', 'abriran pronto', 'abre pronto', 'abren pronto',
+        'demnächst', 'demnachst', 'demnächst geöffnet', 'bald geöffnet', 'bald geoffnet', 'eröffnet bald',
+        'eröffnen bald', 'öffnet bald', 'öffnen bald', 'neueröffnung',
+        'prossima apertura', 'prossimamente', 'in arrivo', 'apertura prossima', 'aprirà presto', 'aprira presto',
+        'apriranno presto', 'apre presto',
+        'em breve', 'próxima abertura', 'proxima abertura', 'brevemente', 'abre em breve', 'abrirá em breve',
+        'abrira em breve', 'abrem em breve',
+        'binnenkort open', 'binnenkort', 'opent binnenkort', 'openen binnenkort',
+        '近日オープン', 'オープン予定', '近日開店', '開店予定', '新規オープン',
+        '곧 오픈', '오픈 예정', '개점 예정', '오픈 준비',
+        '即将开业', '即将开幕', '近期开业', '即将开张',
+        '即將開業', '即將開幕', '近期開業',
+        'قريبا', 'قريباً', 'الافتتاح قريبا', 'افتتاح قريب',
+    ]),
+    temporarilyClosed: byLength([
+        'temporarily closed', 'temporary closed', 'closed temporarily', 'temporarily shut', 'temporarily unavailable',
+        'closed for now', 'under renovation', 'closed for renovation',
+        'fermés temporairement', 'fermé temporairement', 'fermées temporairement', 'fermée temporairement',
+        'fermes temporairement', 'fermees temporairement',
+        'temporairement fermés', 'temporairement fermé', 'temporairement fermées', 'temporairement fermée',
+        'fermeture temporaire', 'fermé provisoirement', 'fermés provisoirement',
+        'cerrados temporalmente', 'cerrado temporalmente', 'cerradas temporalmente', 'cerrada temporalmente',
+        'temporalmente cerrados', 'temporalmente cerrado', 'temporalmente cerradas', 'cierre temporal',
+        'vorübergehend geschlossen', 'voruebergehend geschlossen', 'temporär geschlossen', 'temporar geschlossen',
+        'temporaneamente chiusi', 'temporaneamente chiuso', 'temporaneamente chiuse', 'temporaneamente chiusa',
+        'chiusi temporaneamente', 'chiuso temporaneamente', 'chiusura temporanea',
+        'temporariamente fechados', 'temporariamente fechado', 'temporariamente fechadas', 'temporariamente fechada',
+        'fechados temporariamente', 'fechado temporariamente', 'encerrado temporariamente',
+        'tijdelijk gesloten', 'tijdelijk dicht',
+        '一時休業', '臨時休業', '一時閉店', '休業中',
+        '임시 휴업', '임시 폐점', '잠시 휴업', '휴업 중',
+        '暂时关闭', '暂停营业', '暫時關閉', '暫停營業',
+        'مغلق مؤقتا', 'مغلق مؤقتاً', 'مغلقة مؤقتا', 'إغلاق مؤقت',
+    ]),
+    operational: byLength([
+        'open for business', 'operational', 'trading', 'currently trading', 'already open', 'up and running',
+        'en activité', 'en activite', 'en service',
+        'en funcionamiento', 'operativo', 'operativas', 'ya abiertas',
+        'in betrieb', 'in betrieb genommen', 'bereits geöffnet',
+        'in attività', 'in attivita', 'operativi', 'già aperti', 'gia aperti',
+        'em funcionamento', 'operacional', 'já abertas', 'ja abertas',
+        'in bedrijf', 'al geopend',
+        '営業中の店舗', '通常営業',
+        '정상 영업', '운영 중',
+        '正常营业', '正在运营', '正常營業', '正在營運',
+        'قيد التشغيل', 'تعمل بالفعل',
+    ]),
     openNow: byLength([
         'open now', 'open right now', 'currently open', 'open at the moment', 'open at this time', 'still open',
         'open today right now', 'that are open now', 'opened now',
         'ouvert maintenant', 'ouverts maintenant', 'actuellement ouvert', 'ouvert en ce moment',
         'abierto ahora', 'abiertos ahora', 'abierto en este momento', 'actualmente abierto',
-        'jetzt geöffnet', 'jetzt geoffnet', 'gerade geöffnet', 'gerade geoffnet', 'aktuell geöffnet',
+        'jetzt geöffnet', 'jetzt geoffnet', 'jetzt öffnen', 'jetzt öffnet', 'gerade geöffnet', 'gerade geoffnet', 'aktuell geöffnet',
         'aperto adesso', 'aperti adesso', 'aperto ora', 'attualmente aperto',
         'aberto agora', 'abertos agora', 'aberto neste momento',
         'nu open', 'nu geopend', 'momenteel open',
@@ -248,18 +313,18 @@ const STOPWORDS = new Set([
     // Spanish
     'muestra', 'muéstrame', 'muestrame', 'busca', 'buscar', 'encuentra', 'dame', 'ver', 'las', 'los', 'una', 'unos',
     'unas', 'del', 'con', 'sin', 'que', 'están', 'estan', 'esta', 'son', 'tienda', 'tiendas', 'ubicación',
-    'ubicacion', 'ubicaciones', 'lugar', 'lugares', 'sucursal', 'sucursales', 'cerca',
+    'ubicacion', 'ubicaciones', 'lugar', 'lugares', 'sucursal', 'sucursales', 'cerca', 'en', 'al', 'para',
     // German
     'zeige', 'zeig', 'mir', 'suche', 'finde', 'alle', 'die', 'der', 'das', 'den', 'dem', 'ein', 'eine', 'einen',
     'mit', 'ohne', 'sind', 'ist', 'geschäft', 'geschaft', 'geschäfte', 'geschafte', 'laden', 'läden', 'laeden',
-    'filiale', 'filialen', 'standort', 'standorte', 'nähe', 'nahe',
+    'filiale', 'filialen', 'standort', 'standorte', 'nähe', 'nahe', 'öffnen', 'offnen', 'öffnet', 'offnet',
     // Italian
     'mostra', 'mostrami', 'cerca', 'trova', 'dammi', 'gli', 'lo', 'una', 'uno', 'del', 'della', 'con', 'senza',
     'che', 'sono', 'negozio', 'negozi', 'sede', 'sedi', 'punto', 'vendita', 'vicino',
     // Portuguese
     'mostre', 'mostrar', 'procure', 'procurar', 'encontre', 'encontrar', 'me', 'as', 'os', 'uma', 'um', 'da', 'do',
     'com', 'sem', 'que', 'estão', 'estao', 'está', 'esta', 'são', 'sao', 'loja', 'lojas', 'local', 'locais',
-    'localização', 'localizacao', 'filial', 'filiais', 'perto',
+    'localização', 'localizacao', 'filial', 'filiais', 'perto', 'no', 'na', 'nos', 'nas', 'em', 'ao', 'aos',
     // Dutch
     'toon', 'laat', 'zien', 'zoek', 'vind', 'geef', 'de', 'het', 'een', 'alle', 'met', 'zonder', 'die', 'zijn',
     'winkel', 'winkels', 'locatie', 'locaties', 'vestiging', 'vestigingen', 'buurt',
@@ -521,7 +586,21 @@ export function parseLocatorPrompt(raw, { filters = [], distanceUnit = 'mi' } = 
         scanner.drop(clocks[0].raw.trim());
     }
 
-    // 5. The schedule vocabulary. `open24` is taken before the generic "open"
+    // 5. The merchant-set trading state, BEFORE the schedule vocabulary — see the
+    //    note on PHRASES.comingSoon. "Temporarily closed" is a state the
+    //    merchant set, not an answer to "is it open right now".
+    const comingSoon = scanner.take(PHRASES.comingSoon);
+    const temporarilyClosed = !comingSoon && scanner.take(PHRASES.temporarilyClosed);
+    const operational = !comingSoon && !temporarilyClosed && scanner.take(PHRASES.operational);
+    const locationStatus = comingSoon
+        ? 'coming_soon'
+        : temporarilyClosed
+            ? 'temporarily_closed'
+            : operational
+                ? 'open'
+                : null;
+
+    // 6. The schedule vocabulary. `open24` is taken before the generic "open"
     //    so "open 24 hours" is not reduced to "open".
     const open24 = scanner.take(PHRASES.open24);
     const openNow = scanner.take(PHRASES.openNow);
@@ -530,11 +609,11 @@ export function parseLocatorPrompt(raw, { filters = [], distanceUnit = 'mi' } = 
     const daylight = !night && scanner.take(PHRASES.daylight);
     const openWord = scanner.take(PHRASES.open);
 
-    // 6. Position and scope.
+    // 7. Position and scope.
     const nearMe = scanner.take(PHRASES.nearMe);
     const wantsAll = scanner.take(PHRASES.all);
 
-    // 7. "named X" — whatever follows the keyword, once it has been consumed.
+    // 8. "named X" — whatever follows the keyword, once it has been consumed.
     //    The marker itself is always dropped: a quoted name has already been
     //    taken above, but "named" is still sitting in the text.
     if (name) scanner.take(PHRASES.named);
@@ -549,7 +628,7 @@ export function parseLocatorPrompt(raw, { filters = [], distanceUnit = 'mi' } = 
         }
     }
 
-    // 8. Amenities, resolved against the locator's OWN filter list. An exact
+    // 9. Amenities, resolved against the locator's OWN filter list. An exact
     //    label match is taken first; otherwise every word of the label has to be
     //    present, which matches "free wifi" to "📶 Free WiFi" without ever
     //    producing a tag the merchant has not defined.
@@ -570,7 +649,7 @@ export function parseLocatorPrompt(raw, { filters = [], distanceUnit = 'mi' } = 
         }
     }
 
-    // 9. Whatever survived is the shopper's own words: a city, a store name, or
+    // 10. Whatever survived is the shopper's own words: a city, a store name, or
     //    something they remember from the merchant's notes.
     const keywords = tokenize(scanner.text).filter(isMeaningfulToken);
 
@@ -597,6 +676,9 @@ export function parseLocatorPrompt(raw, { filters = [], distanceUnit = 'mi' } = 
         today,
         tomorrow,
         window,
+        // 'coming_soon' | 'temporarily_closed' | 'open' | null — matched against
+        // the location's own `location_status`, never inferred from its hours.
+        locationStatus,
         // `open` without any qualifier means "open right now" — the reading a
         // shopper expects from "locations that are open". With a day, a window
         // or daylight/night beside it, it is only saying the location trades
@@ -607,6 +689,6 @@ export function parseLocatorPrompt(raw, { filters = [], distanceUnit = 'mi' } = 
         daylight,
         night,
         hasSchedule: !!schedule,
-        hasSignal: !!(nearMe || wantsAll || radius || name || matchedFilters.length || keywords.length || schedule),
+        hasSignal: !!(nearMe || wantsAll || radius || name || matchedFilters.length || keywords.length || schedule || locationStatus),
     };
 }

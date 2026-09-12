@@ -200,7 +200,7 @@ export const formStyles = `
 }
 .locator-sidebar .ai-search-form .ai-search-form-textarea {
     width: 100%;
-    height: 70px;
+    height: 54px;
     padding: 8px;
     border: 1px solid #000;
     font-size: 100%;

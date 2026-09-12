@@ -88,6 +88,8 @@ export function buildRecoverySuggestions(context, blocked) {
         distance: [['sugRadiusNearMe', true, wider], ['sugAllIn', !!place], ['sugNearMe', true]],
         // The amenity is what emptied it — same area, no amenity.
         filters: [['sugAllIn', !!place], ['sugNearMe', true], ['sugOpenNow', true]],
+        // Nothing carries that trading state — show what the area does have.
+        status: [['sugAllIn', !!place], ['sugNearMe', true], ['sugOpenNow', true]],
         // The place didn't resolve — fall back to the shopper's own position.
         place: [['sugNearMe', true], ['sugOpenNow', true], ['sugAllIn', !!place]],
         // No store by that name — show what there is instead.

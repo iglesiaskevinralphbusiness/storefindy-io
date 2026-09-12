@@ -84,9 +84,9 @@ function buildAddress(loc) {
 // Locations that aren't open keep their stored schedule in the DB, but it is
 // meaningless to a visitor — the status badge shows the standing notice instead
 // and the weekly breakdown is hidden entirely. Returns '' for open locations.
-function closedStatusLabel(loc) {
-    if (loc.location_status === 'temporarily_closed') return 'Temporarily Closed';
-    if (loc.location_status === 'coming_soon') return 'Coming Soon';
+function closedStatusLabel(loc, labels) {
+    if (loc.location_status === 'temporarily_closed') return labels.statusTemporarilyClosed;
+    if (loc.location_status === 'coming_soon') return labels.statusComingSoon;
     return '';
 }
 
@@ -213,7 +213,7 @@ function daySuffix(base, minutes, labels) {
 // The full indicator for one location: a state word, the next transition, and a
 // tone the UI colours by. Returns null when there's nothing meaningful to show.
 function locationStatus(loc, now, labels) {
-    const notice = closedStatusLabel(loc);
+    const notice = closedStatusLabel(loc, labels);
     if (notice) return { tone: 'notice', label: notice, detail: '', isHoliday: false };
     if (!loc.hours) return null;
 

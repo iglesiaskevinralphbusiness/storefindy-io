@@ -46,6 +46,9 @@ export const LOCATOR_LANGUAGES = {
 		aiReasonFilters: 'no location offers {filters}',
 		aiReasonPlace: 'I couldn’t match “{place}” to any city, address or note',
 		aiReasonName: 'no location is named “{name}”',
+		statusComingSoon: 'Coming Soon',
+		statusTemporarilyClosed: 'Temporarily Closed',
+		aiReasonStatus: 'no location there is marked “{status}”',
 		aiReasonUnclear: 'I couldn’t tell what to look for',
 		aiTryInstead: 'Try one of these instead:',
 		sugNearMe: 'Show all locations near me',
@@ -106,6 +109,9 @@ export const LOCATOR_LANGUAGES = {
 		aiReasonFilters: 'aucun emplacement ne propose {filters}',
 		aiReasonPlace: 'je n’ai pas pu associer « {place} » à une ville, une adresse ou une note',
 		aiReasonName: 'aucun emplacement ne s’appelle « {name} »',
+		statusComingSoon: 'Bientôt ouvert',
+		statusTemporarilyClosed: 'Fermé temporairement',
+		aiReasonStatus: 'aucun emplacement n’est marqué « {status} »',
 		aiReasonUnclear: 'je n’ai pas compris ce qu’il fallait chercher',
 		aiTryInstead: 'Essayez plutôt l’une de ces demandes :',
 		sugNearMe: 'Montre-moi tous les magasins près de moi',
@@ -166,6 +172,9 @@ export const LOCATOR_LANGUAGES = {
 		aiReasonFilters: 'ninguna ubicación ofrece {filters}',
 		aiReasonPlace: 'no pude relacionar «{place}» con ninguna ciudad, dirección o nota',
 		aiReasonName: 'ninguna ubicación se llama «{name}»',
+		statusComingSoon: 'Próximamente',
+		statusTemporarilyClosed: 'Cerrado temporalmente',
+		aiReasonStatus: 'ninguna ubicación está marcada como «{status}»',
 		aiReasonUnclear: 'no pude entender qué buscar',
 		aiTryInstead: 'Prueba una de estas:',
 		sugNearMe: 'Muéstrame todas las tiendas cerca de mí',
@@ -226,6 +235,9 @@ export const LOCATOR_LANGUAGES = {
 		aiReasonFilters: 'kein Standort bietet {filters}',
 		aiReasonPlace: 'ich konnte „{place}“ keiner Stadt, Adresse oder Notiz zuordnen',
 		aiReasonName: 'kein Standort heißt „{name}“',
+		statusComingSoon: 'Demnächst',
+		statusTemporarilyClosed: 'Vorübergehend geschlossen',
+		aiReasonStatus: 'kein Standort ist als „{status}“ markiert',
 		aiReasonUnclear: 'ich konnte nicht erkennen, wonach gesucht werden soll',
 		aiTryInstead: 'Versuchen Sie stattdessen eine davon:',
 		sugNearMe: 'Zeige mir alle Filialen in meiner Nähe',
@@ -286,6 +298,9 @@ export const LOCATOR_LANGUAGES = {
 		aiReasonFilters: 'nessuna sede offre {filters}',
 		aiReasonPlace: 'non sono riuscito ad associare «{place}» a una città, un indirizzo o una nota',
 		aiReasonName: 'nessuna sede si chiama «{name}»',
+		statusComingSoon: 'Prossima apertura',
+		statusTemporarilyClosed: 'Temporaneamente chiuso',
+		aiReasonStatus: 'nessuna sede è contrassegnata come «{status}»',
 		aiReasonUnclear: 'non ho capito cosa cercare',
 		aiTryInstead: 'Prova invece una di queste:',
 		sugNearMe: 'Mostrami tutti i negozi vicino a me',
@@ -346,6 +361,9 @@ export const LOCATOR_LANGUAGES = {
 		aiReasonFilters: 'nenhum local oferece {filters}',
 		aiReasonPlace: 'não consegui associar «{place}» a uma cidade, morada ou nota',
 		aiReasonName: 'nenhum local se chama «{name}»',
+		statusComingSoon: 'Em breve',
+		statusTemporarilyClosed: 'Temporariamente fechado',
+		aiReasonStatus: 'nenhum local está marcado como «{status}»',
 		aiReasonUnclear: 'não percebi o que procurar',
 		aiTryInstead: 'Experimente antes uma destas:',
 		sugNearMe: 'Mostre-me todas as lojas perto de mim',
@@ -406,6 +424,9 @@ export const LOCATOR_LANGUAGES = {
 		aiReasonFilters: 'geen enkele locatie biedt {filters}',
 		aiReasonPlace: 'ik kon “{place}” niet koppelen aan een plaats, adres of notitie',
 		aiReasonName: 'geen enkele locatie heet “{name}”',
+		statusComingSoon: 'Binnenkort open',
+		statusTemporarilyClosed: 'Tijdelijk gesloten',
+		aiReasonStatus: 'geen enkele locatie is gemarkeerd als “{status}”',
 		aiReasonUnclear: 'ik kon niet opmaken waarnaar ik moest zoeken',
 		aiTryInstead: 'Probeer in plaats daarvan een van deze:',
 		sugNearMe: 'Toon alle winkels in de buurt',
@@ -466,6 +487,9 @@ export const LOCATOR_LANGUAGES = {
 		aiReasonFilters: '{filters}のある店舗はありません',
 		aiReasonPlace: '「{place}」に一致する都市・住所・メモが見つかりませんでした',
 		aiReasonName: '「{name}」という名前の店舗はありません',
+		statusComingSoon: '近日オープン',
+		statusTemporarilyClosed: '一時休業',
+		aiReasonStatus: '「{status}」の店舗はありません',
 		aiReasonUnclear: '何を探せばよいか分かりませんでした',
 		aiTryInstead: 'こちらをお試しください:',
 		sugNearMe: '近くの店舗をすべて表示',
@@ -526,6 +550,9 @@ export const LOCATOR_LANGUAGES = {
 		aiReasonFilters: '{filters}을(를) 제공하는 매장이 없습니다',
 		aiReasonPlace: '“{place}”와(과) 일치하는 도시, 주소 또는 메모를 찾지 못했습니다',
 		aiReasonName: '“{name}”(이)라는 이름의 매장이 없습니다',
+		statusComingSoon: '곧 오픈',
+		statusTemporarilyClosed: '임시 휴업',
+		aiReasonStatus: '“{status}” 상태인 매장이 없습니다',
 		aiReasonUnclear: '무엇을 찾아야 할지 파악하지 못했습니다',
 		aiTryInstead: '대신 이렇게 시도해 보세요:',
 		sugNearMe: '내 근처 매장 모두 보여줘',
@@ -586,6 +613,9 @@ export const LOCATOR_LANGUAGES = {
 		aiReasonFilters: '没有门店提供{filters}',
 		aiReasonPlace: '无法将“{place}”匹配到任何城市、地址或备注',
 		aiReasonName: '没有名为“{name}”的门店',
+		statusComingSoon: '即将开业',
+		statusTemporarilyClosed: '暂停营业',
+		aiReasonStatus: '没有标记为“{status}”的门店',
 		aiReasonUnclear: '我无法判断要查找什么',
 		aiTryInstead: '换一个试试：',
 		sugNearMe: '显示我附近的所有门店',
@@ -646,6 +676,9 @@ export const LOCATOR_LANGUAGES = {
 		aiReasonFilters: '沒有門店提供{filters}',
 		aiReasonPlace: '無法將「{place}」對應到任何城市、地址或備註',
 		aiReasonName: '沒有名為「{name}」的門店',
+		statusComingSoon: '即將開業',
+		statusTemporarilyClosed: '暫停營業',
+		aiReasonStatus: '沒有標記為「{status}」的門店',
 		aiReasonUnclear: '我無法判斷要尋找什麼',
 		aiTryInstead: '換一個試試：',
 		sugNearMe: '顯示我附近的所有門店',
@@ -706,6 +739,9 @@ export const LOCATOR_LANGUAGES = {
 		aiReasonFilters: 'لا يوجد موقع يوفر {filters}',
 		aiReasonPlace: 'لم أتمكن من مطابقة «{place}» مع أي مدينة أو عنوان أو ملاحظة',
 		aiReasonName: 'لا يوجد موقع باسم «{name}»',
+		statusComingSoon: 'قريبا',
+		statusTemporarilyClosed: 'مغلق مؤقتا',
+		aiReasonStatus: 'لا يوجد موقع مصنف كـ «{status}»',
 		aiReasonUnclear: 'لم أفهم ما الذي يجب البحث عنه',
 		aiTryInstead: 'جرّب أحد هذه بدلاً من ذلك:',
 		sugNearMe: 'اعرض كل المتاجر بالقرب مني',
@@ -741,6 +777,14 @@ export function getLocatorLabels(code) {
 export function formatLocationsFound(count, labels) {
 	const template = count === 1 ? labels.locationFoundNearYou : labels.locationsFoundNearYou;
 	return template.replace('{count}', String(count));
+}
+
+/** The stored trading state, in the locator's own language. */
+export function locationStatusLabel(status, labels) {
+	if (status === 'coming_soon') return labels.statusComingSoon;
+	if (status === 'temporarily_closed') return labels.statusTemporarilyClosed;
+	if (status === 'open') return labels.open;
+	return '';
 }
 
 export function dayLabelKey(dayKey) {

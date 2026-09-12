@@ -8,7 +8,7 @@ import { serializeForClient, getUserPlan } from '@/utils/helpers';
 import { kmToMiles, milesToKm } from '@/utils/distance';
 import { plans } from '@/utils/constant/pricing';
 import { COUNTRIES } from '@/utils/constant/countries';
-import { getLocatorLabels } from '@/utils/constant/locator-languages';
+import { getLocatorLabels, locationStatusLabel } from '@/utils/constant/locator-languages';
 import { parseLocatorPrompt } from '@/lib/ai/locator-prompt';
 import { applyLocatorIntent } from '@/lib/ai/locator-search';
 import { buildRecoverySuggestions, fillTemplate } from '@/lib/ai/locator-suggestions';
@@ -126,6 +126,9 @@ function reasonFor(blocked, intent, labels, values) {
     }
     if (blocked === 'distance') return fillTemplate(labels.aiReasonDistance, values);
     if (blocked === 'filters') return fillTemplate(labels.aiReasonFilters, { filters: intent.filters.join(', ') });
+    if (blocked === 'status') {
+        return fillTemplate(labels.aiReasonStatus, { status: locationStatusLabel(intent.locationStatus, labels) });
+    }
     if (blocked === 'place') return fillTemplate(labels.aiReasonPlace, { place: intent.leftover || intent.raw });
     if (blocked === 'name') return fillTemplate(labels.aiReasonName, { name: intent.name });
     return '';
