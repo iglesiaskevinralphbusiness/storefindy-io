@@ -231,6 +231,47 @@ export const formStyles = `
     padding: 0;
     font-size: 100%;
 }
+.locator-sidebar .ai-search-form .ai-search-btn-search[disabled] {
+    opacity: .6;
+    cursor: default;
+}
+
+/* The example prompts, and the fixes offered when a question found nothing.
+   Both are real prompts: clicking one runs it verbatim, so they wrap onto as
+   many lines as the sentence needs rather than being clipped to a chip. */
+.ai-suggestion-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+.ai-suggestion {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 5px;
+    max-width: 100%;
+    padding: 6px 10px;
+    border: 1px solid #e3dafd;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .75);
+    color: inherit;
+    font-family: inherit;
+    font-size: 95%;
+    line-height: 1.35;
+    text-align: left;
+    cursor: pointer;
+}
+.ai-suggestion:hover {
+    background: #fff;
+}
+.ai-suggestion svg {
+    flex: none;
+    margin-top: 2px;
+}
+.results .ai-retry-title {
+    margin-top: 12px;
+    font-weight: 600;
+}
 
 .search-method-selector {
     display: flex;

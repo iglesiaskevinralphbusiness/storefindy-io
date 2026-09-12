@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
-import mongoose, { isValidObjectId } from 'mongoose';
+import { isValidObjectId } from 'mongoose';
 import { dbConnect } from '@/config/mongo.config';
 import { LocationModel } from '@/mongo/LocationsModel';
 import { LocatorModel } from '@/mongo/LocatorModel';
 import { UserModel } from '@/mongo/UserModel';
-import { serializeForClient, getCurrentHourCode, getUserPlan } from '@/utils/helpers';
+import { serializeForClient, getUserPlan } from '@/utils/helpers';
+import { recordLocatorSearch, recordLocationViews } from '@/lib/locator-analytics';
 import { kmToMiles, milesToKm } from '@/utils/distance';
 import { plans } from '@/utils/constant/pricing';
 
@@ -252,177 +253,25 @@ export async function GET(request) {
     const activeResults = results.filter(result => !inactiveIds.includes(String(result._id)));
 
 
-    // ANALYTICS
-    const today = new Date().toISOString().split("T")[0];
-    const isViewExist = await LocatorModel.findOne({
-        _id: locatorId,
-        "views.date_id": today,
+    // ANALYTICS — the same writes the AI search makes, so both searches land in
+    // one history rather than two half-histories (see lib/locator-analytics.js).
+    await recordLocatorSearch({
+        locatorId,
+        exactSearch: searches_exact_search,
+        geo: searches_geo_label
+            ? {
+                city_province: searches_city_provice,
+                country: searches_country,
+                lat: searches_lat,
+                lng: searches_lng,
+            }
+            : null,
+        recordHour: isRecordQuery,
     });
 
-    // record city/province, country to analytics
-    if(searches_geo_label !== '' && isViewExist){
-        const isExists = await LocatorModel.findOne({
-            _id: locatorId,
-            views: {
-                $elemMatch: {
-                    date_id: today,
-                    searches: {
-                        $elemMatch: {
-                            geo_label: searches_geo_label,
-                        },
-                    },
-                },
-            },
-        });
-
-        if(!isExists) {
-            await LocatorModel.updateOne(
-                {
-                    _id: locatorId,
-                    "views.date_id": today,
-                },
-                {
-                    $push: {
-                        "views.$.searches": {
-                            geo_label: searches_geo_label,
-                            city_province: searches_city_provice,
-                            country: searches_country,
-                            lat: searches_lat,
-                            lng: searches_lng,
-                            count: 1
-                        }
-                    }
-                }
-            );
-        } else {
-            await LocatorModel.updateOne(
-                {
-                    _id: locatorId,
-                },
-                {
-                    $inc: {
-                        "views.$[view].searches.$[search].count": 1,
-                    },
-                },
-                {
-                    arrayFilters: [
-                        { "view.date_id": today },
-                        { "search.geo_label": searches_geo_label },
-                    ],
-                }
-            );
-        }
+    if (isRecordQuery) {
+        await recordLocationViews(activeResults.map((result) => result._id));
     }
-
-    // record exact search to analytics
-    if(searches_exact_search !== '' && isViewExist){
-        const isExactSearchExists = await LocatorModel.findOne({
-            _id: locatorId,
-            views: {
-                $elemMatch: {
-                    date_id: today,
-                    exact_search: {
-                        $elemMatch: {
-                            exact_search: searches_exact_search,
-                        },
-                    },
-                },
-            },
-        });
-        if(!isExactSearchExists){
-            await LocatorModel.updateOne(
-                {
-                    _id: locatorId,
-                    "views.date_id": today,
-                },
-                {
-                    $push: {
-                        "views.$.exact_search": {
-                            exact_search: searches_exact_search,
-                            count: 1
-                        }
-                    }
-                }
-            );
-        } else {
-            await LocatorModel.updateOne(
-                {
-                    _id: locatorId,
-                },
-                {
-                    $inc: {
-                        "views.$[view].exact_search.$[search].count": 1,
-                    },
-                },
-                {
-                    arrayFilters: [
-                        { "view.date_id": today },
-                        { "search.exact_search": searches_exact_search },
-                    ],
-                }
-            );
-        }
-    }
-
-    // record peak hours to analytics
-    if(isRecordQuery && isViewExist){
-        const hourCode = getCurrentHourCode();
-        await LocatorModel.updateOne(
-            {
-                _id: locatorId,
-                "views.date_id": today,
-            },
-            {
-                $inc: {
-                    [`views.$.${hourCode}`]: 1,
-                },
-            }
-        );
-    }
-
-    // locations count viewed   in results
-    if(isRecordQuery && activeResults.length > 0){
-        const resultsIds = activeResults.map(result => result._id.toString());
-        // Convert string IDs to ObjectIds if your _id is ObjectId
-        const locationIds = resultsIds.map((id) => new mongoose.Types.ObjectId(id));
-
-        // step 1. Increment existing view_count
-        await LocationModel.updateMany(
-            {
-                _id: { $in: locationIds },
-                "views.date_id": today,
-            },
-            {
-                $inc: {
-                    "views.$.view_count": 1,
-                },
-            }
-        );
-
-        // step 2: Add today's record if it doesn't exist
-        await LocationModel.updateMany(
-            {
-                _id: { $in: locationIds },
-                views: {
-                    $not: {
-                        $elemMatch: {
-                            date_id: today,
-                        },
-                    },
-                },
-            },
-            {
-                $push: {
-                    views: {
-                        date_id: today,
-                        click_count: 0,
-                        view_count: 1,
-                    },
-                },
-            }
-        );
-    }
-
 
     return json({
         status: 'success',

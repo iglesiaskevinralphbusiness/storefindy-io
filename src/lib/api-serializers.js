@@ -94,6 +94,33 @@ export function toPublicLocatorDetail(locator) {
     return omit(locator, HIDDEN_LOCATOR_DETAIL_FIELDS);
 }
 
+/**
+ * Settings groups that were added after locators had already been saved.
+ *
+ * Those documents carry no value for the new group at all, and the customize PUT
+ * requires every group to be present — so a merchant opening an older locator in
+ * the WordPress panel and pressing Save would be told "searchAi settings are
+ * required" for a panel they never touched. Filling the group in on the way out
+ * keeps the read/write round trip whole, and hands the same defaults the schema
+ * gives a new locator.
+ */
+const SETTINGS_DEFAULTS = {
+    searchAi: {
+        ai_placeholder: 'What are you looking for?',
+        ai_border_color: '#e3dafd',
+        ai_background_start: '#f4f0ff',
+        ai_background_end: '#ffffff',
+    },
+};
+
+function withSettingsDefaults(settings) {
+    const out = { ...(settings || {}) };
+    for (const [group, defaults] of Object.entries(SETTINGS_DEFAULTS)) {
+        out[group] = { ...defaults, ...(out[group] || {}) };
+    }
+    return out;
+}
+
 /** Customize read/write shape — settings, feature flags, and plan gating fields. */
 export function toPublicLocatorCustomize(locator) {
     if (!locator || typeof locator !== 'object') return locator;
@@ -131,12 +158,14 @@ export function toPublicLocatorCustomize(locator) {
         name,
         user_plan,
         status,
-        settings,
+        settings: withSettingsDefaults(settings),
         features: {
             show_map_radius_indicator,
             show_map_pin_number,
             form_style,
-            search_method,
+            // Absent on locators saved before the setting existed; an empty
+            // value is the "offer both search forms" default.
+            search_method: search_method ?? '',
             focused_zoom,
             dynamic_search,
             map_style: map_style ?? '',

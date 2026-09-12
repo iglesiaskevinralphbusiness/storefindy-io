@@ -18,6 +18,7 @@ import { SOCIAL_MEDIA_LINKS } from '@/utils/constant';
 import { getSearchRadiiValues, formatDistanceDisplay, kmToMiles } from '@/utils/distance';
 import { WIDGET_API_ORIGIN } from '@/utils/widget-api-origin';
 import { getLocatorLabels, formatLocationsFound, dayLabelKey } from '@/utils/constant/locator-languages';
+import { buildPromptSuggestions } from '@/lib/ai/locator-suggestions';
 import { resolveMapLibrarySelection } from '@/utils/constant/mapbox-styles';
 import SearchSuggest from './SearchSuggest';
 
@@ -401,6 +402,18 @@ export default function Locator({
     const [openHours, setOpenHours] = useState({});
     const [showListMap, setShowListMap] = useState('list');
     const [showSearchMethod, setShowSearchMethod] = useState('address');
+    // --- AI search state ------------------------------------------------------
+    // The headline above the results. The address search counts "near you",
+    // which is only true when there IS a "you" — an AI answer about a city says
+    // so in its own words, so the server's sentence wins whenever it sent one.
+    const [resultsLabel, setResultsLabel] = useState('');
+    // What to offer after an AI search came back empty: the same question with
+    // whichever condition emptied it loosened (see /api/locations/ai-search).
+    const [retrySuggestions, setRetrySuggestions] = useState([]);
+    const [retryTitle, setRetryTitle] = useState('');
+    // Whether the last AI answer was bounded by a distance. A city-wide answer
+    // is not, so the map must not draw a circle around its center.
+    const [showAiRadius, setShowAiRadius] = useState(true);
     // --- Locate-me state (the icon inside the search box) ---------------------
     // The visitor's own coordinates, once geolocation has produced a fix.
     const [userCoords, setUserCoords] = useState(null);
@@ -464,6 +477,10 @@ export default function Locator({
         const p = { ...paramsRef.current, ...override };
         setParams(p);
         setActiveId(null); // results are about to change; drop any stale selection
+        // Anything left over from an AI answer belongs to that answer.
+        setResultsLabel('');
+        setRetrySuggestions([]);
+        setShowAiRadius(true);
 
         const sp = new URLSearchParams();
         sp.set('locator_id', locator_id);
@@ -520,6 +537,166 @@ export default function Locator({
         } catch {
             setStatus('error');
             setMessage('Something went wrong while searching. Please try again.');
+        }
+    };
+
+    // Which search forms this locator offers. An empty value means both, and so
+    // does a MISSING one: locators saved before this setting existed have no
+    // `search_method` on the document at all, and reading that as "neither"
+    // would hide the search box from every one of them.
+    const searchMethod = features.search_method || '';
+
+    // Whether the AI panel is the one the visitor is looking at. Drives the
+    // map's dynamic search as well as the panel itself: re-running a coordinate
+    // search behind the visitor's back would silently replace the answer they
+    // asked a question to get.
+    const aiMode = searchMethod === 'search-by-ai' ||
+        (searchMethod === '' && showSearchMethod === 'ai');
+
+    // A place the merchant actually trades in, for the example prompts. Taken
+    // from whatever is on screen so the examples name a real city, and falling
+    // back to the locator's configured country before it has any results.
+    const suggestionPlace = locations[0]?.city || countryView?.label || '';
+
+    // Six of the ten templates fit the sidebar without pushing the results off
+    // the screen; the rest stay in the catalogue for the "try this instead"
+    // buttons an empty answer offers. Raise the second argument to show more.
+    const promptSuggestions = buildPromptSuggestions({
+        labels,
+        filters,
+        place: suggestionPlace,
+        radius: defaultRadius,
+        unit: distanceUnit,
+        name: locations[0]?.name || '',
+    }, 6);
+
+    /**
+     * Ask the AI endpoint a question in the visitor's own words.
+     *
+     * The visitor's CLOCK goes with the request — weekday, minutes past
+     * midnight and the calendar date — because opening hours are read at face
+     * value against it, exactly as the open/closed badge on each result is. The
+     * server has no business deciding whether a store on the other side of the
+     * world is "open now" from its own timezone.
+     *
+     * `coords` is only ever the visitor's own position, and only when the
+     * sentence needs one. A prompt that says nothing about "near me" is
+     * answered without it.
+     */
+    const runAiSearch = async (prompt, { coords = null, canRetry = true } = {}) => {
+        if (!locator_id) return;
+        const text = String(prompt ?? paramsRef.current.ai_q ?? '').trim();
+        setParams((p) => ({ ...p, ai_q: text }));
+        setActiveId(null);
+        setRetrySuggestions([]);
+
+        if (!text) {
+            setStatus('empty');
+            setResultsLabel('');
+            setMessage(labels.aiPromptEmpty);
+            return;
+        }
+
+        const position = coords || userCoords;
+        const now = new Date();
+        const pad = (n) => String(n).padStart(2, '0');
+
+        const sp = new URLSearchParams();
+        sp.set('locator_id', locator_id);
+        sp.set('prompt', text);
+        if (position) {
+            sp.set('lat', String(position[0]));
+            sp.set('lng', String(position[1]));
+        }
+        if (paramsRef.current.country) sp.set('country', paramsRef.current.country);
+        sp.set('day', String(now.getDay()));
+        sp.set('minutes', String(now.getHours() * 60 + now.getMinutes()));
+        sp.set('date', `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`);
+
+        const isRecordQuery = !isDemo && user_plan === 'business';
+
+        setStatus('loading');
+        setResultsLabel('');
+        try {
+            // Same canonical-host reasoning as runSearch: straight to `www`, so
+            // the CORS headers survive on a tenant sub-domain or a third-party
+            // embed.
+            const res = await fetch(`${apiOrigin}/api/locations/ai-search?${sp.toString()}&is_demo=${isDemo}&is_record_query=${isRecordQuery}`);
+            const data = await res.json();
+
+            // The sentence asked for somewhere near the visitor and we have no
+            // position yet. Ask the browser once, then ask the question again —
+            // failing with "allow location access" when the visitor would have
+            // allowed it is a dead end they have to back out of themselves.
+            if (data.needs_location && canRetry && typeof navigator !== 'undefined' && navigator.geolocation) {
+                setLocating(true);
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        const next = [pos.coords.latitude, pos.coords.longitude];
+                        setLocating(false);
+                        setGeoPermission('granted');
+                        setUserCoords(next);
+                        runAiSearch(text, { coords: next, canRetry: false });
+                    },
+                    (err) => {
+                        setLocating(false);
+                        if (err && err.code === err.PERMISSION_DENIED) setGeoPermission('denied');
+                        setStatus('empty');
+                        setMessage(data.message || labels.aiNeedLocation);
+                        setRetrySuggestions(data.suggestions || []);
+                        setRetryTitle(data.try_instead || '');
+                    },
+                    { timeout: 10000, maximumAge: 60000, enableHighAccuracy: true }
+                );
+                return;
+            }
+
+            const items = data.locations || [];
+            setLocations(items);
+
+            if (data.center) {
+                setCenter([data.center.lat, data.center.lng]);
+                setRecenterCenter([data.center.lat, data.center.lng]);
+                setMapCenter([data.center.lat, data.center.lng]);
+            }
+            // A distance the shopper asked for ("within 500 miles") becomes the
+            // circle on the map; a city-wide answer has no circle to draw, and
+            // the server says which of the two this was.
+            if (data.status === 'success') {
+                setParams((p) => ({ ...p, radius: data.show_radius ? (data.radius ?? p.radius) : p.radius }));
+                setShowAiRadius(!!data.show_radius);
+                setZoom(defaultZoom);
+                setStatus('success');
+                setResultsLabel(data.message || '');
+                setMessage('');
+            } else {
+                setStatus('empty');
+                setResultsLabel('');
+                setMessage(data.message || labels.noLocationsFound);
+                setRetrySuggestions(data.suggestions || []);
+                setRetryTitle(data.try_instead || '');
+            }
+        } catch {
+            setStatus('error');
+            setResultsLabel('');
+            setMessage('Something went wrong while searching. Please try again.');
+        }
+    };
+
+    const onAiSubmit = (e) => {
+        e.preventDefault();
+        runAiSearch();
+    };
+
+    // Switching tabs leaves the results alone — they are still a real answer —
+    // but an AI explanation and its retry buttons belong to the question that
+    // produced them, and would be nonsense sitting under the address form.
+    const selectSearchMethod = (method) => {
+        setShowSearchMethod(method);
+        setRetrySuggestions([]);
+        if (status === 'empty' || status === 'error') {
+            setStatus(locations.length ? 'success' : 'idle');
+            setMessage('');
         }
     };
 
@@ -645,6 +822,10 @@ export default function Locator({
         // visitor's position should bring the locate icon back at once rather
         // than 600ms plus an API round trip later.
         setMapCenter([c.lat, c.lng]);
+        // The AI panel answered a question, not "what is at this point" —
+        // quietly replacing that answer with a coordinate search as soon as the
+        // visitor pans the map would throw away what they asked for.
+        if (aiMode) return;
         if (dragTimer.current) clearTimeout(dragTimer.current);
         dragTimer.current = setTimeout(async () => {
             const geo = await reverseGeocode(c.lat, c.lng);
@@ -745,6 +926,16 @@ export default function Locator({
         } else {
             setParams((p) => ({ ...p, country }));
         }
+    };
+
+    // The AI panel's own theme. Read defensively: a locator saved before these
+    // fields existed has no `searchAi` group at all, and the panel still has to
+    // render with the same colours a new locator gets.
+    const aiTheme = {
+        placeholder: settings.searchAi?.ai_placeholder || '',
+        border_color: settings.searchAi?.ai_border_color || '#e3dafd',
+        background_start: settings.searchAi?.ai_background_start || '#f4f0ff',
+        background_end: settings.searchAi?.ai_background_end || '#ffffff',
     };
 
     const getAppHeight = () => {
@@ -1016,7 +1207,7 @@ export default function Locator({
                 >
                     {features.show_search_bar && (<>
 
-                        {features.search_method === '' && (<>
+                        {searchMethod === '' && (<>
                             <div
                                 className="search-method-selector"
                                 style={{
@@ -1030,10 +1221,10 @@ export default function Locator({
                                         borderColor: settings.mobileView.active_border_color,
                                         backgroundColor: settings.mobileView.active_background,
                                     } : {}}
-                                    onClick={() => setShowSearchMethod('address')}
+                                    onClick={() => selectSearchMethod('address')}
                                 >
                                     <LuMap />
-                                    <span>Search by Address</span>
+                                    <span>{labels.searchByAddress}</span>
                                 </div>
                                 <div
                                     className={'search-tab-item' + (showSearchMethod === 'ai' ? ' active' : '')}
@@ -1041,15 +1232,15 @@ export default function Locator({
                                         borderColor: settings.mobileView.active_border_color,
                                         backgroundColor: settings.mobileView.active_background,
                                     } : {}}
-                                    onClick={() => setShowSearchMethod('ai')}
+                                    onClick={() => selectSearchMethod('ai')}
                                 >
                                     <LuWandSparkles />
-                                    <span>Search with AI</span>
+                                    <span>{labels.searchWithAi}</span>
                                 </div>
                             </div>
                         </>)}
 
-                        {(features.search_method === 'search-by-address' || (features.search_method === '' && showSearchMethod === 'address' )) && (<>
+                        {(searchMethod === 'search-by-address' || (searchMethod === '' && showSearchMethod === 'address' )) && (<>
                             <form onSubmit={onSubmit}>
                                 <div className="inputs">
                                     <SearchSuggest
@@ -1205,26 +1396,35 @@ export default function Locator({
                                 )}
                             </form>
                         </>)}
-                        {(features.search_method === 'search-by-ai'  || (features.search_method === '' && showSearchMethod === 'ai' )) && (<>
+                        {(searchMethod === 'search-by-ai'  || (searchMethod === '' && showSearchMethod === 'ai' )) && (<>
                             <form
                                 className="ai-search-form"
+                                onSubmit={onAiSubmit}
                                 style={{
-                                    borderColor: settings.searchAi.ai_border_color,
-                                    backgroundColor: settings.searchAi.ai_background_start,
-                                    backgroundImage: `linear-gradient(to bottom, ${settings.searchAi.ai_background_start}, ${settings.searchAi.ai_background_end})`,
+                                    borderColor: aiTheme.border_color,
+                                    backgroundColor: aiTheme.background_start,
+                                    backgroundImage: `linear-gradient(to bottom, ${aiTheme.background_start}, ${aiTheme.background_end})`,
                                 }}
                             >
                                 <div className="ai-search-form-head">
                                     <LuWandSparkles />
-                                    <span>Search with AI</span>
+                                    <span>{labels.searchWithAi}</span>
                                 </div>
-                                <p className='desc'>Describe what you’re looking for, and we’ll find the right stores.</p>
+                                <p className='desc'>{labels.aiSearchDescription}</p>
                                 <textarea
-                                    type="text"
-                                    placeholder={settings.searchAi.ai_placeholder}
+                                    placeholder={aiTheme.placeholder}
                                     className="ai-search-form-textarea"
                                     value={params.ai_q}
-                                    onChange={(q) => setParams((p) => ({ ...p, q }))}
+                                    onChange={(e) => setParams((p) => ({ ...p, ai_q: e.target.value }))}
+                                    onKeyDown={(e) => {
+                                        // Enter asks the question; Shift+Enter is
+                                        // still a newline, because the box invites
+                                        // a sentence rather than a keyword.
+                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                            e.preventDefault();
+                                            runAiSearch();
+                                        }
+                                    }}
                                     style={{
                                         borderColor: settings.searchInput.border_color,
                                         backgroundColor: settings.searchInput.background,
@@ -1232,20 +1432,38 @@ export default function Locator({
                                         borderRadius: getBorderStyle(settings.searchInput.border),
                                     }}
                                 />
-                                <div className="ai-search-form-suggestions">
-                                    <p>Try asking:</p>
-                                    {/* TODO: Add suggestions */}
-                                </div>
+                                {promptSuggestions.length > 0 && (
+                                    <div className="ai-search-form-suggestions">
+                                        <p>{labels.tryAsking}</p>
+                                        <div className="ai-suggestion-list">
+                                            {promptSuggestions.map((suggestion) => (
+                                                <button
+                                                    key={suggestion.key}
+                                                    type="button"
+                                                    className="ai-suggestion"
+                                                    onClick={() => runAiSearch(suggestion.prompt)}
+                                                    style={{
+                                                        borderColor: aiTheme.border_color,
+                                                        color: settings.text_color,
+                                                    }}
+                                                >
+                                                    <LuSparkles />{suggestion.prompt}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                                 <button
                                     type="submit"
                                     className="ai-search-btn-search"
+                                    disabled={status === 'loading'}
                                     style={{
                                         backgroundColor: settings.search.background,
                                         color: settings.search.text_color,
                                         borderRadius: getBorderStyle(settings.search.border),
                                     }}
                                 >
-                                    <LuSparkles />{settings.search.label}
+                                    <LuSparkles />{status === 'loading' ? labels.aiSearching : settings.search.label}
                                 </button>
                             </form>
                         </>)}
@@ -1288,11 +1506,31 @@ export default function Locator({
                         )}
                         {status === 'success' && (
                             <p className="results-count" role="alert" aria-atomic="true">
-                                <LuMapPin /> {formatLocationsFound(locations.length, labels)}
+                                <LuMapPin /> {resultsLabel || formatLocationsFound(locations.length, labels)}
                             </p>
                         )}
                         {(status === 'empty' || status === 'error') && (
-                            <p className="results-error" role="alert" aria-atomic="true">{message}</p>
+                            <div className="results-error" role="alert" aria-atomic="true">
+                                <p>{message}</p>
+                                {retrySuggestions.length > 0 && (
+                                    <>
+                                        {retryTitle && <p className="ai-retry-title">{retryTitle}</p>}
+                                        <div className="ai-suggestion-list">
+                                            {retrySuggestions.map((suggestion) => (
+                                                <button
+                                                    key={suggestion.key}
+                                                    type="button"
+                                                    className="ai-suggestion"
+                                                    onClick={() => runAiSearch(suggestion.prompt)}
+                                                    style={{ borderColor: aiTheme.border_color }}
+                                                >
+                                                    <LuSparkles />{suggestion.prompt}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         )}
                         {status === 'idle' && (
                             <p className="results-count"><LuMapPin /> {labels.searchPrompt}</p>
@@ -1344,7 +1582,7 @@ export default function Locator({
                             recenterCenter={recenterCenter}
                             zoom={zoom}
                             defaultCenter={defaultCenter}
-                            radiusMiles={features.show_map_radius_indicator ? (distanceUnit === 'km' ? kmToMiles(params.radius) : params.radius) : 0}
+                            radiusMiles={features.show_map_radius_indicator && showAiRadius ? (distanceUnit === 'km' ? kmToMiles(params.radius) : params.radius) : 0}
                             showPinNumber={features.show_map_pin_number}
                             pinColor={settings.pin.color}
                             pinSize={settings.pin.size}

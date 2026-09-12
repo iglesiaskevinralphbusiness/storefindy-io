@@ -40,10 +40,14 @@ export function generateSettingsDefault(settings) {
             placeholder: settings.searchInput.placeholder,
         },
         searchAi: {
-            ai_background_start: settings.searchAi?.ai_background_start, // added ? to avoid undefined error for newly added fields
-            ai_background_end: settings.searchAi?.ai_background_end,
-            ai_border_color: settings.searchAi?.ai_border_color,
-            ai_placeholder: settings.searchAi?.ai_placeholder,
+            // Optional chaining AND a default: a locator saved before this group
+            // existed has no `searchAi` at all, and leaving the colours blank
+            // would paint the AI panel with nothing rather than with the look a
+            // new locator gets.
+            ai_background_start: settings.searchAi?.ai_background_start || '#f4f0ff',
+            ai_background_end: settings.searchAi?.ai_background_end || '#ffffff',
+            ai_border_color: settings.searchAi?.ai_border_color || '#e3dafd',
+            ai_placeholder: settings.searchAi?.ai_placeholder || 'What are you looking for?',
         },
         search: {
             border: settings.search.border,
@@ -129,7 +133,10 @@ export function generateFeaturesDefault(data) {
         show_map_radius_indicator: data.show_map_radius_indicator,
         show_map_pin_number: data.show_map_pin_number,
         form_style: data.form_style,
-        search_method: data.search_method,
+        // Empty string means "offer both search forms" — and so does a missing
+        // value, which is what every locator saved before this setting existed
+        // has on it.
+        search_method: data.search_method ?? '',
         focused_zoom: data.focused_zoom,
         dynamic_search: data.dynamic_search,
         // Empty string means "use the map's default style" (see resolveMapStyle).
