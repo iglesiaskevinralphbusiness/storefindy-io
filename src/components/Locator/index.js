@@ -664,6 +664,12 @@ export default function Locator({
             const items = data.locations || [];
             setLocations(items);
 
+            // The map follows the answer whether or not the answer found
+            // anything. "Nothing in Bayambang" is only a useful thing to be told
+            // while you are looking at Bayambang — so the server sends back the
+            // place it resolved even on an empty result, and the view goes
+            // there exactly as it does when that place is picked from the
+            // address autocomplete.
             if (data.center) {
                 setCenter([data.center.lat, data.center.lng]);
                 setRecenterCenter([data.center.lat, data.center.lng]);
@@ -680,6 +686,11 @@ export default function Locator({
                 setResultsLabel(data.message || '');
                 setMessage('');
             } else {
+                // An empty answer that still moved the map has to frame the
+                // place properly: the locator's configured zoom, and no radius
+                // circle left over from whatever the previous answer was.
+                setShowAiRadius(!!data.show_radius);
+                if (data.center) setZoom(defaultZoom);
                 setStatus('empty');
                 setResultsLabel('');
                 setMessage(data.message || labels.noLocationsFound);

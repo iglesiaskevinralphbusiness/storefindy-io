@@ -6,6 +6,7 @@ import { LocatorModel } from '@/mongo/LocatorModel';
 import { UserModel } from '@/mongo/UserModel';
 import { serializeForClient, getUserPlan } from '@/utils/helpers';
 import { recordLocatorSearch, recordLocationViews } from '@/lib/locator-analytics';
+import { geocodePlace } from '@/lib/geocode';
 import { kmToMiles, milesToKm } from '@/utils/distance';
 import { plans } from '@/utils/constant/pricing';
 
@@ -34,42 +35,6 @@ function distanceInMiles(lat1, lng1, lat2, lng2) {
         Math.sin(dLat / 2) ** 2 +
         Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
     return EARTH_RADIUS_MILES * 2 * Math.asin(Math.sqrt(a));
-}
-
-// Resolve a free-text "city, state, or postal code" query into coordinates via
-// the free OpenStreetMap Nominatim service (same provider used elsewhere in the
-// app). `country` biases results when the locator is scoped to one country.
-async function geocode(query, country) {
-    const params = new URLSearchParams({
-        q: query,
-        format: 'json',
-        limit: '1',
-        addressdetails: '1', // request structured address parts (city/state/country)
-    });
-    if (country) params.set('countrycodes', country);
-    try {
-        const res = await fetch(
-            `https://nominatim.openstreetmap.org/search?${params.toString()}`,
-            { headers: { 'User-Agent': 'StoreFindy-Locator/1.0' } }
-        );
-        if (!res.ok) return null;
-        const data = await res.json();
-        if (!Array.isArray(data) || data.length === 0) return null;
-        const addr = data[0].address || {};
-        return {
-            lat: parseFloat(data[0].lat),
-            lng: parseFloat(data[0].lon),
-            label: data[0].display_name || '',
-            // city falls back through town/village/municipality;
-            // province falls back through state/region
-            city_province:
-                addr.city || addr.town || addr.village ||
-                addr.municipality || addr.state || addr.region || '',
-            country: addr.country || '',
-        };
-    } catch {
-        return null;
-    }
 }
 
 // Reverse geocode raw coordinates (used by map-drag searches) into an address
@@ -176,7 +141,10 @@ export async function GET(request) {
             searches_lng = lng;
         }
     } else if (query) {
-        const geo = await geocode(query, countryParam || locator.default_country);
+        // The country dropdown biases this lookup but never restricts it — see
+        // lib/geocode.js. Typing a place and pressing Search now reaches exactly
+        // as far as picking that same place from the autocomplete dropdown.
+        const geo = await geocodePlace(query, countryParam || locator.default_country);
         if (!geo) {
             return json({
                 status: 'not_found',

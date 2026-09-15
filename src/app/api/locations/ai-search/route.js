@@ -13,6 +13,7 @@ import { parseLocatorPrompt } from '@/lib/ai/locator-prompt';
 import { applyLocatorIntent } from '@/lib/ai/locator-search';
 import { buildRecoverySuggestions, fillTemplate } from '@/lib/ai/locator-suggestions';
 import { recordLocatorSearch, recordLocationViews } from '@/lib/locator-analytics';
+import { geocodePlace } from '@/lib/geocode';
 
 /*
  * "Search with AI" for the public widget.
@@ -46,44 +47,6 @@ const CORS_HEADERS = {
 
 function json(body, status = 200) {
     return NextResponse.json(body, { status, headers: CORS_HEADERS });
-}
-
-/**
- * Resolve a place name to a point and the box around it, via the same free
- * OpenStreetMap service the address search uses. Only reached when the words the
- * shopper used match nothing in the merchant's own address fields, so a locator
- * whose cities are spelled the way shoppers spell them never calls out at all.
- */
-async function geocodePlace(query, country) {
-    const params = new URLSearchParams({ q: query, format: 'json', limit: '1', addressdetails: '1' });
-    if (country) params.set('countrycodes', country);
-    try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?${params.toString()}`, {
-            headers: { 'User-Agent': 'StoreFindy-Locator/1.0' },
-        });
-        if (!res.ok) return null;
-        const data = await res.json();
-        if (!Array.isArray(data) || data.length === 0) return null;
-
-        const first = data[0];
-        const address = first.address || {};
-        // [south, north, west, east] as strings.
-        const box = (first.boundingbox || []).map(Number);
-        return {
-            lat: parseFloat(first.lat),
-            lng: parseFloat(first.lon),
-            label: first.display_name || '',
-            bounds: box.length === 4 && box.every(Number.isFinite)
-                ? { south: box[0], north: box[1], west: box[2], east: box[3] }
-                : null,
-            city_province:
-                address.city || address.town || address.village ||
-                address.municipality || address.state || address.region || '',
-            country: address.country || '',
-        };
-    } catch {
-        return null;
-    }
 }
 
 /**
@@ -179,6 +142,11 @@ export async function GET(request) {
         name: '',
     };
 
+    // `extra.center` is how a fruitless answer still moves the map: the shopper
+    // named a real place, we resolved it, and there simply are no locations in
+    // it. Showing them that place with the "nothing found" notice beats leaving
+    // the map wherever it happened to be — which is what picking the same place
+    // from the address autocomplete does.
     const empty = (message, blocked = null, extra = {}) => json({
         status: 'empty',
         message,
@@ -187,6 +155,9 @@ export async function GET(request) {
         center: null,
         radius: defaultRadius,
         distance_unit: distanceUnit,
+        // No circle to draw: nothing was found, and an empty place-name answer
+        // was never bounded by a distance the shopper asked for.
+        show_radius: false,
         count: 0,
         locations: [],
         ...extra,
@@ -313,7 +284,9 @@ export async function GET(request) {
                 ? fillTemplate(labels.aiNoResultsReason, { query: prompt, reason })
                 : fillTemplate(labels.aiNoResults, { query: prompt }),
             outcome.blocked,
-            { understood: intent }
+            // mapCenter is the geocoded place, else the shopper's own position;
+            // null when the sentence named neither, which leaves the map alone.
+            { understood: intent, center: mapCenter }
         );
     }
 
