@@ -137,7 +137,7 @@ const aiFeatures = [
     {
         icon: TbListSearch,
         title: 'Find locations in plain language',
-        desc: '"Show unpublished stores in Manila with free wifi." Describe the locations you are looking for instead of setting filters by hand. It only ever narrows what you are looking at — it never changes or deletes anything.',
+        desc: '"Show the stores in California that are open now and with free wifi." Describe the locations you are looking for instead of setting filters by hand. It only ever narrows what you are looking at — it never changes or deletes anything.',
     },
     {
         icon: TbMessageChatbot,
