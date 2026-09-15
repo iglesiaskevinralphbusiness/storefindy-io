@@ -80,6 +80,9 @@ export default function LocatorMapbox({
     center,
     recenterCenter = null,
     zoom = 10,
+    // { level, nonce } — a zoom asked for in the AI panel. Applied by its own
+    // effect below, since the recenter effect ignores a zoom-only change.
+    zoomCommand = null,
     defaultCenter = null,
     radiusMiles,
     showPinNumber = false,
@@ -590,6 +593,22 @@ export default function LocatorMapbox({
         programmaticUntil.current = Date.now() + 1000;
         map.jumpTo({ center: [lng, lat], zoom: zoom ?? map.getZoom() });
     }, [mapReady, recenterCenter, zoom]);
+
+    // An explicit zoom asked for in the AI panel. The recenter effect above
+    // only fires on a CENTER change, so a "zoom in" that names no place would
+    // otherwise never reach the map. `nonce` makes a repeated command repeat.
+    const lastZoomNonce = useRef(0);
+    useEffect(() => {
+        const map = mapRef.current;
+        if (!map || !zoomCommand || !zoomCommand.nonce) return;
+        if (zoomCommand.nonce === lastZoomNonce.current) return;
+        lastZoomNonce.current = zoomCommand.nonce;
+        const level = Math.max(map.getMinZoom(), Math.min(zoomCommand.level, map.getMaxZoom()));
+        if (level === map.getZoom()) return;
+        // Programmatic — easeTo fires moveend, which must not trigger a search.
+        programmaticUntil.current = Date.now() + 1000;
+        map.easeTo({ zoom: level, duration: 400 });
+    }, [mapReady, zoomCommand]);
 
     // Zooms in on the active location whenever a result is selected — by
     // clicking its pin or its entry in the store list.

@@ -172,6 +172,39 @@ export async function GET(request) {
         return empty(fillTemplate(labels.aiNoResultsReason, { query: prompt, reason: labels.aiReasonUnclear }));
     }
 
+    // A MAP COMMAND is an instruction to the view, not a question about the
+    // data (see PHRASES.zoomIn in lib/ai/locator-prompt.js). A zoom is complete
+    // on its own — it names no place and filters nothing — so it is answered
+    // here, before a database round trip that could not change the reply.
+    //
+    // `keep_results` is the important half: the shopper zooming in is still
+    // looking at the results of whatever they last asked, and returning an
+    // empty list would wipe the very thing they are trying to see closer.
+    const zoomAction = intent.map && intent.map.action !== 'pan' ? intent.map.action : '';
+    if (zoomAction) {
+        if (isRecordQuery) {
+            await recordLocatorSearch({ locatorId, exactSearch: prompt, geo: null, recordHour: true });
+        }
+        return json({
+            status: 'success',
+            map: { action: zoomAction },
+            keep_results: true,
+            message: zoomAction === 'zoom_in' ? labels.aiMapZoomedIn : labels.aiMapZoomedOut,
+            center: null,
+            radius: defaultRadius,
+            distance_unit: distanceUnit,
+            show_radius: false,
+            count: 0,
+            understood: intent,
+            suggestions: [],
+            locations: [],
+        });
+    }
+
+    // "move the map to X" — the place is the whole point of the sentence, so it
+    // is resolved even when the merchant happens to trade there (below).
+    const wantsPan = intent.map?.action === 'pan';
+
     // "Near me" is the one condition this route cannot answer on its own.
     const hasCoords = latParam !== null && latParam !== '' && lngParam !== null && lngParam !== '';
     const visitor = hasCoords ? { lat: parseFloat(latParam), lng: parseFloat(lngParam) } : null;
@@ -225,7 +258,7 @@ export async function GET(request) {
     const hasOtherSignal = intent.hasSchedule || intent.nearMe || intent.filters.length > 0 ||
         !!intent.name || !!intent.radius || intent.wantsAll;
 
-    if (!outcome.results.length && outcome.blocked === 'place' && intent.keywords.length) {
+    if ((wantsPan || (!outcome.results.length && outcome.blocked === 'place')) && intent.keywords.length) {
         // The words matched nothing in the merchant's own address fields, so the
         // place may still be real — "near the Eiffel Tower", a district the
         // locator doesn't store. Only here is the geocoder worth a round trip.
@@ -274,6 +307,63 @@ export async function GET(request) {
             exactSearch: prompt,
             geo: geo ? { city_province: geo.city_province, country: geo.country, lat: geo.lat, lng: geo.lng } : null,
             recordHour: true,
+        });
+    }
+
+    // A pan that found its place has done what it was asked. Reporting "no
+    // locations" here would be answering a question the shopper didn't ask —
+    // they wanted to be shown Bayambang, and they are now looking at it.
+    if (wantsPan && mapCenter) {
+        // applyLocatorIntent lets a location satisfy "place" by matching the
+        // WORDS or by sitting inside the geocoded box, which is right for a
+        // search — "stores in philippines" should match on the country field.
+        // For a pan it is not: the shopper is being shown one specific place,
+        // and listing a store three islands away because the sentence happened
+        // to say "philippines" would describe a map they are not looking at.
+        // So when the place resolved, the list is narrowed to what is actually
+        // there.
+        const panResults = geo
+            ? results.filter((location) => {
+                if (geo.bounds) {
+                    const { south, north, west, east } = geo.bounds;
+                    if (typeof location.latitude === 'number' && typeof location.longitude === 'number' &&
+                        location.latitude >= south && location.latitude <= north &&
+                        location.longitude >= west && location.longitude <= east) {
+                        return true;
+                    }
+                }
+                // No box from the geocoder (or the location falls outside it):
+                // fall back to the locator's own radius around the point.
+                return typeof location._distanceMiles === 'number' && location._distanceMiles <= radiusMiles;
+            })
+            : results;
+
+        if (isRecordQuery && panResults.length) {
+            await recordLocationViews(panResults.map((result) => result._id));
+        }
+        const place = geo
+            ? ([geo.city_province, geo.country].filter(Boolean).join(', ') || geo.label)
+            : (panResults[0]?.city || intent.leftover || prompt);
+        const panned = panResults.map(({ _distanceMiles, ...location }) => (
+            typeof _distanceMiles === 'number'
+                ? { ...location, distance: distanceUnit === 'km' ? milesToKm(_distanceMiles) : _distanceMiles }
+                : location
+        ));
+        return json({
+            status: 'success',
+            map: { action: 'pan' },
+            center: mapCenter,
+            label: geo?.label || '',
+            radius: radiusInUnit,
+            distance_unit: distanceUnit,
+            // A place is framed by its own extent, not by a circle the shopper
+            // never asked for.
+            show_radius: !!intent.radius,
+            count: panned.length,
+            message: fillTemplate(labels.aiMapMoved, { place }),
+            understood: intent,
+            suggestions: [],
+            locations: serializeForClient(panned),
         });
     }
 

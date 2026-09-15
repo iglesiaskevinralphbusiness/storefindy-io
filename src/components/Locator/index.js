@@ -33,6 +33,13 @@ const LOCATE_UNAVAILABLE_MESSAGE =
 // How many example prompts the AI panel shows before the "show more" button.
 const VISIBLE_SUGGESTIONS = 2;
 
+// How far one "zoom in" / "zoom out" moves, and the range those commands may
+// walk through. The map clamps again to its own tile ceiling on the way in — a
+// style with fewer native levels must still not be overshot.
+const ZOOM_STEP = 1;
+const MIN_COMMAND_ZOOM = 2;
+const MAX_COMMAND_ZOOM = 18;
+
 // How close the map has to be to the visitor's position before it counts as
 // already showing it — loose enough to absorb the drift between two GPS fixes,
 // tight enough that a pan down the street brings the icon back.
@@ -398,6 +405,16 @@ export default function Locator({
     // <Recenter>. Map-drag searches deliberately leave it untouched.
     const [recenterCenter, setRecenterCenter] = useState(null);
     const [zoom, setZoom] = useState(defaultZoom);
+    // A zoom instruction from the AI panel: { level, nonce }. The map applies it
+    // through its own effect, because a zoom-only change is deliberately
+    // ignored by the recenter path (see LocatorMap's <Recenter />).
+    const [zoomCommand, setZoomCommand] = useState(null);
+    const zoomNonce = useRef(0);
+    // handleMapMove writes every real zoom back into `zoom`, so this ref is the
+    // level the visitor is actually looking at — which is what "zoom in" has to
+    // step from, not the locator's configured default.
+    const zoomRef = useRef(defaultZoom);
+    useEffect(() => { zoomRef.current = zoom; }, [zoom]);
     const [status, setStatus] = useState('idle'); // idle | loading | success | empty | error
     const [message, setMessage] = useState('');
     const [activeId, setActiveId] = useState(null);
@@ -661,8 +678,15 @@ export default function Locator({
                 return;
             }
 
+            // A map command is an instruction to the VIEW. A zoom says nothing
+            // about WHICH locations to show, so the list the shopper is already
+            // looking at has to survive it — replacing it with an empty one
+            // would throw away the very results they asked to see closer.
+            const mapAction = data.map?.action || '';
+            const isZoomCommand = mapAction === 'zoom_in' || mapAction === 'zoom_out';
+
             const items = data.locations || [];
-            setLocations(items);
+            if (!data.keep_results) setLocations(items);
 
             // The map follows the answer whether or not the answer found
             // anything. "Nothing in Bayambang" is only a useful thing to be told
@@ -678,10 +702,14 @@ export default function Locator({
             // A distance the shopper asked for ("within 500 miles") becomes the
             // circle on the map; a city-wide answer has no circle to draw, and
             // the server says which of the two this was.
+            if (isZoomCommand) applyMapCommand(mapAction);
+
             if (data.status === 'success') {
                 setParams((p) => ({ ...p, radius: data.show_radius ? (data.radius ?? p.radius) : p.radius }));
                 setShowAiRadius(!!data.show_radius);
-                setZoom(defaultZoom);
+                // A zoom command owns the zoom — snapping back to the locator's
+                // configured level here would undo the instruction it just gave.
+                if (!isZoomCommand) setZoom(defaultZoom);
                 setStatus('success');
                 setResultsLabel(data.message || '');
                 setMessage('');
@@ -702,6 +730,20 @@ export default function Locator({
             setResultsLabel('');
             setMessage('Something went wrong while searching. Please try again.');
         }
+    };
+
+    // Carry out a map instruction the AI panel came back with. A pan is already
+    // handled by the centre the answer carries; this is the zoom half, which has
+    // no other way into the map.
+    const applyMapCommand = (action) => {
+        if (action !== 'zoom_in' && action !== 'zoom_out') return;
+        const step = action === 'zoom_in' ? ZOOM_STEP : -ZOOM_STEP;
+        const current = Number.isFinite(zoomRef.current) ? zoomRef.current : defaultZoom;
+        const level = Math.max(MIN_COMMAND_ZOOM, Math.min(MAX_COMMAND_ZOOM, current + step));
+        setZoom(level);
+        zoomRef.current = level;
+        zoomNonce.current += 1;
+        setZoomCommand({ level, nonce: zoomNonce.current });
     };
 
     // Running one of the example prompts collapses the catalogue back to the
@@ -1625,6 +1667,7 @@ export default function Locator({
                             center={center}
                             recenterCenter={recenterCenter}
                             zoom={zoom}
+                            zoomCommand={zoomCommand}
                             defaultCenter={defaultCenter}
                             radiusMiles={features.show_map_radius_indicator && showAiRadius ? (distanceUnit === 'km' ? kmToMiles(params.radius) : params.radius) : 0}
                             showPinNumber={features.show_map_pin_number}

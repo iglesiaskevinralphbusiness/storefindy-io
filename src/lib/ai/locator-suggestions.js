@@ -55,6 +55,9 @@ export function buildPromptSuggestions(context, limit = 10) {
         ['sugRadiusNearMe', Number(radius) > 0],
         ['sugOpen24NearMe', true],
         ['sugNamed', !!name],
+        // The box takes map instructions as well as questions, which nothing
+        // else on screen says. One example is how a shopper finds that out.
+        ['sugMoveMap', !!place],
     ];
 
     return candidates

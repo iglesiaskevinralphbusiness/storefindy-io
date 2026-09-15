@@ -64,6 +64,12 @@ export const LOCATOR_LANGUAGES = {
 		sugNamed: 'Find the location named “{name}”',
 		aiShowMore: 'Show more',
 		aiShowLess: 'Show less',
+		// Confirmations for a map command — the answer to "move the map to X"
+		// or "zoom in", which succeed whether or not any location sits there.
+		aiMapMoved: 'Moved the map to {place}.',
+		aiMapZoomedIn: 'Zoomed in.',
+		aiMapZoomedOut: 'Zoomed out.',
+		sugMoveMap: 'Move the map to {place}',
 	},
 	fr: {
 		searching: 'Recherche…',
@@ -127,6 +133,12 @@ export const LOCATOR_LANGUAGES = {
 		sugNamed: 'Trouve l’emplacement nommé « {name} »',
 		aiShowMore: 'Voir plus',
 		aiShowLess: 'Voir moins',
+		// Confirmations for a map command — the answer to "move the map to X"
+		// or "zoom in", which succeed whether or not any location sits there.
+		aiMapMoved: 'Carte déplacée vers {place}.',
+		aiMapZoomedIn: 'Zoom avant effectué.',
+		aiMapZoomedOut: 'Zoom arrière effectué.',
+		sugMoveMap: 'Déplace la carte vers {place}',
 	},
 	es: {
 		searching: 'Buscando…',
@@ -190,6 +202,12 @@ export const LOCATOR_LANGUAGES = {
 		sugNamed: 'Encuentra la ubicación llamada «{name}»',
 		aiShowMore: 'Ver más',
 		aiShowLess: 'Ver menos',
+		// Confirmations for a map command — the answer to "move the map to X"
+		// or "zoom in", which succeed whether or not any location sits there.
+		aiMapMoved: 'Mapa desplazado a {place}.',
+		aiMapZoomedIn: 'Mapa acercado.',
+		aiMapZoomedOut: 'Mapa alejado.',
+		sugMoveMap: 'Mueve el mapa a {place}',
 	},
 	de: {
 		searching: 'Suche…',
@@ -253,6 +271,12 @@ export const LOCATOR_LANGUAGES = {
 		sugNamed: 'Finde den Standort namens „{name}“',
 		aiShowMore: 'Mehr anzeigen',
 		aiShowLess: 'Weniger anzeigen',
+		// Confirmations for a map command — the answer to "move the map to X"
+		// or "zoom in", which succeed whether or not any location sits there.
+		aiMapMoved: 'Karte nach {place} verschoben.',
+		aiMapZoomedIn: 'Hineingezoomt.',
+		aiMapZoomedOut: 'Herausgezoomt.',
+		sugMoveMap: 'Verschiebe die Karte nach {place}',
 	},
 	it: {
 		searching: 'Ricerca…',
@@ -316,6 +340,12 @@ export const LOCATOR_LANGUAGES = {
 		sugNamed: 'Trova la sede chiamata «{name}»',
 		aiShowMore: 'Mostra altro',
 		aiShowLess: 'Mostra meno',
+		// Confirmations for a map command — the answer to "move the map to X"
+		// or "zoom in", which succeed whether or not any location sits there.
+		aiMapMoved: 'Mappa spostata su {place}.',
+		aiMapZoomedIn: 'Zoom avanti eseguito.',
+		aiMapZoomedOut: 'Zoom indietro eseguito.',
+		sugMoveMap: 'Sposta la mappa su {place}',
 	},
 	pt: {
 		searching: 'A pesquisar…',
@@ -379,6 +409,12 @@ export const LOCATOR_LANGUAGES = {
 		sugNamed: 'Encontre o local chamado «{name}»',
 		aiShowMore: 'Ver mais',
 		aiShowLess: 'Ver menos',
+		// Confirmations for a map command — the answer to "move the map to X"
+		// or "zoom in", which succeed whether or not any location sits there.
+		aiMapMoved: 'Mapa movido para {place}.',
+		aiMapZoomedIn: 'Zoom aproximado.',
+		aiMapZoomedOut: 'Zoom afastado.',
+		sugMoveMap: 'Mova o mapa para {place}',
 	},
 	nl: {
 		searching: 'Zoeken…',
@@ -442,6 +478,12 @@ export const LOCATOR_LANGUAGES = {
 		sugNamed: 'Vind de locatie genaamd “{name}”',
 		aiShowMore: 'Meer tonen',
 		aiShowLess: 'Minder tonen',
+		// Confirmations for a map command — the answer to "move the map to X"
+		// or "zoom in", which succeed whether or not any location sits there.
+		aiMapMoved: 'Kaart verplaatst naar {place}.',
+		aiMapZoomedIn: 'Ingezoomd.',
+		aiMapZoomedOut: 'Uitgezoomd.',
+		sugMoveMap: 'Verplaats de kaart naar {place}',
 	},
 	ja: {
 		searching: '検索中…',
@@ -505,6 +547,12 @@ export const LOCATOR_LANGUAGES = {
 		sugNamed: '「{name}」という名前の店舗を探す',
 		aiShowMore: 'もっと見る',
 		aiShowLess: '閉じる',
+		// Confirmations for a map command — the answer to "move the map to X"
+		// or "zoom in", which succeed whether or not any location sits there.
+		aiMapMoved: '地図を{place}に移動しました。',
+		aiMapZoomedIn: '地図を拡大しました。',
+		aiMapZoomedOut: '地図を縮小しました。',
+		sugMoveMap: '地図を{place}に移動して',
 	},
 	ko: {
 		searching: '검색 중…',
@@ -568,6 +616,12 @@ export const LOCATOR_LANGUAGES = {
 		sugNamed: '“{name}”(이)라는 이름의 매장 찾아줘',
 		aiShowMore: '더 보기',
 		aiShowLess: '접기',
+		// Confirmations for a map command — the answer to "move the map to X"
+		// or "zoom in", which succeed whether or not any location sits there.
+		aiMapMoved: '지도를 {place}(으)로 이동했습니다.',
+		aiMapZoomedIn: '지도를 확대했습니다.',
+		aiMapZoomedOut: '지도를 축소했습니다.',
+		sugMoveMap: '지도를 {place}(으)로 이동해 줘',
 	},
 	'zh-CN': {
 		searching: '正在搜索…',
@@ -631,6 +685,12 @@ export const LOCATOR_LANGUAGES = {
 		sugNamed: '查找名为“{name}”的门店',
 		aiShowMore: '显示更多',
 		aiShowLess: '收起',
+		// Confirmations for a map command — the answer to "move the map to X"
+		// or "zoom in", which succeed whether or not any location sits there.
+		aiMapMoved: '已将地图移动到{place}。',
+		aiMapZoomedIn: '已放大地图。',
+		aiMapZoomedOut: '已缩小地图。',
+		sugMoveMap: '把地图移动到{place}',
 	},
 	'zh-TW': {
 		searching: '正在搜尋…',
@@ -694,6 +754,12 @@ export const LOCATOR_LANGUAGES = {
 		sugNamed: '尋找名為「{name}」的門店',
 		aiShowMore: '顯示更多',
 		aiShowLess: '收合',
+		// Confirmations for a map command — the answer to "move the map to X"
+		// or "zoom in", which succeed whether or not any location sits there.
+		aiMapMoved: '已將地圖移動到{place}。',
+		aiMapZoomedIn: '已放大地圖。',
+		aiMapZoomedOut: '已縮小地圖。',
+		sugMoveMap: '把地圖移動到{place}',
 	},
 	ar: {
 		searching: 'جارٍ البحث…',
@@ -757,6 +823,12 @@ export const LOCATOR_LANGUAGES = {
 		sugNamed: 'ابحث عن الموقع المسمى «{name}»',
 		aiShowMore: 'عرض المزيد',
 		aiShowLess: 'عرض أقل',
+		// Confirmations for a map command — the answer to "move the map to X"
+		// or "zoom in", which succeed whether or not any location sits there.
+		aiMapMoved: 'تم تحريك الخريطة إلى {place}.',
+		aiMapZoomedIn: 'تم تكبير الخريطة.',
+		aiMapZoomedOut: 'تم تصغير الخريطة.',
+		sugMoveMap: 'حرّك الخريطة إلى {place}',
 	},
 };
 

@@ -248,6 +248,91 @@ const PHRASES = {
         '范围内', '半径', '以内', '範圍內',
         'في نطاق', 'ضمن', 'نصف قطر',
     ]),
+    /*
+     * MAP COMMANDS — an instruction to the VIEW, not a question about the data.
+     *
+     * "move the map to bayambang" and "show me the map of bayambang" are not
+     * asking which stores are there; they are asking to be shown the place. The
+     * distinction matters because it changes what "nothing found" means: a
+     * search that matches no location has failed, whereas a map command that
+     * moved the map did exactly what it was told, whether or not the merchant
+     * trades there.
+     *
+     * Consumed FIRST (see parseLocatorPrompt), because these phrases overlap
+     * the rest of the book: "show me the map of X" starts like PHRASES.all, and
+     * "take me to X" ends like PHRASES.nearMe's "to me".
+     */
+    zoomIn: byLength([
+        'zoom in', 'zoom into', 'zoom in on', 'zoom in the map', 'zoom the map in', 'zoom closer',
+        'closer', 'move closer', 'get closer', 'magnify', 'enlarge the map', 'enlarge',
+        'zoom avant', 'zoomer', 'agrandir', 'rapprocher', 'plus pres', 'plus près',
+        'acercar', 'acercate', 'acércate', 'ampliar', 'mas cerca', 'más cerca',
+        'hineinzoomen', 'heranzoomen', 'vergrossern', 'vergrößern', 'naher', 'näher',
+        'ingrandisci', 'zoom avanti', 'avvicina', 'piu vicino la mappa',
+        'aproximar', 'ampliar o mapa', 'mais perto o mapa',
+        'inzoomen', 'vergroten',
+        '拡大', 'ズームイン', '寄って',
+        '확대', '줌인', '가까이',
+        '放大', '拉近',
+        'تكبير', 'قرب الخريطة', 'قرّب',
+    ]),
+    zoomOut: byLength([
+        'zoom out', 'zoom out of', 'zoom out the map', 'zoom the map out', 'zoom away', 'zoom back',
+        'further out', 'farther out', 'move away', 'pull back', 'shrink the map', 'wider view', 'see more area',
+        'zoom arriere', 'zoom arrière', 'dezoomer', 'dézoomer', 'reduire', 'réduire', 'eloigner', 'éloigner',
+        'alejar', 'alejate', 'aléjate', 'reducir', 'mas lejos', 'más lejos',
+        'herauszoomen', 'rauszoomen', 'verkleinern', 'weiter weg',
+        'rimpicciolisci', 'zoom indietro', 'allontana',
+        'afastar', 'reduzir o mapa', 'mais longe o mapa',
+        'uitzoomen', 'verkleinen',
+        '縮小', 'ズームアウト', '引いて',
+        '축소', '줌아웃', '멀리',
+        '缩小', '拉远', '縮小地圖', '拉遠',
+        'تصغير', 'بعد الخريطة', 'صغّر',
+    ]),
+    /*
+     * The verb half of a pan command. Paired with `mapWord` below, or used on
+     * its own ("take me to manila"), which is why the phrasings here are the
+     * ones that can only mean "move the view".
+     */
+    mapMove: byLength([
+        'move the map to', 'move the map', 'move map to', 'move map',
+        'show me the map of', 'show me the map for', 'show me the map',
+        'show the map of', 'show the map for', 'show the map', 'show map of', 'show map',
+        'center the map on', 'center the map', 'centre the map on', 'centre the map',
+        'centre on', 'center on', 'pan the map to', 'pan the map', 'pan to',
+        'take me to', 'bring me to', 'go to', 'jump to', 'navigate to', 'fly to',
+        'map of', 'map for', 'view of the map', 'the map to', 'map to',
+        'deplace la carte vers', 'déplace la carte vers', 'deplacer la carte', 'déplacer la carte',
+        'montre moi la carte de', 'montre la carte de', 'affiche la carte de', 'centre la carte sur',
+        'carte de', 'va a', 'emmene moi a', 'emmène-moi à',
+        'mueve el mapa a', 'mover el mapa a', 'muestrame el mapa de', 'muéstrame el mapa de',
+        'muestra el mapa de', 'centra el mapa en', 'mapa de', 'llevame a', 'llévame a', 've a',
+        'verschiebe die karte nach', 'karte verschieben nach', 'zeig mir die karte von',
+        'zeige die karte von', 'zentriere die karte auf', 'karte von', 'bring mich nach', 'geh zu',
+        'sposta la mappa su', 'mostrami la mappa di', 'mostra la mappa di', 'centra la mappa su',
+        'mappa di', 'portami a', 'vai a',
+        'mova o mapa para', 'mover o mapa para', 'mostre o mapa de', 'me mostre o mapa de',
+        'centralize o mapa em', 'mapa de', 'me leve para', 'va para', 'vá para',
+        'verplaats de kaart naar', 'toon de kaart van', 'laat de kaart zien van',
+        'centreer de kaart op', 'kaart van', 'breng me naar', 'ga naar',
+        '地図を', 'の地図', 'マップを', 'に移動', 'へ移動', 'を表示',
+        '지도를', '지도', '로 이동', '으로 이동', '보여줘',
+        '把地图移动到', '将地图移动到', '地图移动到', '显示地图', '的地图', '移动到', '前往',
+        '把地圖移動到', '將地圖移動到', '地圖移動到', '顯示地圖', '的地圖', '移動到',
+        'حرك الخريطة الى', 'حرّك الخريطة إلى', 'انقل الخريطة الى', 'اعرض خريطة',
+        'خريطة', 'اذهب الى', 'اذهب إلى',
+    ]),
+    /*
+     * The noun on its own. "the map of bayambang" is already covered above; this
+     * catches a bare "bayambang map" and, more importantly, lets a zoom command
+     * mention the map without that word leaking into the place name.
+     */
+    mapWord: byLength([
+        'the map', 'a map', 'map', 'la carte', 'carte', 'el mapa', 'mapa',
+        'die karte', 'karte', 'la mappa', 'mappa', 'o mapa',
+        'de kaart', 'kaart', '地図', 'マップ', '지도', '地图', '地圖', 'الخريطة', 'خريطة',
+    ]),
     all: byLength([
         'show me all', 'show all', 'list all', 'find all', 'all locations', 'all stores', 'every location', 'all of them',
         'toutes les', 'tous les', 'todas las', 'todos los', 'alle', 'tutte le', 'tutti i', 'todas as', 'todos os',
@@ -524,6 +609,17 @@ export function parseLocatorPrompt(raw, { filters = [], distanceUnit = 'mi' } = 
     const text = normalizePromptText(original);
     const scanner = createScanner(text);
 
+    // 0. MAP COMMANDS, before anything else gets to eat the words.
+    //    "zoom in" is a complete instruction on its own; a pan needs somewhere
+    //    to go, and whatever survives the rest of the parse becomes that place.
+    //    Zoom is tested first so "zoom out the map" is not read as a pan.
+    const zoomIn = scanner.take(PHRASES.zoomIn);
+    const zoomOut = !zoomIn && scanner.take(PHRASES.zoomOut);
+    const panWord = !zoomIn && !zoomOut && scanner.take(PHRASES.mapMove);
+    // The bare noun is consumed either way: for a zoom it is the object of the
+    // verb ("zoom in the map"), and for a pan it must not end up in the place.
+    const mapNoun = scanner.take(PHRASES.mapWord);
+
     // 1. A quoted string is the shopper being explicit, so it wins over
     //    everything and is read from the ORIGINAL casing for display.
     let name = '';
@@ -652,9 +748,26 @@ export function parseLocatorPrompt(raw, { filters = [], distanceUnit = 'mi' } = 
     // 10. Whatever survived is the shopper's own words: a city, a store name, or
     //    something they remember from the merchant's notes.
     const keywords = tokenize(scanner.text).filter(isMeaningfulToken);
+    const leftoverText = scanner.text;
 
     const schedule = openNow || open24 || closed || daylight || night || days.length > 0 ||
         !!window || today || tomorrow || openWord;
+
+    // The view instruction, if the sentence carried one.
+    //
+    // A pan is only a pan when it has somewhere to go: "show me the map" with no
+    // place names nothing to move to, so it stays null and the sentence is read
+    // as an ordinary search rather than answered with a confirmation for a move
+    // that never happened. A bare "map" with a place ("bayambang map") counts,
+    // which is why `mapNoun` can stand in for the verb.
+    const wantsPan = (panWord || mapNoun) && (keywords.length > 0 || !!leftoverText);
+    const map = zoomIn
+        ? { action: 'zoom_in' }
+        : zoomOut
+            ? { action: 'zoom_out' }
+            : wantsPan
+                ? { action: 'pan' }
+                : null;
 
     return {
         raw: original,
@@ -670,7 +783,7 @@ export function parseLocatorPrompt(raw, { filters = [], distanceUnit = 'mi' } = 
         // Chinese, Korean and Thai cannot be split on spaces: a city called
         // 東京 is found by testing whether THIS string contains it, which is the
         // opposite direction from testing whether a token appears in a field.
-        leftoverText: scanner.text,
+        leftoverText,
         leftover: keywords.join(' '),
         days,
         today,
@@ -689,6 +802,9 @@ export function parseLocatorPrompt(raw, { filters = [], distanceUnit = 'mi' } = 
         daylight,
         night,
         hasSchedule: !!schedule,
-        hasSignal: !!(nearMe || wantsAll || radius || name || matchedFilters.length || keywords.length || schedule || locationStatus),
+        // { action: 'pan' | 'zoom_in' | 'zoom_out' } — an instruction to the map
+        // view. null for an ordinary search.
+        map,
+        hasSignal: !!(nearMe || wantsAll || radius || name || matchedFilters.length || keywords.length || schedule || locationStatus || map),
     };
 }

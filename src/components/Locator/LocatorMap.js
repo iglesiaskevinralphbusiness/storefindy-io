@@ -40,6 +40,26 @@ function Recenter({ center, zoom }) {
     return null;
 }
 
+// Applies an explicit zoom instruction from the AI panel ("zoom in", "zoom
+// out"). <Recenter> deliberately ignores a zoom-only change so it cannot snap a
+// panning user back to a stale center, which leaves this as the only path a
+// zoom with no accompanying move can take.
+//
+// `nonce` is what makes the command repeatable: "zoom in" twice in a row is two
+// instructions, even though the second carries the same level as the first once
+// the ceiling is reached.
+function ApplyZoom({ command }) {
+    const map = useMap();
+    const lastNonce = useRef(0);
+    useEffect(() => {
+        if (!command || !command.nonce || command.nonce === lastNonce.current) return;
+        lastNonce.current = command.nonce;
+        const level = Math.max(map.getMinZoom(), Math.min(command.level, map.getMaxZoom()));
+        if (level !== map.getZoom()) map.setZoom(level);
+    }, [command, map]);
+    return null;
+}
+
 // Reports the map center back to the parent after the user pans or zooms, so
 // the parent can re-run the search around the new viewport center.
 // `programmaticUntil` suppresses events fired by our own zoom-to-pin animation
@@ -131,6 +151,8 @@ export default function LocatorMap({
     center,
     recenterCenter = null,
     zoom = 10,
+    // { level, nonce } — a zoom asked for in the AI panel. See <ApplyZoom />.
+    zoomCommand = null,
     defaultCenter = null,
     radiusMiles,
     showPinNumber = false,
@@ -224,6 +246,7 @@ export default function LocatorMap({
             ) : null}
 
             <Recenter center={recenterCenter} zoom={zoom} />
+            <ApplyZoom command={zoomCommand} />
             {/* With dynamic search on, panning/zooming the map auto-searches
                 around the new viewport center. With it off, moving the map
                 searches nothing at all — the draggable person marker is then the
