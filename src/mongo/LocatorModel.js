@@ -130,6 +130,7 @@ const locatorSchema = new mongoose.Schema({
             ai_border_color: { type: String, default: '#e3dafd' },
             ai_background_start: { type: String, default: '#f4f0ff' },
             ai_background_end: { type: String, default: '#ffffff' },
+            ai_suggestion_background: { type: String, default: '#ffffff' },
         },
         search: { // search button
             border: { type: String, default: 'square' },

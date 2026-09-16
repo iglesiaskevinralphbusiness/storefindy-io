@@ -47,6 +47,7 @@ export function generateSettingsDefault(settings) {
             ai_background_start: settings.searchAi?.ai_background_start || '#f4f0ff',
             ai_background_end: settings.searchAi?.ai_background_end || '#ffffff',
             ai_border_color: settings.searchAi?.ai_border_color || '#e3dafd',
+            ai_suggestion_background: settings.searchAi?.ai_suggestion_background || '#ffffff',
             ai_placeholder: settings.searchAi?.ai_placeholder || 'What are you looking for?',
         },
         search: {

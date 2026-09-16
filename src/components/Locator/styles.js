@@ -254,7 +254,10 @@ export const formStyles = `
     padding: 6px 10px;
     border: 1px solid #e3dafd;
     border-radius: 14px;
-    background: rgba(255, 255, 255, .75);
+    /* Set by the form from the locator's own settings. The chips used to be a
+       hard-coded translucent white, which is invisible under a dark theme's
+       near-white text — the one part of the AI panel no setting could reach. */
+    background: var(--sf-ai-suggestion-bg, rgba(255, 255, 255, .75));
     color: inherit;
     font-family: inherit;
     font-size: 95%;
@@ -262,8 +265,10 @@ export const formStyles = `
     text-align: left;
     cursor: pointer;
 }
+/* A wash rather than a colour, so it reads as a hover on a white chip and on
+   a near-black one alike. */
 .ai-suggestion:hover {
-    background: #fff;
+    box-shadow: inset 0 0 0 999px rgba(127, 127, 127, .14);
 }
 .ai-suggestion svg {
     flex: none;

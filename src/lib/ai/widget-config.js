@@ -84,10 +84,18 @@ export const SETTING_CATALOGUE = [
     { path: 'settings.searchInput.placeholder', type: 'text', label: 'Search box placeholder', phrases: ['search box placeholder text', 'hint text in the search field'] },
     
     // --- Search AI ---
-    { path: 'settings.searchAi.ai_background_start', type: 'color', label: 'AI search box background start', phrases: ['ai search box background start colour', 'ai search field background start'] },
-    { path: 'settings.searchAi.ai_background_end', type: 'color', label: 'AI search box background end', phrases: ['ai search box background end colour', 'ai search field background end'] },
-    { path: 'settings.searchAi.ai_border_color', type: 'color', label: 'AI search box border colour', phrases: ['ai search box border colour', 'ai search field outline colour'] },
-    { path: 'settings.searchAi.ai_placeholder', type: 'text', label: 'AI search box placeholder', phrases: ['ai search box placeholder text', 'hint text in the ai search field'] },
+    //
+    // The "Search with AI" panel in the widget. Its own group because the panel
+    // is a tinted card sitting on the widget background rather than part of it:
+    // it has a gradient, a border and its own suggestion chips, and none of them
+    // follow `settings.background`. That is exactly why every one of these paths
+    // is also named in the theme recipes below — without them "make it dark"
+    // darkened the whole locator and left this panel glowing lavender.
+    { path: 'settings.searchAi.ai_background_start', type: 'color', label: 'AI search panel background (top)', phrases: ['ai search panel background', 'search with ai panel colour', 'ai search box background start colour', 'top of the ai panel gradient'] },
+    { path: 'settings.searchAi.ai_background_end', type: 'color', label: 'AI search panel background (bottom)', phrases: ['bottom of the ai panel gradient', 'ai search box background end colour', 'ai panel fade colour'] },
+    { path: 'settings.searchAi.ai_border_color', type: 'color', label: 'AI search panel border colour', phrases: ['ai search panel border colour', 'search with ai panel outline', 'ai search field outline colour'] },
+    { path: 'settings.searchAi.ai_suggestion_background', type: 'color', label: 'AI suggestion chip background', phrases: ['ai suggestion chip colour', 'example prompt background', 'try asking chip background', 'ai prompt suggestion colour'] },
+    { path: 'settings.searchAi.ai_placeholder', type: 'text', label: 'AI search box placeholder', phrases: ['ai search box placeholder text', 'hint text in the ai search field', 'what the ai search box says before you type'] },
 
     // --- Search button ---
     { path: 'settings.search.border', type: 'enum', options: BORDERS, label: 'Search button border', phrases: ['search button border', 'search button shape'] },
@@ -316,6 +324,10 @@ export const RECIPES = [
             'settings.searchInput.background': '#1f2937',
             'settings.searchInput.text_color': '#f9fafb',
             'settings.searchInput.border_color': '#374151',
+            'settings.searchAi.ai_background_start': '#1f2937',
+            'settings.searchAi.ai_background_end': '#111827',
+            'settings.searchAi.ai_border_color': '#374151',
+            'settings.searchAi.ai_suggestion_background': '#374151',
             'settings.search.background': '#f9fafb',
             'settings.search.text_color': '#111827',
             'settings.filter.background': '#1f2937',
@@ -355,6 +367,12 @@ export const RECIPES = [
             'settings.searchInput.background': '#ffffff',
             'settings.searchInput.text_color': '#111827',
             'settings.searchInput.border_color': '#d1d5db',
+            // The panel's own defaults: a light theme should hand back the tint
+            // a new locator ships with, not flatten it to the page colour.
+            'settings.searchAi.ai_background_start': '#f4f0ff',
+            'settings.searchAi.ai_background_end': '#ffffff',
+            'settings.searchAi.ai_border_color': '#e3dafd',
+            'settings.searchAi.ai_suggestion_background': '#ffffff',
             'settings.search.background': '#111827',
             'settings.search.text_color': '#ffffff',
             'settings.filter.background': '#111827',

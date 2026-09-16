@@ -1007,6 +1007,7 @@ export default function Locator({
         border_color: settings.searchAi?.ai_border_color || '#e3dafd',
         background_start: settings.searchAi?.ai_background_start || '#f4f0ff',
         background_end: settings.searchAi?.ai_background_end || '#ffffff',
+        suggestion_background: settings.searchAi?.ai_suggestion_background || '#ffffff',
     };
 
     const getAppHeight = () => {
@@ -1475,6 +1476,9 @@ export default function Locator({
                                     borderColor: aiTheme.border_color,
                                     backgroundColor: aiTheme.background_start,
                                     backgroundImage: `linear-gradient(to bottom, ${aiTheme.background_start}, ${aiTheme.background_end})`,
+                                    // Read by .ai-suggestion in both its resting
+                                    // and hover states — see styles.js.
+                                    '--sf-ai-suggestion-bg': aiTheme.suggestion_background,
                                 }}
                             >
                                 <div className="ai-search-form-head">

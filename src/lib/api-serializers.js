@@ -110,6 +110,7 @@ const SETTINGS_DEFAULTS = {
         ai_border_color: '#e3dafd',
         ai_background_start: '#f4f0ff',
         ai_background_end: '#ffffff',
+        ai_suggestion_background: '#ffffff',
     },
 };
 

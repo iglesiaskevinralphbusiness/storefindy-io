@@ -339,6 +339,11 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                                     value={settings.searchAi.ai_border_color}
                                     onChange={(v) => updateGroup('searchAi', 'ai_border_color', v)}
                                 />
+                                <ColorField
+                                    label="AI Suggestion Background"
+                                    value={settings.searchAi.ai_suggestion_background}
+                                    onChange={(v) => updateGroup('searchAi', 'ai_suggestion_background', v)}
+                                />
                                 <TextField
                                     label="AI Placeholder"
                                     value={settings.searchAi.ai_placeholder}
