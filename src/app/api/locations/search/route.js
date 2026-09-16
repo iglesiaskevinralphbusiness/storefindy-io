@@ -247,8 +247,12 @@ export async function GET(request) {
         label,
         radius: radiusInUnit,
         distance_unit: distanceUnit,
-        count: results.length,
-        inactiveIds,
+        // The count the widget shows has to be the count it is showing:
+        // `results` is before the plan's allowance is applied, so reporting it
+        // told shoppers about locations that were never in the list. The ids of
+        // those locations left with it — they are nobody's business on a public
+        // endpoint, and nothing on the widget ever read them.
+        count: activeResults.length,
         locations: serializeForClient(activeResults),
     });
 }

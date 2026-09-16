@@ -145,6 +145,8 @@ const PHRASES = {
         'مفتوح', 'مفتوحة', 'تفتح',
     ]),
     closed: byLength([
+        'that are closed right now', 'that are closed now', 'are closed right now', 'are closed now',
+        'closed right now', 'closed at the moment', 'closed at this time', 'currently closed', 'closed now',
         'are closed', 'is closed', 'that are closed', 'closed', 'shut', 'not open',
         'fermé', 'ferme', 'fermés', 'fermes', 'fermée', 'fermees',
         'cerrado', 'cerrados', 'cerrada', 'cerradas',
@@ -391,6 +393,7 @@ const STOPWORDS = new Set([
     'has', 'there', 'here', 'store', 'stores', 'shop', 'shops', 'location', 'locations', 'branch', 'branches',
     'place', 'places', 'outlet', 'outlets', 'near', 'around', 'close', 'it', 'them', 'their', 'we', 'us',
     'during', 'while', 'when', 'still', 'only', 'also', 'about', 'within', 'radius', 'miles', 'km', 'hours', 'hour',
+    'now', 'right', 'currently', 'between', 'time', 'moment',
     // French
     'montre', 'montrez', 'moi', 'cherche', 'trouve', 'trouver', 'les', 'des', 'une', 'un', 'du', 'de', 'la', 'le',
     'dans', 'avec', 'sans', 'qui', 'sont', 'est', 'magasin', 'magasins', 'boutique', 'boutiques', 'emplacement',

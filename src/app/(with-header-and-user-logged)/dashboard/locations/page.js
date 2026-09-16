@@ -11,6 +11,7 @@ import Pagination from '@/components/Pagination';
 import CreateAndIndicator from '@/components/Dashboard/CreateAndIndicator';
 import AILocationFilter from '@/components/ai/AILocationFilter';
 import { FILTER_PARAM, decodeLocationFilters } from '@/lib/ai/location-filter';
+import { TZ_PARAM } from '@/lib/ai/schedule-filter';
 
 export const metadata = {
     title: 'Locations | Store Findy',
@@ -27,11 +28,14 @@ export default async function LocationsPage({ searchParams }) {
         locators='',
         // The natural-language filter, as the JSON list AILocationFilter puts in
         // the URL. Validated inside the query; anything malformed is ignored.
-        [FILTER_PARAM]: ai=''
+        [FILTER_PARAM]: ai='',
+        // The merchant's UTC offset, so "open now" is answered against their
+        // clock rather than the server's. Set by AILocationFilter.
+        [TZ_PARAM]: tzOffset=null
     } = await searchParams;
 
     const locatorsData = await getLocators();
-    const locationsData = await getLocations(page, rows, sort, order, search, locators, ai);
+    const locationsData = await getLocations(page, rows, sort, order, search, locators, ai, tzOffset);
 
     // The filter chips render server-side from the same list the query ran, so
     // what the merchant sees described is exactly what was applied.

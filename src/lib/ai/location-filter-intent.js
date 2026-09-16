@@ -1,88 +1,97 @@
-'use client';
 // Reads a merchant's sentence on the Locations page into the filter triples
 // defined by ./location-filter.js.
 //
-// Kept apart from that module on purpose: this half imports the AI worker and
-// only ever runs in the browser, while location-filter.js (the catalogue, the
-// Zod schema and the URL codec) is also imported by the server-side query
-// builder. One file for the contract, one for the interpretation.
+// ONE VOCABULARY, TWO PAGES.
+// The sentence is parsed by parseLocatorPrompt() — the same function that reads
+// a shopper's sentence on the storefront locator. That is deliberate and it is
+// the whole design: "open on saturday and sunday", "closed now", "temporarily
+// closed", "24 hours", "named Galleria" and every translation of them are
+// understood here because they are understood there, not because the list was
+// copied across. A phrase added to the locator's phrase book works on this page
+// the day it lands.
 //
-// The rules below resolve every published/active/status/place phrasing on their
-// own. The model is asked exactly one question: which of *this locator's own
-// filters* did the merchant mean when they wrote "free wifi" or "wheelchair
-// access"? That is a ranking over a list the account already owns, so it can
-// surface the wrong existing tag at worst — never a tag that doesn't exist.
-import { embedTexts } from './worker-client';
-import { rank } from './vector';
-import { locationFilterListSchema, filterFieldByName } from './location-filter';
-
-/** Similarity floor for matching a written amenity to a locator filter. */
-const TAG_THRESHOLD = 0.55;
+// This module only adds what the locator has no concept of, because the
+// storefront only ever shows one published, in-plan locator:
+//
+//   published / unpublished   a column the shopper never sees
+//   active / inactive         the plan's location allowance, derived at read time
+//   a named locator           the storefront is already inside exactly one
+//
+// Those are consumed off the front of the sentence, and what remains is handed
+// over. Going the other way, the conditions the locator answers with a map — a
+// radius, "near me", zoom and pan — have nothing to act on here and are reported
+// as ignored rather than silently dropped.
+//
+// THE MODEL NEVER WRITES A QUERY, and on this page it is not asked anything at
+// all any more. Places resolve against the account's own address values
+// (./place-resolver.js) and amenities against its own filter labels, both by
+// rule. See ./location-filter.js for what the triples are allowed to say.
+import { parseLocatorPrompt, normalizePromptText } from './locator-prompt';
+import { buildPlaceIndex, resolveAddress } from './place-resolver';
+import { scheduleFromIntent } from './schedule-filter';
+import { locationFilterListSchema } from './location-filter';
 
 /* --------------------------------------------------------------------- *
- * Keyword rules
+ * The page's own vocabulary
  * ------------------------------------------------------------------ */
 
-const NEGATION = /\b(not|isn'?t|aren'?t|no longer|without|excluding|except|other than|non)\b/;
+// Longest first, so "not published" is taken before "published".
+const byLength = (list) => [...list].sort((a, b) => b.length - a.length);
 
-/** published — the flag on the location document. */
-const PUBLISHED_FALSE = /\b(unpublished|not published|un-?published|draft|drafts|hidden|private|offline)\b/;
-const PUBLISHED_TRUE = /\b(published|live|public|visible|online)\b/;
+/** `published` — the column. Nothing to do with opening hours. */
+const PUBLISHED_FALSE = byLength([
+    'not published', 'unpublished', 'un published', 'draft', 'drafts', 'hidden',
+    'private', 'offline', 'not live', 'not visible', 'not public',
+]);
+const PUBLISHED_TRUE = byLength([
+    'published', 'live', 'public', 'visible', 'online',
+]);
 
-/** status — derived from the plan limit, not stored. `inactive` is tested first. */
-const STATUS_INACTIVE = /\b(inactive|in-active|over (?:the |my )?(?:plan )?limit|disabled by (?:the )?plan|beyond (?:the |my )?limit)\b/;
-const STATUS_ACTIVE = /\bactive\b/;
+/** `status` — inside or outside the plan's location allowance. */
+const STATUS_INACTIVE = byLength([
+    'inactive', 'in active', 'over my plan limit', 'over the plan limit',
+    'over my limit', 'over the limit', 'beyond my limit', 'beyond the limit',
+    'disabled by the plan', 'disabled by plan', 'past my plan limit',
+]);
+const STATUS_ACTIVE = byLength(['active']);
 
-/** location_status — the merchant-set trading state. */
-const LOC_STATUS = [
-    [/\b(coming soon|opening soon|not open yet|due to open)\b/, 'coming_soon'],
-    [/\b(temporarily closed|temporarily shut|temp(?:orary)? closed|closed for now|shut)\b/, 'temporarily_closed'],
-    [/\b(currently open|trading|operational|open for business|that are open|still open)\b/, 'open'],
-];
-
-/** An explicitly named field, so "city Manila" beats the free-text fallback. */
-const FIELD_WORDS = [
-    [/\b(?:city|town)\b/, 'city'],
-    [/\b(?:state|province|region)\b/, 'state'],
-    [/\bcountry\b/, 'country'],
-    [/\b(?:postcode|postal code|zip code|zip|postal)\b/, 'postal'],
-    [/\b(?:named|called|store name|name)\b/, 'name'],
-];
+function escapeForRegex(input) {
+    return String(input).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 /**
- * A place or proper-noun phrase, read from the ORIGINAL casing.
+ * Take the first of `phrases` that appears, and blank it out.
  *
- * Capitalisation is the only reliable signal that "Manila" is a place and
- * "stores" is not, so this runs before the text is lower-cased. A quoted string
- * always wins, because quoting is the merchant being explicit.
+ * Word-bounded, or "active" would be found inside "inactive" and "live" inside
+ * "delivery". Returns the shortened text so the next rule — and ultimately the
+ * locator's parser — never sees a word that has already been answered.
  */
-function readProperNoun(clause) {
-    const quoted = /["“”'‘’]([^"“”'‘’]{2,60})["“”'‘’]/.exec(clause);
-    if (quoted) return quoted[1].trim();
-
-    const after = /\b(?:in|at|near|around|from|located in|based in|inside)\s+((?:[A-Z][\w'’-]*)(?:\s+(?:de|del|of|the|la|los|las|san|santa|new|north|south|east|west|[A-Z][\w'’-]*))*)/
-        .exec(clause);
-    if (after) return after[1].trim();
-
-    // "city Manila", "state = Metro Manila", "postcode: 1300".
-    const labelled = /\b(?:city|town|state|province|region|country|postcode|postal code|zip code|zip|named|called)\b\s*(?:=|:|is|of)?\s*([A-Z0-9][\w'’-]*(?:\s+[A-Z0-9][\w'’-]*)*)/
-        .exec(clause);
-    if (labelled) return labelled[1].trim();
-
-    return '';
+function consume(text, phrases) {
+    for (const phrase of phrases) {
+        const pattern = new RegExp(`(^|[^\\p{L}\\p{N}])${escapeForRegex(phrase)}(?=[^\\p{L}\\p{N}]|$)`, 'iu');
+        if (pattern.test(text)) return { text: text.replace(pattern, '$1 '), hit: true };
+    }
+    return { text, hit: false };
 }
+
+/** How many words a free-text search is allowed to require at once. */
+const MAX_TEXT_TERMS = 6;
+
+/**
+ * "everywhere except Manila".
+ *
+ * Only ever consulted on what is LEFT once the locator's phrase book has had
+ * the sentence: it consumes "not published" and "not open" whole, so a "not"
+ * still standing beside a place really is about the place. The locator itself
+ * has no use for this — a shopper does not ask a storefront for the branches
+ * that are not near them — which is why it lives on this side.
+ */
+const NEGATION_WORDS = ['not', 'no', 'non', 'without', 'excluding', 'except', 'other than', 'apart from', 'aside from'];
+const NEGATION = new RegExp(`\\b(?:${NEGATION_WORDS.join('|')})\\b`, 'i');
 
 /* --------------------------------------------------------------------- *
  * Interpretation
  * ------------------------------------------------------------------ */
-
-/** Split on the separators that divide one condition from the next. */
-function splitClauses(request) {
-    return request
-        .split(/[,;.\n]|\band\b|\balso\b|\bplus\b/i)
-        .map((clause) => clause.trim())
-        .filter((clause) => clause.length > 1);
-}
 
 /**
  * Interpret a request into the page's existing filter vocabulary.
@@ -90,173 +99,154 @@ function splitClauses(request) {
  * @param {string} request What the merchant typed.
  * @param {object} context
  * @param {string[]} context.allowedFilters Every filter defined across the
- *   account's locators — the only tag values that can be produced.
+ *   account's locators — the only amenity values that can be produced.
  * @param {Array<{_id: string, name: string}>} context.locators For "in the
- *   Downtown locator", which reuses the page's existing locator filter.
- * @param {{ signal?: AbortSignal, onProgress?: Function }} options
- * @returns {Promise<{ filters: Array, search: string, locatorIds: string[], unmatched: string[] }>}
+ *   Downtown locator", which becomes a `locator` filter in the list.
+ * @param {{city?: string[], state?: string[], country?: string[], postal?: string[]}} context.places
+ *   Every distinct address value the account has, from getLocationPlaces().
+ * @returns {{filters: Array, unmatched: string[]}} The filter list is the entire
+ *   result: this reader never writes to the manual form's `search` or `locators`
+ *   parameters, so the described search stands on its own.
  */
-export async function interpretLocationRequest(request, { allowedFilters = [], locators = [] } = {}, options = {}) {
-    const clauses = splitClauses(request);
+export function interpretLocationRequest(request, { allowedFilters = [], locators = [], places = null } = {}) {
     const filters = [];
-    const locatorIds = [];
     const unmatched = [];
-    let search = '';
-
-    // Tag candidates are collected first so every one of them can be embedded
-    // in a single pass at the end, rather than a model call per clause.
-    const tagCandidates = [];
+    const placeIndex = buildPlaceIndex(places || {});
 
     const push = (field, operator, value) => {
         // One condition per field: a later clause about the same field replaces
-        // the earlier one, which is what "unpublished, no wait, published"
-        // should do. `filters` is the exception — several tags can be required.
-        if (field !== 'filters') {
+        // the earlier one. `filters` and `locator` are the exceptions — several
+        // amenities can be required at once, and naming two locators means
+        // either.
+        if (field !== 'filters' && field !== 'locator' && field !== 'text') {
             const existing = filters.findIndex((entry) => entry.field === field);
             if (existing !== -1) filters.splice(existing, 1);
         }
         filters.push({ field, operator, value });
     };
 
-    for (const original of clauses) {
-        const clause = original.toLowerCase();
-        const negated = NEGATION.test(clause);
-        let handled = false;
+    let text = normalizePromptText(request);
 
-        // 1. published
-        if (PUBLISHED_FALSE.test(clause)) {
-            push('published', 'equals', false);
-            handled = true;
-        } else if (PUBLISHED_TRUE.test(clause)) {
-            push('published', 'equals', !negated);
-            handled = true;
-        }
-
-        // 2. plan status. Checked before `active` so "inactive" isn't read as
-        //    a negated "active" and then flipped twice.
-        if (STATUS_INACTIVE.test(clause)) {
-            push('status', 'equals', 'inactive');
-            handled = true;
-        } else if (STATUS_ACTIVE.test(clause)) {
-            push('status', 'equals', negated ? 'inactive' : 'active');
-            handled = true;
-        }
-
-        // 3. trading state
-        for (const [pattern, value] of LOC_STATUS) {
-            if (!pattern.test(clause)) continue;
-            push('location_status', negated ? 'not_equals' : 'equals', value);
-            handled = true;
-            break;
-        }
-
-        // 4. a named locator
-        for (const locator of locators) {
-            const name = String(locator.name ?? '').trim();
-            if (name.length < 2 || !clause.includes(name.toLowerCase())) continue;
-            if (!locatorIds.includes(locator._id)) locatorIds.push(locator._id);
-            handled = true;
-            break;
-        }
-
-        // 5. an explicitly named field with a value beside it
-        const noun = readProperNoun(original);
-        if (noun) {
-            const named = FIELD_WORDS.find(([pattern]) => pattern.test(clause));
-            if (named) {
-                const entry = filterFieldByName(named[1]);
-                if (entry) {
-                    // `name` reads as "contains" because a merchant asking for
-                    // "stores called Galleria" means the branch whose name
-                    // includes it, not one named exactly that.
-                    const operator = negated ? 'not_equals' : (named[1] === 'name' ? 'contains' : 'equals');
-                    push(named[1], operator, noun);
-                    handled = true;
-                }
-            } else if (!handled || !search) {
-                // An unlabelled place goes to the page's existing free-text
-                // search, which already matches name/street/city/state/country/
-                // postal — a far better answer than guessing which one it is.
-                search = search ? `${search} ${noun}` : noun;
-                handled = true;
-            }
-        }
-
-        // 6. An amenity, resolved against the account's own filter list.
-        //
-        // Runs even when the clause already produced a condition: "stores with
-        // wheelchair access in Quezon City" is one clause saying two things.
-        // Whether the clause was already handled is carried on the candidate,
-        // so a tag that doesn't match is only reported as ignored when it was
-        // the *only* thing the clause seemed to be asking for.
-        let queued = false;
-        if (allowedFilters.length) {
-            const stripped = clause
-                // Drop the place already consumed above, then the scaffolding
-                // words, leaving just the words that could name an amenity.
-                .replace(noun ? noun.toLowerCase() : '', ' ')
-                .replace(/\b(show|list|find|get|me|all|the|locations?|stores?|shops?|branches|with|that|have|has|having|which|are|is|a|an|in|at|of|city|town|state|province|country)\b/g, ' ')
-                .replace(/\s+/g, ' ')
-                .trim();
-
-            if (stripped.length >= 3) {
-                const exact = allowedFilters.find((filter) => clause.includes(filter.toLowerCase()));
-                if (exact) {
-                    push('filters', negated ? 'not_equals' : 'contains', exact);
-                    handled = true;
-                } else {
-                    tagCandidates.push({ clause: stripped, negated, wasHandled: handled });
-                    queued = true;
-                }
-            }
-        }
-
-        if (!handled && !queued) unmatched.push(original);
-    }
-
-    // The one model call: rank the leftover phrases against the real filters.
-    if (tagCandidates.length && allowedFilters.length) {
-        try {
-            const vectors = await embedTexts(
-                [...allowedFilters, ...tagCandidates.map((candidate) => candidate.clause)],
-                options
-            );
-            const filterVectors = vectors.slice(0, allowedFilters.length);
-            const candidateVectors = vectors.slice(allowedFilters.length);
-
-            tagCandidates.forEach((candidate, index) => {
-                const [best] = rank(candidateVectors[index], allowedFilters.map((value, position) => ({
-                    value,
-                    vector: filterVectors[position],
-                })), { threshold: TAG_THRESHOLD, limit: 1 });
-
-                if (best) push('filters', candidate.negated ? 'not_equals' : 'contains', best.value);
-                // Only worth reporting when the clause produced nothing else:
-                // "unpublished stores in Manila" is fully handled, and naming
-                // its leftover words as ignored would just be noise.
-                else if (!candidate.wasHandled) unmatched.push(candidate.clause);
-            });
-        } catch (error) {
-            if (error?.name === 'AbortError') throw error;
-            // Without the model the rules still stand; the phrases it would
-            // have matched are reported rather than silently dropped.
-            for (const candidate of tagCandidates) {
-                if (!candidate.wasHandled) unmatched.push(candidate.clause);
-            }
-        }
+    /* 1. published — checked false-first, since "not published" contains it. */
+    let taken = consume(text, PUBLISHED_FALSE);
+    if (taken.hit) {
+        push('published', 'equals', false);
+        text = taken.text;
     } else {
-        for (const candidate of tagCandidates) {
-            if (!candidate.wasHandled) unmatched.push(candidate.clause);
+        taken = consume(text, PUBLISHED_TRUE);
+        if (taken.hit) {
+            push('published', 'equals', true);
+            text = taken.text;
         }
     }
 
-    // Final gate before anything is handed to the URL.
+    /* 2. the plan's allowance — "inactive" before "active", same reason. */
+    taken = consume(text, STATUS_INACTIVE);
+    if (taken.hit) {
+        push('status', 'equals', 'inactive');
+        text = taken.text;
+    } else {
+        taken = consume(text, STATUS_ACTIVE);
+        if (taken.hit) {
+            push('status', 'equals', 'active');
+            text = taken.text;
+        }
+    }
+
+    /* 3. a named locator, by the name the merchant gave it. */
+    for (const locator of locators) {
+        const name = normalizePromptText(locator.name);
+        if (name.length < 2 || !text.includes(name)) continue;
+        const id = String(locator._id ?? '');
+        if (!filters.some((entry) => entry.field === 'locator' && entry.value === id)) {
+            push('locator', 'equals', id);
+        }
+        text = text.replace(name, ' ');
+        // The word "locator" itself is scaffolding once the name is taken.
+        text = consume(text, ['locator', 'locators']).text;
+    }
+
+    /* 4. everything else is the locator's to read. */
+    const intent = parseLocatorPrompt(text, { filters: allowedFilters });
+
+    /* 5. the merchant-set trading state. */
+    if (intent.locationStatus) {
+        push('location_status', 'equals', intent.locationStatus);
+    }
+
+    /* 6. opening hours — one condition, matched by the same function the
+     *    storefront uses. See ./schedule-filter.js. */
+    const schedule = scheduleFromIntent(intent);
+    if (schedule) push('hours', 'equals', schedule);
+
+    /* 7. amenities, already resolved against the account's own labels. */
+    for (const filter of intent.filters) {
+        push('filters', 'contains', filter);
+    }
+
+    /* 8. a store name the merchant spelled out. */
+    if (intent.name) push('name', 'contains', intent.name);
+
+    /* 9. whatever is left is an address, or words to look for in the text. */
+    applyLeftover(intent, placeIndex, push, unmatched);
+
+    /* 10. the conditions this page has no way to answer. A radius and "near me"
+     *     need a map and a visitor's position; zoom and pan need a map at all.
+     *     Named rather than dropped, so the merchant isn't left wondering why
+     *     the result ignored half their sentence. */
+    if (intent.nearMe) unmatched.push('near me');
+    if (intent.radius) unmatched.push(`within ${intent.radius.value} ${intent.radius.unit}`);
+    if (intent.map) unmatched.push(intent.map.action === 'pan' ? 'move the map' : intent.map.action.replace('_', ' '));
+
     const validated = locationFilterListSchema.safeParse(filters);
 
     return {
         filters: validated.success ? validated.data : [],
-        search: search.trim(),
-        locatorIds,
         unmatched,
     };
+}
+
+/**
+ * The merchant's own words: an address, or something to look for in the text.
+ *
+ * Addresses resolve against the account's real values, so "california, united
+ * states" becomes the state and the country it actually stores.
+ *
+ * What happens to the rest turns on whether any of it WAS an address. When the
+ * sentence named a place this account has, the address is the question and the
+ * words around it are noise — "telbang bayambang pangasinan" should answer with
+ * Bayambang, Pangasinan, not AND in a barangay that is recorded nowhere and
+ * return an empty page. When it named no place at all, those same words are the
+ * question: "inside the food court" is the merchant looking through their own
+ * notes, which is what the storefront locator has always done with them.
+ */
+function applyLeftover(intent, placeIndex, push, unmatched) {
+    const leftover = String(intent.leftoverText || '').trim();
+    if (!leftover && !intent.keywords.length) return;
+
+    const negated = NEGATION.test(leftover);
+    const operator = negated ? 'not_equals' : 'equals';
+
+    const { matches, consumed } = resolveAddress(leftover, placeIndex);
+    for (const match of matches) push(match.field, operator, match.value);
+
+    // Only the meaningful words — `keywords` has already had the scaffolding of
+    // nine languages taken out of it, which is why "Show me all locations that
+    // are open now" leaves nothing behind to search for.
+    const spent = new Set(consumed.flatMap((run) => run.split(' ')));
+    const rest = intent.keywords.filter((keyword) => !spent.has(keyword) && !NEGATION_WORDS.includes(keyword));
+
+    if (!rest.length) return;
+
+    if (matches.length) {
+        for (const word of rest) unmatched.push(word);
+        return;
+    }
+
+    // One term per word, so each has to appear somewhere on the location but
+    // not all in the same column — and so "drive-through" is found by "drive"
+    // and "through" without the hyphen having to match.
+    for (const word of rest.slice(0, MAX_TEXT_TERMS)) {
+        push('text', negated ? 'not_equals' : 'contains', word);
+    }
 }

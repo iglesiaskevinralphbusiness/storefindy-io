@@ -7,16 +7,19 @@
 // MongoDB query by src/lib/locations-query.js — server-side, from the whitelist,
 // with the values escaped there as they already are for `search`. There is no
 // path by which a model output becomes a Mongo operator: `field` is an enum of
-// seven names, `operator` an enum of three, and `value` a string, number or
+// the names below, `operator` an enum of three, and `value` a string, number or
 // boolean that is only ever used as a *value*, never as a key.
 //
-// Anything the catalogue can't express falls back to the page's existing
-// free-text `search` parameter, which already matches name/street/city/state/
-// country/postal. That keeps the structured surface small on purpose: a place
-// name the merchant didn't label ("in Manila") is handed to the search that
-// already exists rather than guessed into a city-versus-state decision.
+// The filter list is the WHOLE query. It does not borrow the manual form's
+// `search` or `locators` parameters — a described search and a typed search are
+// two separate ways to filter this page, and running one clears the other. A
+// place the merchant didn't label ("in california") becomes the `place` filter
+// below, which matches every address column at once instead of being guessed
+// into a city-versus-state decision.
 import { z } from 'zod';
 import { LOCATION_STATUSES } from '@/lib/csv-import-fields';
+import { COUNTRIES } from '@/utils/constant/countries';
+import { scheduleValueSchema, hasScheduleCondition, describeSchedule } from './schedule-filter';
 
 /* --------------------------------------------------------------------- *
  * The catalogue
@@ -97,6 +100,46 @@ export const FILTER_FIELDS = [
         label: 'Store name',
         phrases: ['store name contains', 'branch called', 'named'],
     },
+    {
+        // Words that didn't resolve to anything more specific, matched across
+        // everything a location carries text in.
+        //
+        // `custom_notes` and `description` are in here deliberately, and are the
+        // reason this is not just an address fallback: merchants use notes for
+        // the things no column covers ("inside the food court", "drive-through
+        // only"), and the storefront locator has always searched them. A
+        // merchant looking for the same thing on their own Locations page
+        // should not find less than a shopper does.
+        //
+        // The columns are constants here; see buildFilterTerms() in
+        // src/lib/locations-query.js.
+        field: 'text',
+        column: null,
+        columns: ['name', 'street', 'city', 'state', 'country', 'postal', 'custom_notes', 'description', 'filters'],
+        kind: 'text',
+        label: 'Any text',
+        phrases: ['anything in the address, the name or the notes'],
+    },
+    {
+        // Opening hours. Evaluated in JavaScript rather than as a query term —
+        // see src/lib/ai/schedule-filter.js for why, and for the matcher the
+        // storefront locator shares with it.
+        field: 'hours',
+        column: null,
+        kind: 'schedule',
+        label: 'Opening hours',
+        phrases: ['open now', 'closed now', 'open 24 hours', 'open on saturday and sunday', 'closed on monday', 'open at 1pm today'],
+    },
+    {
+        // The account's own locator, by id. The AI filter owns this rather than
+        // borrowing the manual form's `locators` parameter, so a described
+        // search is one self-contained filter list.
+        field: 'locator',
+        column: 'locator_id',
+        kind: 'id',
+        label: 'Locator',
+        phrases: ['in a named locator', 'belonging to a locator'],
+    },
 ];
 
 const FIELD_BY_NAME = new Map(FILTER_FIELDS.map((entry) => [entry.field, entry]));
@@ -112,7 +155,11 @@ export const FILTER_OPERATORS = ['equals', 'not_equals', 'contains'];
 export const locationFilterSchema = z.object({
     field: z.enum(FILTER_FIELD_NAMES),
     operator: z.enum(FILTER_OPERATORS),
-    value: z.union([z.string().max(200), z.boolean(), z.number()]),
+    // The one structured value: a schedule condition, which is a handful of
+    // bounded flags and integers (scheduleValueSchema). It is the exception that
+    // proves the rule about keys — it never reaches Mongo at all, because
+    // opening hours are arithmetic over sub-documents rather than a query term.
+    value: z.union([z.string().max(200), z.boolean(), z.number(), scheduleValueSchema]),
 });
 
 export const locationFilterListSchema = z.array(locationFilterSchema).max(10);
@@ -167,22 +214,53 @@ function isValueValid(entry, filter) {
         case 'tag':
         case 'text':
             return typeof filter.value === 'string' && filter.value.trim().length > 0;
+        case 'id':
+            // A 24-hex ObjectId and nothing else: this one reaches the query as
+            // an `$in` member, so anything else is dropped here rather than
+            // cast later.
+            return typeof filter.value === 'string' && /^[a-f\d]{24}$/i.test(filter.value);
+        case 'schedule':
+            // Already shaped by scheduleValueSchema above; this only drops a
+            // well-formed object that happens to say nothing.
+            return hasScheduleCondition(filter.value);
         default:
             return false;
     }
 }
 
-/** Human sentence for one filter, for the chips above the results table. */
-export function describeFilter(filter) {
+/**
+ * Human sentence for one filter, for the chips above the results table.
+ *
+ * @param {object} filter
+ * @param {{ locators?: Array<{_id: string, name: string}> }} context Used to
+ *   name a locator filter, whose stored value is an id the merchant never saw.
+ */
+export function describeFilter(filter, { locators = [] } = {}) {
     const entry = FIELD_BY_NAME.get(filter.field);
     if (!entry) return '';
 
     if (entry.kind === 'boolean') {
         return `${entry.label}: ${filter.value ? 'yes' : 'no'}`;
     }
+
+    if (entry.kind === 'schedule') {
+        return describeSchedule(filter.value);
+    }
+
+    if (entry.kind === 'id') {
+        const match = locators.find((locator) => String(locator._id) === String(filter.value));
+        return `${entry.label} ${filter.operator === 'not_equals' ? 'is not' : 'is'} ${match?.name || 'unknown'}`;
+    }
     const verb = filter.operator === 'not_equals' ? 'is not' : filter.operator === 'contains' ? 'contains' : 'is';
     const value = typeof filter.value === 'string' ? filter.value.replace(/_/g, ' ') : String(filter.value);
-    return `${entry.label} ${verb} ${value}`;
+    // `country` is stored as an ISO code. The chip names the country, because
+    // "Country is us" reads like a typo and "Country is United States" doesn't.
+    return `${entry.label} ${verb} ${filter.field === 'country' ? countryLabel(value) : value}`;
+}
+
+function countryLabel(value) {
+    const code = String(value).trim().toLowerCase();
+    return COUNTRIES.find((country) => country.code === code)?.label || value;
 }
 
 export const filterFieldByName = (field) => FIELD_BY_NAME.get(field);

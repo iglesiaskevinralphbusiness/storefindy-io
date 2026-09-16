@@ -11,16 +11,14 @@
 
 import { COUNTRIES } from '@/utils/constant/countries';
 import { normalizePromptText } from './locator-prompt';
-import {
-    DAYLIGHT_WINDOW,
-    NIGHT_WINDOW,
-    isOpen24On,
-    isOpenAt,
-    isOpenDuringWindow,
-    isOpenOnDay,
-    isTradingClosed,
-    upcomingDates,
-} from '@/lib/locator-hours';
+// The schedule matcher lives in ./schedule-filter.js so the dashboard's
+// Locations page answers "open on saturday and sunday" with the same function
+// this does, rather than a second implementation kept in step by hand.
+import { matchesSchedule } from './schedule-filter';
+// The same address reader the dashboard's Locations page uses, so a shopper
+// who misspells a town or writes "California, United States" gets the answer a
+// merchant searching their own list would.
+import { buildPlaceIndex, resolveAddress, PLACE_FIELDS, normalizePlace } from './place-resolver';
 
 const EARTH_RADIUS_MILES = 3958.8;
 
@@ -96,47 +94,6 @@ function textScore(fields, intent) {
     return { score, matched: [...matched] };
 }
 
-/** Does the location satisfy everything the prompt said about opening times? */
-function scheduleMatches(location, intent, clock) {
-    if (!intent.hasSchedule) return true;
-
-    const dates = upcomingDates(clock);
-    const explicitDays = intent.days.length
-        ? intent.days
-        : intent.tomorrow
-            ? [(clock.dayIndex + 1) % 7]
-            : intent.today
-                ? [clock.dayIndex]
-                : [];
-    // With no day named, every question is about today — "open 24 hours",
-    // "open at night" and "open 9 to 5" all mean today unless told otherwise.
-    const days = explicitDays.length ? explicitDays : [clock.dayIndex];
-
-    // A location the merchant flagged as temporarily closed or coming soon is
-    // never "open", and is always an answer to "which ones are closed".
-    if (isTradingClosed(location)) return !!intent.closed;
-
-    if (intent.open24) {
-        const open = days.every((day) => isOpen24On(location, dates[day], day));
-        return intent.closed ? !open : open;
-    }
-
-    const window = intent.night ? NIGHT_WINDOW : intent.daylight ? DAYLIGHT_WINDOW : intent.window;
-    if (window) {
-        const open = days.every((day) => isOpenDuringWindow(location, dates[day], day, window));
-        return intent.closed ? !open : open;
-    }
-
-    if (explicitDays.length) {
-        const open = explicitDays.every((day) => isOpenOnDay(location, dates[day], day));
-        return intent.closed ? !open : open;
-    }
-
-    if (intent.openNow) return isOpenAt(location, clock);
-    if (intent.closed) return !isOpenAt(location, clock);
-    return true;
-}
-
 /**
  * The merchant-set trading state, matched exactly.
  *
@@ -164,6 +121,68 @@ function filtersMatch(location, intent) {
     if (!intent.filters.length) return true;
     const owned = (location.filters || []).map((value) => normalizePromptText(value));
     return intent.filters.every((filter) => owned.includes(normalizePromptText(filter)));
+}
+
+/**
+ * The locator's own address values, as a resolver index.
+ *
+ * Built from the rows already in memory — this is the same idea as the
+ * dashboard's vocabulary query, except the rows are right here, so there is
+ * nothing to fetch.
+ */
+function placeIndexFor(locations) {
+    const columns = {};
+    for (const field of PLACE_FIELDS) columns[field] = [];
+    for (const location of locations) {
+        for (const field of PLACE_FIELDS) {
+            const value = String(location[field] ?? '').trim();
+            if (value) columns[field].push(value);
+        }
+    }
+    return buildPlaceIndex(columns);
+}
+
+/**
+ * Does the location sit at the address the shopper described?
+ *
+ * Every part that resolved has to hold: "bayambang pangasinan" is one place,
+ * not two alternatives. Returns null when nothing resolved, so the caller can
+ * tell "no address was named" from "an address was named and this isn't it".
+ */
+function matchesResolvedPlace(location, resolved) {
+    if (!resolved.length) return null;
+    return resolved.every((match) => normalizePlace(location[match.field]) === normalizePlace(match.value));
+}
+
+/** Fields that are somewhere, as opposed to something. */
+const ADDRESS_FIELDS = new Set(['city', 'state', 'country', 'postal', 'street']);
+
+/**
+ * Did the shopper name this location's place?
+ *
+ * When the words resolved to an address this locator really has, that address
+ * IS the question and every part of it has to hold — "Bayambang, Pangasinan"
+ * means the branch in Bayambang, not every branch in the province. Scoring is
+ * too loose to decide that on its own: one keyword landing in one field is
+ * enough for it, and "pangasinan" lands in the province of every branch there.
+ *
+ * A location that fails the resolved address is still rescued by matching on
+ * something that is NOT an address — its name, its notes, its description, an
+ * amenity. That is what keeps "california pizza" finding the store of that name
+ * in a locator that also trades in California.
+ *
+ * With nothing resolved, scoring decides as it always has, which is what
+ * answers a search through the merchant's own notes.
+ */
+function placeMatches(location, { wantsText, resolved, score, matched, bounds }) {
+    if (!wantsText) return true;
+    if (insideBounds(location, bounds)) return true;
+
+    const atResolvedPlace = matchesResolvedPlace(location, resolved);
+    if (atResolvedPlace === null) return score > 0;
+    if (atResolvedPlace) return true;
+
+    return matched.some((field) => !ADDRESS_FIELDS.has(field));
 }
 
 /** Inside the box a geocoder drew around the place that was named. */
@@ -199,6 +218,13 @@ export function applyLocatorIntent(locations, intent, context = {}) {
     const wantsText = intent.keywords.length > 0;
     const wantsDistance = !!center && Number.isFinite(radiusMiles) && radiusMiles > 0 && (intent.nearMe || !!intent.radius);
 
+    // What the shopper wrote, read against the addresses this locator really
+    // has. Case, accents, punctuation, country codes and ordinary misspellings
+    // all come out in the wash — see lib/ai/place-resolver.js.
+    const resolved = wantsText
+        ? resolveAddress(intent.leftoverText, placeIndexFor(locations)).matches
+        : [];
+
     const rows = locations.map((location) => {
         const fields = searchableFields(location);
         const { score, matched } = wantsText ? textScore(fields, intent) : { score: 0, matched: [] };
@@ -212,15 +238,11 @@ export function applyLocatorIntent(locations, intent, context = {}) {
             matched,
             distance,
             pass: {
-                // A named place is satisfied EITHER by the words lining up with
-                // the stored address (which needs no geocoder and works in every
-                // script) OR by the location sitting inside the box the geocoder
-                // drew — which is what catches "near the Eiffel Tower".
-                place: !wantsText || score > 0 || insideBounds(location, bounds),
+                place: placeMatches(location, { wantsText, resolved, score, matched, bounds }),
                 name: nameMatches(location, intent),
                 status: statusMatches(location, intent),
                 filters: filtersMatch(location, intent),
-                schedule: scheduleMatches(location, intent, clock),
+                schedule: matchesSchedule(location, intent, clock),
                 distance: !wantsDistance || (distance !== null && distance <= radiusMiles),
             },
         };

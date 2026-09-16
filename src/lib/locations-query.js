@@ -9,12 +9,14 @@ import { serializeForClient, getUserPlan } from '@/utils/helpers';
 import { plans } from '@/utils/constant/pricing';
 import { redirect } from 'next/navigation';
 import { decodeLocationFilters, filterFieldByName } from '@/lib/ai/location-filter';
+import { matchesSchedule, clockFromOffset } from '@/lib/ai/schedule-filter';
 import {
     LIMITS,
     escapeRegex,
     parseObjectIdList,
     pickSortField,
     pickSortOrder,
+    isObjectIdString,
     toBoundedInt,
     toSearchTerm,
 } from '@/lib/api-sanitize';
@@ -23,6 +25,15 @@ import {
 // components/Dashboard/Locations/Table plus the default. `sort` ends up as a KEY
 // in `$sort`, where a value-level sanitizer can't help, so it must come from a
 // whitelist. See pickSortField().
+/**
+ * How many rows an opening-hours question will walk.
+ *
+ * Generous, because it is one merchant's own locations and only the schedule
+ * fields are read. An account past this is far beyond any plan's limit; the
+ * query still answers, over the first this many.
+ */
+const SCHEDULE_SCAN_LIMIT = 10_000;
+
 const SORTABLE_FIELDS = [
     'name',
     'address',
@@ -73,12 +84,23 @@ export async function getInactiveLocationIds(user_id) {
  * plan's location allowance", which is derived at read time. It is applied as an
  * `_id` set built from getInactiveLocationIds().
  *
+ * `place` has several columns instead of one — it is the place a merchant named
+ * without saying whether they meant a city, a state or a country. It becomes an
+ * `$or` over those columns, returned separately so the caller can merge it under
+ * `$and` without colliding with the `$or` that `search` already uses.
+ *
  * @param {Array<{field: string, operator: string, value: any}>} filters
  * @param {string[]} inactiveIds Location ids that fall outside the plan limit.
- * @returns {object} Terms to merge into the aggregation's `$match`.
+ * @returns {{terms: object, and: object[]}} Terms to merge into the
+ *   aggregation's `$match`, and the multi-column clauses to `$and` into it.
  */
 function buildFilterTerms(filters, inactiveIds) {
     const terms = {};
+    // Clauses that span more than one column, merged by the caller under `$and`.
+    const and = [];
+    // Every `locator` filter collected into one `$in`, so asking for two
+    // locators widens the result rather than the second replacing the first.
+    const locatorIds = [];
 
     for (const filter of filters) {
         const entry = filterFieldByName(filter.field);
@@ -96,6 +118,38 @@ function buildFilterTerms(filters, inactiveIds) {
             continue;
         }
 
+        if (entry.kind === 'schedule') {
+            // Not a query term. Opening hours are seven sub-documents, a list of
+            // special-hours ranges, spans that run past midnight and a clock —
+            // arithmetic, not a `$match`. Applied after the query instead, by
+            // the same function the storefront locator uses.
+            continue;
+        }
+
+        if (entry.kind === 'id') {
+            // `locator_id` is stored as a string. Checked rather than escaped:
+            // it is compared as a plain value, so anything that isn't an id is
+            // a malformed filter and is dropped.
+            const id = String(filter.value).trim();
+            if (isObjectIdString(id) && !locatorIds.includes(id)) locatorIds.push(id);
+            continue;
+        }
+
+        const value = String(filter.value).trim();
+
+        // Multi-column text, i.e. `place`. Every column comes from the catalogue
+        // constant above; only the value is the merchant's, and it is escaped
+        // exactly as a single-column term would be.
+        if (Array.isArray(entry.columns) && entry.columns.length) {
+            if (!value) continue;
+            const pattern = filter.operator === 'equals'
+                ? { $regex: `^${escapeRegex(value)}$`, $options: 'i' }
+                : { $regex: escapeRegex(value), $options: 'i' };
+            const clauses = entry.columns.map((name) => ({ [name]: pattern }));
+            and.push(filter.operator === 'not_equals' ? { $nor: clauses } : { $or: clauses });
+            continue;
+        }
+
         const column = entry.column;
         if (!column) continue;
 
@@ -104,7 +158,6 @@ function buildFilterTerms(filters, inactiveIds) {
             continue;
         }
 
-        const value = String(filter.value).trim();
         if (!value) continue;
 
         if (entry.kind === 'tag') {
@@ -126,7 +179,9 @@ function buildFilterTerms(filters, inactiveIds) {
         }
     }
 
-    return terms;
+    if (locatorIds.length) terms.locator_id = { $in: locatorIds };
+
+    return { terms, and };
 }
 
 /**
@@ -146,6 +201,10 @@ function buildFilterTerms(filters, inactiveIds) {
  *   carries. Validated by decodeLocationFilters() before it is read; anything
  *   malformed means "no filter". Absent for every other caller, including the
  *   REST API, which keeps its existing contract.
+ * @param {string|number}  options.tzOffset The viewer's UTC offset in minutes,
+ *   as `Date.prototype.getTimezoneOffset()` reports it. Only read when the
+ *   filter list carries an opening-hours condition, so that "open now" means
+ *   now where the merchant is rather than wherever the server runs.
  */
 export async function queryLocations({
     user_id,
@@ -156,6 +215,7 @@ export async function queryLocations({
     search = '',
     locators = '',
     ai = '',
+    tzOffset = null,
 } = {}) {
     // build the query
     //
@@ -200,8 +260,48 @@ export async function queryLocations({
     // Natural-language filter, if the page sent one. Re-validated from scratch:
     // see buildFilterTerms() for why none of this can become a Mongo operator.
     const aiFilters = decodeLocationFilters(ai);
+    // Opening-hours conditions can't be expressed as query terms, so they are
+    // applied to the rows the query returns. Everything else still narrows in
+    // Mongo first, which keeps the set this has to walk as small as the rest of
+    // the sentence allows.
+    const scheduleFilters = aiFilters.filter((filter) => filterFieldByName(filter.field)?.kind === 'schedule');
+
     if (aiFilters.length) {
-        Object.assign(match, buildFilterTerms(aiFilters, inactiveIds));
+        const { terms, and } = buildFilterTerms(aiFilters, inactiveIds);
+        // Keys come from the catalogue, never from the caller. A key the manual
+        // parameters already set (`locator_id`) is moved under `$and` rather
+        // than overwriting it, so the two can never silently cancel out.
+        for (const [key, value] of Object.entries(terms)) {
+            if (key in match) and.push({ [key]: value });
+            else match[key] = value;
+        }
+        if (and.length) match.$and = [...(match.$and || []), ...and];
+    }
+
+    // The opening-hours pass.
+    //
+    // Runs between the query and the pager, not after it: paginating first and
+    // then dropping closed locations would leave short pages and a page count
+    // that lies. So the columns narrow the set in Mongo, this narrows it again
+    // in JavaScript, and what survives is what gets counted and paged.
+    //
+    // Only `_id` and the schedule are read — the rows themselves are fetched by
+    // the aggregation below, exactly as they always were.
+    if (scheduleFilters.length) {
+        const clock = clockFromOffset(tzOffset);
+
+        const candidates = await LocationModel.find(match)
+            .select('_id hours holidays location_status')
+            .limit(SCHEDULE_SCAN_LIMIT)
+            .lean();
+
+        const open = candidates.filter((candidate) => scheduleFilters.every(
+            (filter) => matchesSchedule(candidate, filter.value, clock),
+        ));
+
+        // Pushed under `$and` rather than assigned: `status` may already have
+        // put an `_id` term on the match, and the two have to both hold.
+        match.$and = [...(match.$and || []), { _id: { $in: open.map((row) => row._id) } }];
     }
 
     // pagination — clamped so `$limit`/`$skip` can't be handed an arbitrary

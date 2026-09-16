@@ -9,6 +9,7 @@ import { sanitizeInput } from '@/utils/lib/input-sanitization';
 import { serializeForClient } from '@/utils/helpers';
 import { isValidObjectId } from 'mongoose';
 import { queryLocations, getInactiveLocationIds } from '@/lib/locations-query';
+import { getLocationPlaces } from '@/lib/location-places';
 import { IMPORT_MODES, buildImportDocs, writeImportDocs } from '@/lib/import-csv';
 
 export async function postCreateLocation(categories, hours, holidays, socialMediaLinks, _prev, formData) {
@@ -272,7 +273,7 @@ export async function getLocationsInactiveIds(user_id){
  * parameter holds. It is validated inside queryLocations(); the REST endpoint
  * never passes it, so GET /api/v1/locations keeps exactly its current contract.
  */
-export async function getLocations(page=1, rows=10, sort='createdAt', order='asc', search='', locators='', ai='') {
+export async function getLocations(page=1, rows=10, sort='createdAt', order='asc', search='', locators='', ai='', tzOffset=null) {
 
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -289,7 +290,24 @@ export async function getLocations(page=1, rows=10, sort='createdAt', order='asc
         search,
         locators,
         ai,
+        tzOffset,
     });
+}
+
+/**
+ * The distinct city / state / country / postal values this account has, for the
+ * Locations page's natural-language filter to read a written address against.
+ *
+ * Fetched by the AI panel the first time it runs rather than rendered into the
+ * page, so a merchant who never opens it never pays for it.
+ */
+export async function getLocationPlaceVocabulary() {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        redirect('/sign-in');
+    }
+
+    return getLocationPlaces(session.user.id);
 }
 
 export async function getLocationById(location_id) {

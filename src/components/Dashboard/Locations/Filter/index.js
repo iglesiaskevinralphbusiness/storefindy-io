@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react';
 import { LuSearch, LuX, LuPlus } from "react-icons/lu";
 import Button from '@/components/Forms/Button';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { FILTER_PARAM } from '@/lib/ai/location-filter';
+import { TZ_PARAM } from '@/lib/ai/schedule-filter';
 
 const Filter = ({ locators}) => {
     const router = useRouter();
@@ -29,6 +31,14 @@ const Filter = ({ locators}) => {
         e.preventDefault();
         const params = new URLSearchParams(searchParams);
 
+        // This form and the described search above it are alternatives, not
+        // layers: submitting here clears the AI filter, so the chips never
+        // describe conditions that are no longer the ones being applied. The
+        // page number goes too — it belongs to the previous result set.
+        params.delete(FILTER_PARAM);
+        params.delete(TZ_PARAM);
+        params.delete('page');
+
         if (search.trim()) {
             params.set('search', search.trim());
         } else {
@@ -50,6 +60,9 @@ const Filter = ({ locators}) => {
         const params = new URLSearchParams(searchParams);
         params.delete('search');
         params.delete('locators');
+        params.delete(FILTER_PARAM);
+        params.delete(TZ_PARAM);
+        params.delete('page');
         router.push(`${pathname}?${params.toString()}`);
     };
 
