@@ -15,7 +15,20 @@
  * So the country is applied as a first pass only: it still decides which
  * "Springfield" wins when the name is ambiguous, but when it matches nothing at
  * all the lookup is retried world-wide rather than reported as a dead end.
+ *
+ * WHY A COUNTRY NAME SKIPS THE BIAS ENTIRELY
+ * ------------------------------------------
+ * The retry only helps when the biased pass finds NOTHING, and for a country
+ * name it always finds something wrong. The United States contains towns called
+ * China (Texas), Canada (Kentucky), Japan (Missouri) and Australia (Colorado),
+ * so "move the map to china" on a US-default locator answered with China, Texas
+ * — a confident, plausible, completely wrong result that also stopped the
+ * world-wide retry from ever running. A country is never the thing the country
+ * dropdown is there to disambiguate, so it is looked up world-wide from the
+ * start.
  */
+
+import { countryFromPhrase } from '@/lib/ai/place-resolver';
 
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
 
@@ -68,6 +81,27 @@ async function lookup(query, country) {
 export async function geocodePlace(query, country) {
     const text = String(query ?? '').trim();
     if (!text) return null;
+
+    // A country names itself. Looked up by its canonical English name, so
+    // "u.s.a.", "cn" and "country china" all reach Nominatim as something it
+    // recognises, and never through the bias that would trap them in a US town
+    // of the same name.
+    const named = countryFromPhrase(text);
+    if (named) {
+        const worldwide = await lookup(named.label, '');
+        if (worldwide) return worldwide;
+
+        // Nominatim unreachable or unhelpful. Every country's coordinates ship
+        // with the app, so a pan still goes to the right part of the world.
+        return {
+            lat: named.lat,
+            lng: named.lng,
+            label: named.label,
+            bounds: null,
+            city_province: '',
+            country: named.label,
+        };
+    }
 
     const code = String(country || '').trim().toLowerCase();
     const biased = code ? await lookup(text, code) : null;

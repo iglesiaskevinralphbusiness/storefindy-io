@@ -117,6 +117,7 @@ const US_STATES = [
  */
 function buildAliasGroups(pairs, extras = {}) {
     const groups = new Map();
+    const codeByName = new Map();
 
     for (const [code, label] of pairs) {
         const names = new Set([code, normalizePlace(label), ...(extras[code] || []).map(normalizePlace)]);
@@ -128,10 +129,11 @@ function buildAliasGroups(pairs, extras = {}) {
             // an alias is only consulted when the merchant's own values
             // didn't already answer.
             if (!groups.has(name)) groups.set(name, names);
+            if (!codeByName.has(name)) codeByName.set(name, code);
         }
     }
 
-    return groups;
+    return { groups, codeByName };
 }
 
 const COUNTRY_ALIASES = buildAliasGroups(
@@ -141,10 +143,49 @@ const COUNTRY_ALIASES = buildAliasGroups(
 const STATE_ALIASES = buildAliasGroups(US_STATES);
 
 function aliasesFor(field, key) {
-    const groups = field === 'country' ? COUNTRY_ALIASES : field === 'state' ? STATE_ALIASES : null;
-    if (!groups) return [];
-    const names = groups.get(key);
+    const aliases = field === 'country' ? COUNTRY_ALIASES : field === 'state' ? STATE_ALIASES : null;
+    if (!aliases) return [];
+    const names = aliases.groups.get(key);
     return names ? [...names].filter((name) => name !== key) : [];
+}
+
+/** Words that frame a country rather than naming one. */
+const COUNTRY_PHRASE_FILLER = new Set([
+    'country', 'countries', 'nation', 'the', 'of', 'in', 'to', 'map', 'whole', 'entire', 'all',
+]);
+
+/**
+ * Is this phrase the name of a country?
+ *
+ * Used by the geocoder to decide whether the locator's country dropdown should
+ * bias a lookup. It must not: with `countrycodes=us`, "china" resolves to China,
+ * Texas, "canada" to Canada, Kentucky and "japan" to Japan, Missouri — all real
+ * American towns, all returned ahead of the country the shopper meant, and all
+ * of them stopping the world-wide retry from ever running.
+ *
+ * Reads every spelling the resolver already knows, so "china", "CHINA", "cn",
+ * "country china" and "u.s.a." all answer.
+ */
+export function countryFromPhrase(text) {
+    const key = normalizePlace(text);
+    if (!key) return null;
+
+    const direct = COUNTRY_ALIASES.codeByName.get(key);
+    if (direct) return countryByCode(direct);
+
+    // "move the map to country china" — the label is not part of the name.
+    const stripped = key.split(' ').filter((word) => !COUNTRY_PHRASE_FILLER.has(word)).join(' ');
+    if (stripped && stripped !== key) {
+        const code = COUNTRY_ALIASES.codeByName.get(stripped);
+        if (code) return countryByCode(code);
+    }
+
+    return null;
+}
+
+function countryByCode(code) {
+    const entry = COUNTRIES.find((country) => country.code === code);
+    return entry ? { code: entry.code, label: entry.label, lat: entry.lat, lng: entry.lng } : null;
 }
 
 /* --------------------------------------------------------------------- *

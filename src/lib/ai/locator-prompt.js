@@ -104,6 +104,29 @@ const PHRASES = {
         '暂时关闭', '暂停营业', '暫時關閉', '暫停營業',
         'مغلق مؤقتا', 'مغلق مؤقتاً', 'مغلقة مؤقتا', 'إغلاق مؤقت',
     ]),
+    /*
+     * The word "status" and its translations — a LABEL for the trading state,
+     * never part of the answer.
+     *
+     * Without this, "show me all locations status coming soon" understood the
+     * status perfectly and then returned nothing: "status" was left over as one
+     * of the shopper's own words, so every location also had to have the word
+     * "status" written on it somewhere. The value phrases below match whether
+     * or not the label is there; this just makes sure the label doesn't count
+     * as a search term. A colon or an equals sign is a word boundary here, so
+     * "status: coming soon" needs no entry of its own.
+     */
+    statusLabel: byLength([
+        'status', 'statuses', 'state of', 'condition',
+        'statut', 'statuts', 'état', 'etat',
+        'estado', 'estados', 'situación', 'situacion',
+        'zustand', 'stato', 'stati', 'situação', 'situacao',
+        'toestand', 'status van',
+        'ステータス', '状態', '営業状態',
+        '상태', '영업 상태',
+        '状态', '狀態', '营业状态', '營業狀態',
+        'الحالة', 'حالة', 'الوضع',
+    ]),
     operational: byLength([
         'open for business', 'operational', 'trading', 'currently trading', 'already open', 'up and running',
         'en activité', 'en activite', 'en service',
@@ -112,6 +135,7 @@ const PHRASES = {
         'in attività', 'in attivita', 'operativi', 'già aperti', 'gia aperti',
         'em funcionamento', 'operacional', 'já abertas', 'ja abertas',
         'in bedrijf', 'al geopend',
+        'status open', 'status is open', 'status active', 'currently operating',
         '営業中の店舗', '通常営業',
         '정상 영업', '운영 중',
         '正常营业', '正在运营', '正常營業', '正在營運',
@@ -389,11 +413,13 @@ const STOPWORDS = new Set([
     // English
     'show', 'me', 'my', 'find', 'look', 'looking', 'for', 'get', 'give', 'search', 'searching', 'want', 'need',
     'list', 'display', 'please', 'can', 'you', 'i', 'a', 'an', 'the', 'any', 'some', 'all', 'every', 'and', 'or',
-    'of', 'in', 'at', 'on', 'to', 'from', 'with', 'without', 'that', 'which', 'who', 'are', 'is', 'be', 'have',
+    'of', 'in', 'at', 'on', 'to', 'from', 'with', 'without', 'that', 'which', 'who', 'whose', 'whom',
+    'this', 'these', 'those', 'where', 'what', 'are', 'is', 'be', 'was', 'were', 'have',
     'has', 'there', 'here', 'store', 'stores', 'shop', 'shops', 'location', 'locations', 'branch', 'branches',
     'place', 'places', 'outlet', 'outlets', 'near', 'around', 'close', 'it', 'them', 'their', 'we', 'us',
     'during', 'while', 'when', 'still', 'only', 'also', 'about', 'within', 'radius', 'miles', 'km', 'hours', 'hour',
-    'now', 'right', 'currently', 'between', 'time', 'moment',
+    'now', 'right', 'currently', 'between', 'time', 'moment', 'status', 'statuses',
+    'country', 'countries', 'nation', 'nations', 'pays', 'pais', 'país', 'paese',
     // French
     'montre', 'montrez', 'moi', 'cherche', 'trouve', 'trouver', 'les', 'des', 'une', 'un', 'du', 'de', 'la', 'le',
     'dans', 'avec', 'sans', 'qui', 'sont', 'est', 'magasin', 'magasins', 'boutique', 'boutiques', 'emplacement',
@@ -438,6 +464,11 @@ export function normalizePromptText(text) {
         .toLowerCase()
         .replace(/[‘’ʼ]/g, "'")
         .replace(/[“”]/g, '"')
+        // "u.s.a." -> "usa", "u.k." -> "uk". A dotted initialism is one word,
+        // but every later step splits on punctuation, which left it as three
+        // single letters that no rule and no token filter would keep. Applied
+        // to stored values too, so a prompt and a field normalise the same way.
+        .replace(/\b(?:[a-z]\.){2,}/g, (match) => match.replace(/\./g, ''))
         .replace(/\s+/g, ' ')
         .trim();
 }
@@ -688,10 +719,13 @@ export function parseLocatorPrompt(raw, { filters = [], distanceUnit = 'mi' } = 
     // 5. The merchant-set trading state, BEFORE the schedule vocabulary — see the
     //    note on PHRASES.comingSoon. "Temporarily closed" is a state the
     //    merchant set, not an answer to "is it open right now".
+    // The label first, so "status coming soon" and "coming soon" are read the
+    // same way and the word is gone either way.
+    const statusLabel = scanner.take(PHRASES.statusLabel);
     const comingSoon = scanner.take(PHRASES.comingSoon);
     const temporarilyClosed = !comingSoon && scanner.take(PHRASES.temporarilyClosed);
     const operational = !comingSoon && !temporarilyClosed && scanner.take(PHRASES.operational);
-    const locationStatus = comingSoon
+    let locationStatus = comingSoon
         ? 'coming_soon'
         : temporarilyClosed
             ? 'temporarily_closed'
@@ -707,6 +741,16 @@ export function parseLocatorPrompt(raw, { filters = [], distanceUnit = 'mi' } = 
     const night = scanner.take(PHRASES.night);
     const daylight = !night && scanner.take(PHRASES.daylight);
     const openWord = scanner.take(PHRASES.open);
+
+    // A bare "open" beside the word "status" is the merchant-set state — "status
+    // open" is the opposite of "status coming soon", not a question about this
+    // minute. Only when the sentence says nothing else about time: "status open
+    // on sunday" really is asking about Sunday.
+    const statusIsOpen = statusLabel && !locationStatus && openWord &&
+        !openNow && !closed && !open24 && !daylight && !night &&
+        !days.length && !window && !today && !tomorrow;
+
+    if (statusIsOpen) locationStatus = 'open';
 
     // 7. Position and scope.
     const nearMe = scanner.take(PHRASES.nearMe);
@@ -753,8 +797,8 @@ export function parseLocatorPrompt(raw, { filters = [], distanceUnit = 'mi' } = 
     const keywords = tokenize(scanner.text).filter(isMeaningfulToken);
     const leftoverText = scanner.text;
 
-    const schedule = openNow || open24 || closed || daylight || night || days.length > 0 ||
-        !!window || today || tomorrow || openWord;
+    const schedule = !statusIsOpen && (openNow || open24 || closed || daylight || night ||
+        days.length > 0 || !!window || today || tomorrow || openWord);
 
     // The view instruction, if the sentence carried one.
     //
@@ -799,7 +843,7 @@ export function parseLocatorPrompt(raw, { filters = [], distanceUnit = 'mi' } = 
         // shopper expects from "locations that are open". With a day, a window
         // or daylight/night beside it, it is only saying the location trades
         // then, which those conditions already express.
-        openNow: openNow || (openWord && !closed && !open24 && !daylight && !night && !days.length && !window && !today && !tomorrow),
+        openNow: openNow || (openWord && !statusIsOpen && !closed && !open24 && !daylight && !night && !days.length && !window && !today && !tomorrow),
         open24,
         closed,
         daylight,
