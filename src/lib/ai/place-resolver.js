@@ -48,10 +48,18 @@ const VIA_RANK = { exact: 0, alias: 1, fuzzy: 2 };
  */
 export function normalizePlace(text) {
     return String(text ?? '')
+        // Strip accents, then recompose: Hangul decomposes into jamo under
+        // NFD and has to be put back together, or every Korean value would
+        // be compared in a form nothing else produces.
         .normalize('NFD')
         .replace(/[̀-ͯ]/g, '')
+        .normalize('NFC')
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, ' ')
+        // Every letter and digit in any script, not just ASCII. Dropping
+        // non-ASCII here meant a Japanese, Korean, Chinese, Thai or Arabic
+        // address normalised to the empty string, so none of them could
+        // resolve at all — and neither could a country named in one.
+        .replace(/[^\p{L}\p{N}]+/gu, ' ')
         .trim();
 }
 
@@ -92,6 +100,89 @@ const EXTRA_COUNTRY_NAMES = {
     sz: ['swaziland'],
     mm: ['burma'],
 };
+
+/**
+ * Country names in Filipino, which the ISO list carries only in English.
+ *
+ * Kept apart from EXTRA_COUNTRY_NAMES so it is obvious what these are and where
+ * to add the next language. "Ilipat ang mapa sa bansang Hapon" cannot work
+ * without them: Hapon is Japan, and nothing else in the app knows that.
+ */
+const FILIPINO_COUNTRY_NAMES = {
+    jp: ['hapon', 'bansang hapon', 'hapones'],
+    ph: ['pilipinas', 'bansang pilipinas', 'republika ng pilipinas'],
+    cn: ['tsina', 'tsayna', 'bansang tsina', 'intsik'],
+    us: ['estados unidos', 'amerika', 'bansang amerika', 'amerika estados unidos'],
+    gb: ['britanya', 'inglatera', 'nagkakaisang kaharian'],
+    kr: ['timog korea', 'korea'],
+    de: ['alemanya', 'alemania'],
+    fr: ['pransiya', 'pransya', 'prancia'],
+    es: ['espanya', 'espana'],
+    it: ['italya'],
+    ca: ['kanada'],
+    au: ['awstralya', 'australya'],
+    sg: ['singapura'],
+    th: ['taylandiya', 'thailandia'],
+    vn: ['biyetnam'],
+    my: ['malasya'],
+    id: ['indonesya'],
+    in: ['indiya'],
+    ae: ['emirato'],
+    sa: ['saudi arabya'],
+    hk: ['hong kong'],
+    tw: ['taywan'],
+    nl: ['olanda'],
+    ru: ['rusya'],
+    br: ['brasil'],
+    mx: ['mehiko'],
+};
+
+for (const [code, names] of Object.entries(FILIPINO_COUNTRY_NAMES)) {
+    EXTRA_COUNTRY_NAMES[code] = [...(EXTRA_COUNTRY_NAMES[code] || []), ...names];
+}
+
+/**
+ * The same countries in the other languages the prompt parser reads.
+ *
+ * Restricted on purpose to the ones a store locator is actually asked about —
+ * this is a search aid, not a translation table. Every entry still has to match
+ * a country the merchant really trades in before it filters anything, and the
+ * geocoder falls back to a world-wide lookup for whatever isn't here.
+ */
+const LOCALISED_COUNTRY_NAMES = {
+    jp: ['japon', 'giappone', 'japao', '日本', '日本国', '일본', '中国 日本', 'اليابان'],
+    cn: ['chine', 'cina', 'kina', '中国', '中國', '중국', 'الصين'],
+    ph: ['filipinas', 'philippinen', 'filippine', 'フィリピン', '필리핀', '菲律宾', '菲律賓'],
+    us: ['etats unis', 'vereinigte staaten', 'stati uniti', 'verenigde staten',
+         'アメリカ', '米国', '미국', '美国', '美國', 'أمريكا', 'الولايات المتحدة'],
+    gb: ['royaume uni', 'grossbritannien', 'reino unido', 'regno unito',
+         'イギリス', '영국', '英国', '英國'],
+    kr: ['coree du sud', 'sudkorea', 'corea del sur', '韓国', '한국', '대한민국', '韩国'],
+    de: ['allemagne', 'deutschland', 'alemania', 'germania', 'duitsland', 'ドイツ', '독일', '德国'],
+    fr: ['francia', 'frankreich', 'frankrijk', 'franca', 'フランス', '프랑스', '法国'],
+    es: ['espagne', 'espana', 'spanien', 'spagna', 'spanje', 'スペイン', '스페인', '西班牙'],
+    it: ['italie', 'italien', 'italia', 'イタリア', '이탈리아', '意大利'],
+    ca: ['kanada', 'カナダ', '캐나다', '加拿大'],
+    au: ['australie', 'australien', 'オーストラリア', '호주', '澳大利亚'],
+    sg: ['singapour', 'singapur', 'シンガポール', '싱가포르', '新加坡'],
+    th: ['thailande', 'tailandia', 'thailandia', 'タイ', '태국', '泰国'],
+    vn: ['ベトナム', '베트남', '越南'],
+    my: ['malaisie', 'malasia', 'マレーシア', '말레이시아', '马来西亚'],
+    id: ['indonesie', 'indonesien', 'インドネシア', '인도네시아', '印度尼西亚'],
+    in: ['inde', 'indien', 'インド', '인도', '印度'],
+    hk: ['香港', 'ホンコン', '홍콩'],
+    tw: ['台湾', '臺灣', '대만'],
+    ru: ['russie', 'russland', 'rusia', 'ロシア', '러시아', '俄罗斯'],
+    br: ['bresil', 'brasilien', 'brasile', 'ブラジル', '브라질', '巴西'],
+    mx: ['mexique', 'mexiko', 'messico', 'メキシコ', '멕시코', '墨西哥'],
+    nl: ['pays bas', 'niederlande', 'paises bajos', 'オランダ', '네덜란드', '荷兰'],
+    ae: ['emirats arabes unis', 'emiratos arabes unidos', 'الإمارات'],
+    sa: ['arabie saoudite', 'arabia saudita', 'السعودية'],
+};
+
+for (const [code, names] of Object.entries(LOCALISED_COUNTRY_NAMES)) {
+    EXTRA_COUNTRY_NAMES[code] = [...(EXTRA_COUNTRY_NAMES[code] || []), ...names];
+}
 
 const US_STATES = [
     ['al', 'Alabama'], ['ak', 'Alaska'], ['az', 'Arizona'], ['ar', 'Arkansas'],
@@ -152,6 +243,8 @@ function aliasesFor(field, key) {
 /** Words that frame a country rather than naming one. */
 const COUNTRY_PHRASE_FILLER = new Set([
     'country', 'countries', 'nation', 'the', 'of', 'in', 'to', 'map', 'whole', 'entire', 'all',
+    'bansa', 'bansang', 'sa', 'ang', 'ng',
+    'pays', 'pais', 'land', 'paese', 'страна',
 ]);
 
 /**

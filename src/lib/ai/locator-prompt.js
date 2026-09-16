@@ -51,6 +51,8 @@ const PHRASES = {
         '내 근처', '근처에', '근처', '가까운', '제일 가까운',
         '我附近', '离我最近', '離我最近', '附近的', '附近',
         'بالقرب مني', 'قريب مني', 'القريبة مني', 'الأقرب',
+        'malapit sa akin', 'malapit sa aking lokasyon', 'pinakamalapit sa akin', 'pinakamalapit',
+        'malapit dito', 'nasa paligid ko', 'kung nasaan ako',
     ]),
     /*
      * The merchant-set TRADING STATE — `location_status` on the location, not a
@@ -143,6 +145,14 @@ const PHRASES = {
     ]),
     openNow: byLength([
         'open now', 'open right now', 'currently open', 'open at the moment', 'open at this time', 'still open',
+        'ouverts actuellement', 'ouvert actuellement', 'ouvertes actuellement', 'en ce moment ouvert',
+        'abiertas ahora', 'abiertos ahora', 'abierto en este momento', 'ahora abierto',
+        'jetzt geöffnet', 'gerade geöffnet', 'aktuell geöffnet', 'momentan geöffnet',
+        'aperto adesso', 'aperti adesso', 'aperto ora', 'aperti ora',
+        'aberto agora', 'abertos agora', 'nu geopend', 'momenteel geopend',
+        '現在営業中', '営業中', '지금 영업 중', '현재 영업 중', '正在营业', '正在營業',
+        'مفتوح الآن', 'المفتوحة الآن',
+        'bukas ngayon', 'bukas na ngayon', 'kasalukuyang bukas', 'nakabukas ngayon',
         'open today right now', 'that are open now', 'opened now',
         'ouvert maintenant', 'ouverts maintenant', 'actuellement ouvert', 'ouvert en ce moment',
         'abierto ahora', 'abiertos ahora', 'abierto en este momento', 'actualmente abierto',
@@ -157,6 +167,7 @@ const PHRASES = {
     ]),
     open: byLength([
         'are open', 'is open', 'that open', 'open', 'opening',
+        'bukas', 'nakabukas', 'bukas ba',
         'ouvert', 'ouverts', 'ouvre',
         'abierto', 'abiertos', 'abierta', 'abiertas', 'abre',
         'geöffnet', 'geoffnet', 'offen',
@@ -172,6 +183,7 @@ const PHRASES = {
         'that are closed right now', 'that are closed now', 'are closed right now', 'are closed now',
         'closed right now', 'closed at the moment', 'closed at this time', 'currently closed', 'closed now',
         'are closed', 'is closed', 'that are closed', 'closed', 'shut', 'not open',
+        'sarado', 'nakasara', 'saradong', 'sarado ngayon', 'hindi bukas',
         'fermé', 'ferme', 'fermés', 'fermes', 'fermée', 'fermees',
         'cerrado', 'cerrados', 'cerrada', 'cerradas',
         'geschlossen', 'zu haben', 'nicht geöffnet',
@@ -322,6 +334,11 @@ const PHRASES = {
      * ones that can only mean "move the view".
      */
     mapMove: byLength([
+        'ilipat ang mapa sa', 'ilipat ang mapa', 'ilipat sa', 'ilipat', 'igalaw ang mapa',
+        'ipakita ang mapa ng', 'ipakita ang mapa', 'pakitang mapa', 'punta sa', 'pumunta sa',
+        'afficher la carte de', 'afficher la carte du', 'afficher la carte',
+        'karte von', 'karte anzeigen', 'zeige die karte von', 'zeige die karte',
+        'mostrar el mapa de', 'mostrar el mapa', 'muestra el mapa de',
         'move the map to', 'move the map', 'move map to', 'move map',
         'show me the map of', 'show me the map for', 'show me the map',
         'show the map of', 'show the map for', 'show the map', 'show map of', 'show map',
@@ -360,13 +377,23 @@ const PHRASES = {
         'de kaart', 'kaart', '地図', 'マップ', '지도', '地图', '地圖', 'الخريطة', 'خريطة',
     ]),
     all: byLength([
-        'show me all', 'show all', 'list all', 'find all', 'all locations', 'all stores', 'every location', 'all of them',
+        'show me all', 'show all', 'list all', 'find all', 'all locations', 'all stores',
+        'lahat ng', 'lahat', 'ang lahat ng', 'lahat ng mga', 'every location', 'all of them',
         'toutes les', 'tous les', 'todas las', 'todos los', 'alle', 'tutte le', 'tutti i', 'todas as', 'todos os',
         'すべて', '全部', '全て', '모두', '전부', '所有', '全部', 'كل المواقع', 'جميع',
     ]),
 };
 
 /** Day names, abbreviations and CJK/Arabic forms -> JS day index (0 = Sunday). */
+const DAY_WORDS_EXTRA = [
+    // German writes "on Mondays" as one adverb, which the singular never matched.
+    ['montags', 1], ['dienstags', 2], ['mittwochs', 3], ['donnerstags', 4],
+    ['freitags', 5], ['samstags', 6], ['sonnabends', 6], ['sonntags', 0],
+    // Filipino. lunes / martes / sabado are already carried by Spanish.
+    ['miyerkules', 3], ['miyerkoles', 3], ['huwebes', 4], ['biyernes', 5],
+    ['sabado', 6], ['linggo', 0], ['lingo', 0], ['araw ng linggo', 0],
+];
+
 const DAY_WORDS = [
     ['sunday', 0], ['sundays', 0], ['sun', 0], ['dimanche', 0], ['domingo', 0], ['sonntag', 0], ['domenica', 0], ['zondag', 0],
     ['日曜日', 0], ['日曜', 0], ['일요일', 0], ['星期日', 0], ['星期天', 0], ['周日', 0], ['週日', 0], ['الأحد', 0],
@@ -388,7 +415,7 @@ const DAY_WORDS = [
     ['saturday', 6], ['saturdays', 6], ['sat', 6], ['samedi', 6], ['sábado', 6], ['sabado', 6], ['samstag', 6], ['sonnabend', 6],
     ['sabato', 6], ['zaterdag', 6],
     ['土曜日', 6], ['土曜', 6], ['토요일', 6], ['星期六', 6], ['周六', 6], ['週六', 6], ['السبت', 6],
-].sort((a, b) => b[0].length - a[0].length);
+].concat(DAY_WORDS_EXTRA).sort((a, b) => b[0].length - a[0].length);
 
 /** Connectors that turn two day names into an inclusive range. */
 const RANGE_WORDS = ['through', 'thru', 'until', 'till', 'to', '-', '–', '~',
@@ -451,6 +478,26 @@ const STOPWORDS = new Set([
     // Arabic
     'أرني', 'اعرض', 'ابحث', 'عن', 'في', 'من', 'مع', 'التي', 'هي', 'متجر', 'متاجر', 'محل', 'محلات', 'موقع', 'مواقع',
     'ال', 'المتاجر', 'المحلات', 'المواقع', 'الفروع', 'فرع', 'فروع', 'كل', 'جميع',
+    // Filipino / Tagalog
+    'ipakita', 'ipakita mo', 'pakita', 'pakitang', 'ilista', 'hanapin', 'maghanap', 'tingnan',
+    'ibigay', 'gusto', 'ko', 'akin', 'aking', 'mo', 'ang', 'ng', 'mga', 'sa', 'na', 'ay', 'at',
+    'para', 'kung', 'may', 'meron', 'mayroon', 'ito', 'iyon', 'nasa',
+    'tindahan', 'tindahang', 'lokasyon', 'sangay', 'sanga', 'branch', 'lugar', 'pwesto',
+    'bansa', 'bansang', 'lalawigan', 'probinsya', 'lungsod', 'siyudad', 'bayan',
+    // Scaffolding the phrase book leaves standing once it has taken the concept.
+    // Each of these emptied a result that was otherwise fully understood: any
+    // leftover word becomes a term every location has to carry.
+    'afficher', 'affiche', 'affichez', 'actuellement', 'maintenant', 'etablissement',
+    'etablissements', 'établissement', 'établissements', 'succursale', 'succursales',
+    'anzeigen', 'anzeige', 'zeigen', 'jetzt', 'gerade', 'aktuell', 'momentan', 'standort',
+    'ahora', 'actualmente', 'momento', 'el', 'lo',
+    'adesso', 'ora', 'attualmente', 'mostrare',
+    'agora', 'atualmente', 'mostrando',
+    'nu', 'momenteel', 'tonen', 'weergeven',
+    '現在', 'いま', '表示して', '営業', 'すべての',
+    '지금', '현재', '모두', '전체',
+    '现在', '目前', '全部', '所有', '現在の',
+    'الآن', 'حاليا', 'حالياً',
 ]);
 
 /* ---------------------------------------------------------------------- *
@@ -490,10 +537,35 @@ function tokenize(text) {
         .filter(Boolean);
 }
 
+/** Japanese, Korean and Chinese — scripts with no spaces to tokenise on. */
+const CJK = /[぀-ヿ㐀-鿿豈-﫿가-힣]/;
+
+/**
+ * The CJK stopwords, longest first.
+ *
+ * Latin scaffolding falls away on its own because the tokeniser splits on
+ * spaces, so "show me" is two tokens and both are dropped. CJK has no spaces:
+ * "の店舗を" arrives as ONE token that is entirely scaffolding, matches no
+ * stopword as a whole, and so became a word every location had to carry.
+ */
+const CJK_STOPWORDS = [...STOPWORDS]
+    .filter((word) => CJK.test(word))
+    .sort((a, b) => b.length - a.length);
+
+/** Take the scaffolding back out of a CJK run, leaving only what it named. */
+function stripCjkNoise(token) {
+    if (!CJK.test(token)) return token;
+    let rest = token;
+    for (const noise of CJK_STOPWORDS) {
+        while (rest.includes(noise)) rest = rest.replace(noise, '');
+    }
+    return rest.trim();
+}
+
 /** CJK has no spaces, so a single character there is still a real word. */
 function isMeaningfulToken(token) {
     if (STOPWORDS.has(token)) return false;
-    if (/[぀-ヿ㐀-鿿豈-﫿]/.test(token)) return token.length >= 1;
+    if (CJK.test(token)) return token.length >= 1;
     return token.length >= 2;
 }
 
@@ -716,9 +788,18 @@ export function parseLocatorPrompt(raw, { filters = [], distanceUnit = 'mi' } = 
         scanner.drop(clocks[0].raw.trim());
     }
 
-    // 5. The merchant-set trading state, BEFORE the schedule vocabulary — see the
-    //    note on PHRASES.comingSoon. "Temporarily closed" is a state the
-    //    merchant set, not an answer to "is it open right now".
+    // 5a. "Open 24 hours" and "currently open" are taken FIRST, ahead of the
+    //     trading state below. They are unambiguous — no trading-state phrase
+    //     contains one — and taking them here is what stops "現在営業中" (and
+    //     "aperto adesso", and "jetzt geöffnet") from being swallowed by the
+    //     more general "operational", which would answer a question about the
+    //     merchant's own flag instead of about this minute.
+    const open24 = scanner.take(PHRASES.open24);
+    const openNow = scanner.take(PHRASES.openNow);
+
+    // 5b. The merchant-set trading state, BEFORE the rest of the schedule
+    //    vocabulary — see the note on PHRASES.comingSoon. "Temporarily closed"
+    //    is a state the merchant set, not an answer to "is it open right now".
     // The label first, so "status coming soon" and "coming soon" are read the
     // same way and the word is gone either way.
     const statusLabel = scanner.take(PHRASES.statusLabel);
@@ -733,10 +814,7 @@ export function parseLocatorPrompt(raw, { filters = [], distanceUnit = 'mi' } = 
                 ? 'open'
                 : null;
 
-    // 6. The schedule vocabulary. `open24` is taken before the generic "open"
-    //    so "open 24 hours" is not reduced to "open".
-    const open24 = scanner.take(PHRASES.open24);
-    const openNow = scanner.take(PHRASES.openNow);
+    // 6. The rest of the schedule vocabulary.
     const closed = scanner.take(PHRASES.closed);
     const night = scanner.take(PHRASES.night);
     const daylight = !night && scanner.take(PHRASES.daylight);
@@ -794,7 +872,7 @@ export function parseLocatorPrompt(raw, { filters = [], distanceUnit = 'mi' } = 
 
     // 10. Whatever survived is the shopper's own words: a city, a store name, or
     //    something they remember from the merchant's notes.
-    const keywords = tokenize(scanner.text).filter(isMeaningfulToken);
+    const keywords = tokenize(scanner.text).map(stripCjkNoise).filter(Boolean).filter(isMeaningfulToken);
     const leftoverText = scanner.text;
 
     const schedule = !statusIsOpen && (openNow || open24 || closed || daylight || night ||

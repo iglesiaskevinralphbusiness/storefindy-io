@@ -227,7 +227,14 @@ function applyLeftover(intent, placeIndex, push, unmatched) {
     const negated = NEGATION.test(leftover);
     const operator = negated ? 'not_equals' : 'equals';
 
-    const { matches, consumed } = resolveAddress(leftover, placeIndex);
+    // The raw leftover first (word order and articles matter to a place name),
+    // then the cleaned keywords — the only form that works for the scripts with
+    // no spaces, where the whole sentence is one token.
+    let { matches, consumed } = resolveAddress(leftover, placeIndex);
+    if (!matches.length && intent.keywords.length) {
+        ({ matches, consumed } = resolveAddress(intent.keywords.join(' '), placeIndex));
+    }
+
     for (const match of matches) push(match.field, operator, match.value);
 
     // Only the meaningful words — `keywords` has already had the scaffolding of

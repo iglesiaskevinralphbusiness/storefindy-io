@@ -143,6 +143,21 @@ function placeIndexFor(locations) {
 }
 
 /**
+ * The address the shopper wrote, read two ways.
+ *
+ * The raw leftover first, because word order and articles matter to a place
+ * name — "los angeles" is one city and `keywords` would have dropped "los".
+ * Then the cleaned keywords, because Japanese, Chinese and Korean have no
+ * spaces: the whole sentence arrives as one token that no window can split,
+ * and only `keywords` has had the particles taken out character by character.
+ */
+function resolvePlaceWords(intent, index) {
+    const direct = resolveAddress(intent.leftoverText, index);
+    if (direct.matches.length) return direct.matches;
+    return resolveAddress(intent.keywords.join(' '), index).matches;
+}
+
+/**
  * Does the location sit at the address the shopper described?
  *
  * Every part that resolved has to hold: "bayambang pangasinan" is one place,
@@ -221,9 +236,7 @@ export function applyLocatorIntent(locations, intent, context = {}) {
     // What the shopper wrote, read against the addresses this locator really
     // has. Case, accents, punctuation, country codes and ordinary misspellings
     // all come out in the wash — see lib/ai/place-resolver.js.
-    const resolved = wantsText
-        ? resolveAddress(intent.leftoverText, placeIndexFor(locations)).matches
-        : [];
+    const resolved = wantsText ? resolvePlaceWords(intent, placeIndexFor(locations)) : [];
 
     const rows = locations.map((location) => {
         const fields = searchableFields(location);
