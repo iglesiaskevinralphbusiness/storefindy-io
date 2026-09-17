@@ -299,7 +299,7 @@ export const formStyles = `
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 12px 0;
+    margin: 0 0 12px 0;
 }
 .search-method-selector .search-tab-item {
     flex: 1;
