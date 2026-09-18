@@ -720,8 +720,8 @@ export const mapStyles = `
     font-weight: 600;
 }
 .location-status .status-detail {
-    color: #444;
     font-weight: 400;
+    opacity: 0.7;
 }
 .location-status .status-note {
     font-size: 85%;

@@ -916,6 +916,13 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                                 onChange={(v) => updateFeatures('show_filters', v)}
                             />
                             <Checkbox
+                                label="Show store hours"
+                                name="show_store_hours"
+                                description="Display opening hours on each store card for all locations"
+                                checked={features.show_store_hours}
+                                onChange={(v) => updateFeatures('show_store_hours', v)}
+                            />
+                            <Checkbox
                                 label="Show combobox radius"
                                 name="show_radius"
                                 description="Display a combobox to select the search radius on the form"
@@ -963,13 +970,6 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                                 description="Link to Google Maps directions for each store"
                                 checked={features.show_directions}
                                 onChange={(v) => updateFeatures('show_directions', v)}
-                            />
-                            <Checkbox
-                                label="Show store hours"
-                                name="show_store_hours"
-                                description="Display opening hours on each store card for all locations"
-                                checked={features.show_store_hours}
-                                onChange={(v) => updateFeatures('show_store_hours', v)}
                             />
                             <Checkbox
                                 label="Powered by Storefindy"
