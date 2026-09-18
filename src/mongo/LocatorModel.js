@@ -164,6 +164,9 @@ const locatorSchema = new mongoose.Schema({
             border: { type: String, default: 'square' },
             border_color: { type: String, default: '#e4e4e4' },
             background: { type: String, default: '#ffffff' },
+            scrollbar_width: { type: String, default: '8px' },
+            scrollbar_track_color: { type: String, default: '#ffffff' },
+            scrollbar_thumb_color: { type: String, default: '#e4e4e4' },
         },
         getDirections: {
             border: { type: String, default: 'square' },

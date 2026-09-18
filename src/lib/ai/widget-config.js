@@ -47,6 +47,7 @@ const FONT_FAMILIES = [
 const SEARCH_ICONS = ['', 'magnifying-glass', 'magnifying-glass2', 'magnifying-glass3', 'map', 'pin', 'shopping-bag'];
 const FILTER_ICONS = ['', 'funnel', 'funnel-solid', 'list-filter', 'filter-circle'];
 const AI_ICONS = ['', 'wand'];
+const SCROLLBAR_WIDTHS = ['0px', '4px', '6px', '8px', '10px', '12px'];
 const ACTION_ICONS = ['', 'map-view', 'pin-view', 'pinned', 'arrow-right', 'arrow-left', 'chevron-left', 'chevron-right', 'circle-chevron-left', 'circle-chevron-right'];
 const MAP_STYLE_CODES = MAP_STYLE_OPTIONS.map((option) => option.code);
 
@@ -128,6 +129,9 @@ export const SETTING_CATALOGUE = [
     { path: 'settings.resultItem.border_color', type: 'color', label: 'Store card border colour', phrases: ['store card border colour', 'result card outline'] },
     { path: 'settings.resultItem.active_background', type: 'color', label: 'Selected store card background', phrases: ['selected store card background colour', 'highlighted result background'] },
     { path: 'settings.resultItem.active_border_color', type: 'color', label: 'Selected store card border colour', phrases: ['selected store card border colour', 'highlighted result outline'] },
+    { path: 'settings.resultItem.scrollbar_width', type: 'enum', options: SCROLLBAR_WIDTHS, label: 'Store list scrollbar width', phrases: ['store list scrollbar width', 'thinner scrollbar', 'hide the scrollbar'] },
+    { path: 'settings.resultItem.scrollbar_track_color', type: 'color', label: 'Store list scrollbar track colour', phrases: ['scrollbar track colour', 'scrollbar background colour'] },
+    { path: 'settings.resultItem.scrollbar_thumb_color', type: 'color', label: 'Store list scrollbar thumb colour', phrases: ['scrollbar thumb colour', 'scrollbar handle colour', 'scrollbar colour'] },
 
     // --- Card buttons ---
     { path: 'settings.getDirections.background', type: 'color', label: 'Directions button colour', phrases: ['get directions button colour', 'directions button background'] },
@@ -353,6 +357,8 @@ export const RECIPES = [
             'settings.resultItem.border_color': '#374151',
             'settings.resultItem.active_background': '#111827',
             'settings.resultItem.active_border_color': '#60a5fa',
+            'settings.resultItem.scrollbar_track_color': '#1f2937',
+            'settings.resultItem.scrollbar_thumb_color': '#4b5563',
             'settings.getDirections.background': '#f9fafb',
             'settings.getDirections.text_color': '#111827',
             'settings.viewLocation.background': '#374151',
@@ -404,6 +410,8 @@ export const RECIPES = [
             'settings.resultItem.border_color': '#e5e7eb',
             'settings.resultItem.active_background': '#ffffff',
             'settings.resultItem.active_border_color': '#185FA5',
+            'settings.resultItem.scrollbar_track_color': '#ffffff',
+            'settings.resultItem.scrollbar_thumb_color': '#e4e4e4',
             'settings.getDirections.background': '#111827',
             'settings.getDirections.text_color': '#ffffff',
             'settings.viewLocation.background': '#111827',

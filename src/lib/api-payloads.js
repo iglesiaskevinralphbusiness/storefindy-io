@@ -625,6 +625,10 @@ const CUSTOMIZE_BORDERS = new Set(['none', 'rounded', 'pill', 'square']);
 const CUSTOMIZE_PIN_TYPES = new Set(['standard', 'custom']);
 const CUSTOMIZE_PIN_SIZES = new Set(['small', 'medium', 'large']);
 const CUSTOMIZE_FORM_STYLES = new Set(['style-1', 'style-2', 'style-3']);
+// Exactly the widths the customize sidebar offers. The widget writes this value
+// straight into `::-webkit-scrollbar { width }`, so an arbitrary string would be
+// a CSS value the merchant chose — these are the only ones accepted.
+const CUSTOMIZE_SCROLLBAR_WIDTHS = new Set(['0px', '4px', '6px', '8px', '10px', '12px']);
 
 const SETTINGS_TOP = ['height', 'background', 'text_color', 'font_family', 'font_size', 'border', 'border_color'];
 const SETTINGS_GROUPS = {
@@ -633,7 +637,7 @@ const SETTINGS_GROUPS = {
     search: ['border', 'background', 'label', 'text_color', 'icon'],
     filter: ['border', 'background', 'label', 'text_color', 'icon'],
     filterList: ['border_color', 'background', 'text_color', 'active_background', 'active_text_color'],
-    resultItem: ['active_border_color', 'active_background', 'border', 'border_color', 'background'],
+    resultItem: ['active_border_color', 'active_background', 'border', 'border_color', 'background', 'scrollbar_width', 'scrollbar_track_color', 'scrollbar_thumb_color'],
     getDirections: ['border', 'background', 'label', 'text_color', 'icon'],
     viewLocation: ['border', 'background', 'label', 'text_color', 'icon'],
     pin: ['type', 'color', 'size', 'text_color', 'text_size', 'image'],
@@ -773,6 +777,21 @@ function validateSettings(settings, errors) {
                 const code = String(raw ?? '').trim();
                 if (!CUSTOMIZE_BORDERS.has(code)) {
                     errors[`settings.${group}.${field}`] = 'Border must be none, rounded, pill, or square';
+                    continue;
+                }
+                out[group][field] = code;
+            } else if (field === 'scrollbar_width') {
+                // Absent means an older client — the WordPress plugin or a direct
+                // API caller written before this field existed. Those payloads
+                // still have to save, so a missing value takes the model default
+                // rather than failing the whole request.
+                const code = String(raw ?? '').trim();
+                if (code === '') {
+                    out[group][field] = '8px';
+                    continue;
+                }
+                if (!CUSTOMIZE_SCROLLBAR_WIDTHS.has(code)) {
+                    errors[`settings.${group}.${field}`] = 'Scrollbar width must be 0px, 4px, 6px, 8px, 10px, or 12px';
                     continue;
                 }
                 out[group][field] = code;

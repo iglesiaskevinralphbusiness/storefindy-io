@@ -1032,6 +1032,23 @@ export default function Locator({
         return '0';
     }
 
+    // The store list's scrollbar, driven by the resultItem settings. Chromium and
+    // Safari take the width in pixels off ::-webkit-scrollbar; Firefox has no
+    // such pseudo-element and its `scrollbar-width` accepts only auto/thin/none,
+    // so the pixel value is also mapped to the nearest keyword. The thumb's
+    // 4px radius is fixed in styles.js and is not a setting.
+    const getResultsScrollbarStyle = () => {
+        const width = settings.resultItem.scrollbar_width || '8px';
+        const px = parseFloat(width);
+        const keyword = px === 0 ? 'none' : (px <= 6 ? 'thin' : 'auto');
+        return {
+            '--sf-results-scrollbar-width': width,
+            '--sf-results-scrollbar-keyword': keyword,
+            '--sf-results-scrollbar-track': settings.resultItem.scrollbar_track_color || '#ffffff',
+            '--sf-results-scrollbar-thumb': settings.resultItem.scrollbar_thumb_color || '#e4e4e4',
+        };
+    }
+
     const getFormStyle = () => {
         if(user_plan !== 'business') return '';
         if(features.form_style === 'style-2') return 'form-style-2';
@@ -1639,6 +1656,7 @@ export default function Locator({
                             <ul
                                 className={'results-list' + (showListMap === 'list' ? ' mobile-tab-content-active' : ' mobile-tab-content-inactive')}
                                 ref={listRef}
+                                style={getResultsScrollbarStyle()}
                             >
                                 {locations.map((location, index) => (
                                     <li

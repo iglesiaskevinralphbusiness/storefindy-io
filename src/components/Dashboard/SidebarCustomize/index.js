@@ -103,6 +103,18 @@ const SEARCH_ICONS = [
     { code: 'wand', label: 'Wand' },
 ];
 
+// Widths of the store list's scrollbar. Kept as CSS lengths because that is what
+// `::-webkit-scrollbar { width }` reads directly; Firefox only understands the
+// auto/thin/none keywords, which the widget derives from this value.
+const SCROLLBAR_WIDTHS = [
+    { code: '0px', label: 'Hidden' },
+    { code: '4px', label: 'Thin 4px' },
+    { code: '6px', label: 'Small 6px' },
+    { code: '8px', label: 'Default 8px' },
+    { code: '10px', label: 'Medium 10px' },
+    { code: '12px', label: 'Large 12px' },
+];
+
 export default function SidebarCustomize({ user_plan, settings, setSettings, features, setFeatures, handleSave, isSaveDisabled }) {
     const router = useRouter();
     const fileInputRef = useRef(null);
@@ -523,6 +535,23 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                                     label="Selected Border"
                                     value={settings.resultItem.active_border_color}
                                     onChange={(v) => updateGroup('resultItem', 'active_border_color', v)}
+                                />
+                                <SelectField
+                                    label="Scrollbar Width"
+                                    value={settings.resultItem.scrollbar_width}
+                                    onChange={(v) => updateGroup('resultItem', 'scrollbar_width', v)}
+                                    options={SCROLLBAR_WIDTHS}
+                                    note="Applies to the store list's own scrollbar."
+                                />
+                                <ColorField
+                                    label="Scrollbar Track Color"
+                                    value={settings.resultItem.scrollbar_track_color}
+                                    onChange={(v) => updateGroup('resultItem', 'scrollbar_track_color', v)}
+                                />
+                                <ColorField
+                                    label="Scrollbar Thumb Color"
+                                    value={settings.resultItem.scrollbar_thumb_color}
+                                    onChange={(v) => updateGroup('resultItem', 'scrollbar_thumb_color', v)}
                                 />
 
                             </Section>

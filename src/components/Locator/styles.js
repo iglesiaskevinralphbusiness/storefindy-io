@@ -389,6 +389,22 @@ export const resultsStyles = `
     margin: 0;
     padding: 0;
     list-style: none;
+    /* The three --sf-results-scrollbar-* properties are set inline on this <ul>
+       from the locator's resultItem settings — see components/Locator/index.js.
+       Firefox has no ::-webkit-scrollbar, and its scrollbar-width property takes
+       auto/thin/none, so the widget passes the matching keyword separately. */
+    scrollbar-width: var(--sf-results-scrollbar-keyword, auto);
+    scrollbar-color: var(--sf-results-scrollbar-thumb, #e4e4e4) var(--sf-results-scrollbar-track, #ffffff);
+}
+.results ul.results-list::-webkit-scrollbar {
+    width: var(--sf-results-scrollbar-width, 8px);
+}
+.results ul.results-list::-webkit-scrollbar-track {
+    background: var(--sf-results-scrollbar-track, #ffffff);
+}
+.results ul.results-list::-webkit-scrollbar-thumb {
+    background: var(--sf-results-scrollbar-thumb, #e4e4e4);
+    border-radius: 4px;
 }
 .results ul.results-list > li {
     margin-bottom: 15px;

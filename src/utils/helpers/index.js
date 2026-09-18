@@ -84,6 +84,12 @@ export function generateSettingsDefault(settings) {
             border: settings.resultItem.border,
             border_color: settings.resultItem.border_color,
             background: settings.resultItem.background,
+            // Added after launch, so a locator saved before this release has no
+            // stored value — fall back to the model's defaults rather than
+            // handing the widget `undefined` CSS custom properties.
+            scrollbar_width: settings.resultItem.scrollbar_width ?? '8px',
+            scrollbar_track_color: settings.resultItem.scrollbar_track_color ?? '#ffffff',
+            scrollbar_thumb_color: settings.resultItem.scrollbar_thumb_color ?? '#e4e4e4',
         },
         getDirections: {
             border: settings.getDirections.border,
