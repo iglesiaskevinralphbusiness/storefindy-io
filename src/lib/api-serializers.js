@@ -106,11 +106,18 @@ export function toPublicLocatorDetail(locator) {
  */
 const SETTINGS_DEFAULTS = {
     searchAi: {
-        ai_placeholder: 'What are you looking for?',
+        ai_icon: 'wand',
+        ai_title: 'Search with AI',
         ai_border_color: '#e3dafd',
         ai_background_start: '#f4f0ff',
         ai_background_end: '#ffffff',
         ai_suggestion_background: '#ffffff',
+        ai_input_placeholder: 'What are you looking for?',
+        ai_input_background: '#f4f0ff',
+        ai_input_text_color: '#1f1f1f',
+        ai_input_border_color: '#e3dafd',
+        ai_icon: 'wand',
+        ai_title: 'Search with AI',
     },
 };
 

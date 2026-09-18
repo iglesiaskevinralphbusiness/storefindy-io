@@ -126,11 +126,16 @@ const locatorSchema = new mongoose.Schema({
             placeholder: { type: String, default: 'Enter city, state, or postal code' },
         },
         searchAi: {
-            ai_placeholder: { type: String, default: 'What are you looking for?' },
+            ai_icon: { type: String, default: 'wand' },
+            ai_title: { type: String, default: 'Search with AI' },
             ai_border_color: { type: String, default: '#e3dafd' },
             ai_background_start: { type: String, default: '#f4f0ff' },
             ai_background_end: { type: String, default: '#ffffff' },
             ai_suggestion_background: { type: String, default: '#ffffff' },
+            ai_input_placeholder: { type: String, default: 'What are you looking for?' },
+            ai_input_border_color: { type: String, default: '#e3dafd' },
+            ai_input_background: { type: String, default: '#ffffff' },
+            ai_input_text_color: { type: String, default: '#000000' },
         },
         search: { // search button
             border: { type: String, default: 'square' },

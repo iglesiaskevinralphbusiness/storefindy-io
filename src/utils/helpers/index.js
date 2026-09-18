@@ -48,7 +48,14 @@ export function generateSettingsDefault(settings) {
             ai_background_end: settings.searchAi?.ai_background_end || '#ffffff',
             ai_border_color: settings.searchAi?.ai_border_color || '#e3dafd',
             ai_suggestion_background: settings.searchAi?.ai_suggestion_background || '#ffffff',
-            ai_placeholder: settings.searchAi?.ai_placeholder || 'What are you looking for?',
+            ai_input_placeholder: settings.searchAi?.ai_input_placeholder || 'What are you looking for?',
+            ai_input_background: settings.searchAi?.ai_input_background || '#ffffff',
+            ai_input_text_color: settings.searchAi?.ai_input_text_color || '#111827',
+            ai_input_border_color: settings.searchAi?.ai_input_border_color || '#e3dafd',
+            // `??` not `||`: '' is a real choice here ("None"), so it has to
+            // survive the save instead of falling back to the wand.
+            ai_icon: settings.searchAi?.ai_icon ?? 'wand',
+            ai_title: settings.searchAi?.ai_title || 'Search with AI',
         },
         search: {
             border: settings.search.border,

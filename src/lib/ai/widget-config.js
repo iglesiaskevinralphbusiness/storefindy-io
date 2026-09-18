@@ -46,6 +46,7 @@ const FONT_FAMILIES = [
 ];
 const SEARCH_ICONS = ['', 'magnifying-glass', 'magnifying-glass2', 'magnifying-glass3', 'map', 'pin', 'shopping-bag'];
 const FILTER_ICONS = ['', 'funnel', 'funnel-solid', 'list-filter', 'filter-circle'];
+const AI_ICONS = ['', 'wand'];
 const ACTION_ICONS = ['', 'map-view', 'pin-view', 'pinned', 'arrow-right', 'arrow-left', 'chevron-left', 'chevron-right', 'circle-chevron-left', 'circle-chevron-right'];
 const MAP_STYLE_CODES = MAP_STYLE_OPTIONS.map((option) => option.code);
 
@@ -95,7 +96,12 @@ export const SETTING_CATALOGUE = [
     { path: 'settings.searchAi.ai_background_end', type: 'color', label: 'AI search panel background (bottom)', phrases: ['bottom of the ai panel gradient', 'ai search box background end colour', 'ai panel fade colour'] },
     { path: 'settings.searchAi.ai_border_color', type: 'color', label: 'AI search panel border colour', phrases: ['ai search panel border colour', 'search with ai panel outline', 'ai search field outline colour'] },
     { path: 'settings.searchAi.ai_suggestion_background', type: 'color', label: 'AI suggestion chip background', phrases: ['ai suggestion chip colour', 'example prompt background', 'try asking chip background', 'ai prompt suggestion colour'] },
-    { path: 'settings.searchAi.ai_placeholder', type: 'text', label: 'AI search box placeholder', phrases: ['ai search box placeholder text', 'hint text in the ai search field', 'what the ai search box says before you type'] },
+    { path: 'settings.searchAi.ai_input_placeholder', type: 'text', label: 'AI search box placeholder', phrases: ['ai search box placeholder text', 'hint text in the ai search field', 'what the ai search box says before you type'] },
+    { path: 'settings.searchAi.ai_input_background', type: 'color', label: 'AI search box background', phrases: ['ai search box background colour', 'search field background'] },
+    { path: 'settings.searchAi.ai_input_text_color', type: 'color', label: 'AI search box text colour', phrases: ['ai search box text colour', 'colour of what people type'] },
+    { path: 'settings.searchAi.ai_input_border_color', type: 'color', label: 'AI search box border colour', phrases: ['ai search box border colour', 'search field outline colour'] },
+    { path: 'settings.searchAi.ai_icon', type: 'enum', options: AI_ICONS, label: 'AI search button icon', phrases: ['ai search button icon', 'magnifying glass icon'] },
+    { path: 'settings.searchAi.ai_title', type: 'text', label: 'AI search button title', phrases: ['ai search button title', 'search with ai button title'] },
 
     // --- Search button ---
     { path: 'settings.search.border', type: 'enum', options: BORDERS, label: 'Search button border', phrases: ['search button border', 'search button shape'] },
@@ -328,6 +334,12 @@ export const RECIPES = [
             'settings.searchAi.ai_background_end': '#111827',
             'settings.searchAi.ai_border_color': '#374151',
             'settings.searchAi.ai_suggestion_background': '#374151',
+            'settings.searchAi.ai_input_placeholder': 'What are you looking for?',
+            'settings.searchAi.ai_input_background': '#1f2937',
+            'settings.searchAi.ai_input_text_color': '#f9fafb',
+            'settings.searchAi.ai_input_border_color': '#374151',
+            'settings.searchAi.ai_icon': 'wand',
+            'settings.searchAi.ai_title': 'Search with AI',
             'settings.search.background': '#f9fafb',
             'settings.search.text_color': '#111827',
             'settings.filter.background': '#1f2937',
@@ -373,6 +385,12 @@ export const RECIPES = [
             'settings.searchAi.ai_background_end': '#ffffff',
             'settings.searchAi.ai_border_color': '#e3dafd',
             'settings.searchAi.ai_suggestion_background': '#ffffff',
+            'settings.searchAi.ai_input_placeholder': 'What are you looking for?',
+            'settings.searchAi.ai_input_background': '#ffffff',
+            'settings.searchAi.ai_input_text_color': '#111827',
+            'settings.searchAi.ai_input_border_color': '#e3dafd',
+            'settings.searchAi.ai_icon': 'wand',
+            'settings.searchAi.ai_title': 'Search with AI',
             'settings.search.background': '#111827',
             'settings.search.text_color': '#ffffff',
             'settings.filter.background': '#111827',

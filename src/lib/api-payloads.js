@@ -629,7 +629,7 @@ const CUSTOMIZE_FORM_STYLES = new Set(['style-1', 'style-2', 'style-3']);
 const SETTINGS_TOP = ['height', 'background', 'text_color', 'font_family', 'font_size', 'border', 'border_color'];
 const SETTINGS_GROUPS = {
     searchInput: ['border', 'background', 'text_color', 'border_color', 'placeholder'],
-    searchAi: ['ai_background_start', 'ai_background_end', 'ai_border_color', 'ai_suggestion_background', 'ai_placeholder'],
+    searchAi: ['ai_background_start', 'ai_background_end', 'ai_border_color', 'ai_suggestion_background', 'ai_input_placeholder', 'ai_input_background', 'ai_input_text_color', 'ai_input_border_color', 'ai_icon', 'ai_title'],
     search: ['border', 'background', 'label', 'text_color', 'icon'],
     filter: ['border', 'background', 'label', 'text_color', 'icon'],
     filterList: ['border_color', 'background', 'text_color', 'active_background', 'active_text_color'],

@@ -1003,11 +1003,18 @@ export default function Locator({
     // fields existed has no `searchAi` group at all, and the panel still has to
     // render with the same colours a new locator gets.
     const aiTheme = {
-        placeholder: settings.searchAi?.ai_placeholder || '',
+        title: settings.searchAi?.ai_title || 'Search with AI',
+        // `??` not `||`: '' is the select's "None" option, and `||` would read it
+        // as "unset" and paint the wand back on.
+        icon: settings.searchAi?.ai_icon ?? 'wand',
         border_color: settings.searchAi?.ai_border_color || '#e3dafd',
         background_start: settings.searchAi?.ai_background_start || '#f4f0ff',
         background_end: settings.searchAi?.ai_background_end || '#ffffff',
         suggestion_background: settings.searchAi?.ai_suggestion_background || '#ffffff',
+        input_placeholder: settings.searchAi?.ai_input_placeholder || 'What are you looking for?',
+        input_border_color: settings.searchAi?.ai_input_border_color || '#e3dafd',
+        input_background: settings.searchAi?.ai_input_background || '#f4f0ff',
+        input_text_color: settings.searchAi?.ai_input_text_color || '#1f1f1f',
     };
 
     const getAppHeight = () => {
@@ -1482,12 +1489,13 @@ export default function Locator({
                                 }}
                             >
                                 <div className="ai-search-form-head">
-                                    <LuWandSparkles />
-                                    <span>{labels.searchWithAi}</span>
+                                    {aiTheme.icon === 'wand' ? <LuWandSparkles /> : ''}
+                                    {/* <span>{labels.searchWithAi}</span> */}
+                                    <span>{aiTheme.title}</span>
                                 </div>
                                 <p className='desc'>{labels.aiSearchDescription}</p>
                                 <textarea
-                                    placeholder={aiTheme.placeholder}
+                                    placeholder={aiTheme.input_placeholder}
                                     className="ai-search-form-textarea"
                                     value={params.ai_q}
                                     onChange={(e) => setParams((p) => ({ ...p, ai_q: e.target.value }))}
@@ -1501,10 +1509,10 @@ export default function Locator({
                                         }
                                     }}
                                     style={{
-                                        borderColor: settings.searchInput.border_color,
-                                        backgroundColor: settings.searchInput.background,
-                                        color: settings.searchInput.text_color,
-                                        borderRadius: getBorderStyle(settings.searchInput.border),
+                                        borderColor: aiTheme.input_border_color,
+                                        backgroundColor: aiTheme.input_background,
+                                        color: aiTheme.input_text_color,
+                                        borderRadius: getBorderStyle(aiTheme.input_border),
                                     }}
                                 />
                                 {promptSuggestions.length > 0 && (

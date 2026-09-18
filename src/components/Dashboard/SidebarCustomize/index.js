@@ -98,6 +98,11 @@ const GET_DIRECTIONS_VIEW_LOCATION_BUTTON_ICONS = [
     { code: 'circle-chevron-right', label: 'Circle Right' },
 ];
 
+const SEARCH_ICONS = [
+    { code: '', label: 'None' },
+    { code: 'wand', label: 'Wand' },
+];
+
 export default function SidebarCustomize({ user_plan, settings, setSettings, features, setFeatures, handleSave, isSaveDisabled }) {
     const router = useRouter();
     const fileInputRef = useRef(null);
@@ -318,39 +323,6 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                                     onChange={(v) => updateGroup('searchInput', 'placeholder', v)}
                                 />
                             </Section>
-                            <Section
-                                icon={<LuTextCursorInput />}
-                                title="Search AI"
-                                isOpen={openSections.searchAi}
-                                onToggle={() => toggleSection('searchAi')}
-                            >
-                                <ColorField
-                                    label="AI Background Start"
-                                    value={settings.searchAi.ai_background_start}
-                                    onChange={(v) => updateGroup('searchAi', 'ai_background_start', v)}
-                                />
-                                <ColorField
-                                    label="AI Background End"
-                                    value={settings.searchAi.ai_background_end}
-                                    onChange={(v) => updateGroup('searchAi', 'ai_background_end', v)}
-                                />
-                                <ColorField
-                                    label="AI Border Color"
-                                    value={settings.searchAi.ai_border_color}
-                                    onChange={(v) => updateGroup('searchAi', 'ai_border_color', v)}
-                                />
-                                <ColorField
-                                    label="AI Suggestion Background"
-                                    value={settings.searchAi.ai_suggestion_background}
-                                    onChange={(v) => updateGroup('searchAi', 'ai_suggestion_background', v)}
-                                />
-                                <TextField
-                                    label="AI Placeholder"
-                                    value={settings.searchAi.ai_placeholder}
-                                    placeholder="Enter anything"
-                                    onChange={(v) => updateGroup('searchAi', 'ai_placeholder', v)}
-                                />
-                            </Section>
 
                             <Section
                                 icon={<LuSearch />}
@@ -457,6 +429,68 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                                 />
                             </Section>
 
+                            <Section
+                                icon={<LuTextCursorInput />}
+                                title="Search AI"
+                                isOpen={openSections.searchAi}
+                                onToggle={() => toggleSection('searchAi')}
+                            >
+                                <SelectField
+                                    label="Icon"
+                                    value={settings.searchAi.ai_icon}
+                                    onChange={(v) => updateGroup('searchAi', 'ai_icon', v)}
+                                    options={SEARCH_ICONS}
+                                />
+                                <TextField
+                                    label="Title"
+                                    value={settings.searchAi.ai_title}
+                                    placeholder="Enter search AI title"
+                                    onChange={(v) => updateGroup('searchAi', 'ai_title', v)}
+                                />
+                                <ColorField
+                                    label="AI Background Start"
+                                    value={settings.searchAi.ai_background_start}
+                                    onChange={(v) => updateGroup('searchAi', 'ai_background_start', v)}
+                                />
+                                <ColorField
+                                    label="AI Background End"
+                                    value={settings.searchAi.ai_background_end}
+                                    onChange={(v) => updateGroup('searchAi', 'ai_background_end', v)}
+                                />
+                                <ColorField
+                                    label="AI Border Color"
+                                    value={settings.searchAi.ai_border_color}
+                                    onChange={(v) => updateGroup('searchAi', 'ai_border_color', v)}
+                                />
+                                <ColorField
+                                    label="AI Suggestion Background"
+                                    value={settings.searchAi.ai_suggestion_background}
+                                    onChange={(v) => updateGroup('searchAi', 'ai_suggestion_background', v)}
+                                />
+                                <TextField
+                                    label="AI Input Placeholder"
+                                    value={settings.searchAi.ai_input_placeholder}
+                                    placeholder="Enter anything"
+                                    onChange={(v) => updateGroup('searchAi', 'ai_input_placeholder', v)}
+                                />
+                                <ColorField
+                                    label="AI Input Background"
+                                    value={settings.searchAi.ai_input_background}
+                                    onChange={(v) => updateGroup('searchAi', 'ai_input_background', v)}
+                                />
+
+                                <ColorField
+                                    label="AI Input Text Color"
+                                    value={settings.searchAi.ai_input_text_color}
+                                    onChange={(v) => updateGroup('searchAi', 'ai_input_text_color', v)}
+                                />
+                                <ColorField
+                                    label="AI Input Border Color"
+                                    value={settings.searchAi.ai_input_border_color}
+                                    onChange={(v) => updateGroup('searchAi', 'ai_input_border_color', v)}
+                                />
+
+                            </Section>
 
                             <Section
                                 icon={<LuRows3 />}
