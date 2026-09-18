@@ -1,0 +1,172 @@
+// The prompt at the foot of the Customize panel.
+.promo {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 16px;
+    padding: 14px;
+    border: 1px dashed #d9d9d9;
+    border-radius: 8px;
+    background: #fafafa;
+
+    .promoText {
+        margin: 0;
+        color: #6b6b6b;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+}
+
+// --- The picker -----------------------------------------------------------
+
+.slider {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border: 1px solid #e4e4e4;
+    border-radius: 50%;
+    background: #fff;
+    color: #454545;
+    cursor: pointer;
+    transition: background 0.2s ease-in-out, color 0.2s ease-in-out;
+
+    &:hover:not(:disabled) {
+        background: #f1f1f1;
+        color: #185fa5;
+    }
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: default;
+    }
+
+    svg {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+// Clips the track to exactly one card.
+.viewport {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+// Holds every card in a row and slides horizontally. Each card is one viewport
+// wide, so translating by -100% per step lands squarely on the next one.
+.track {
+    display: flex;
+    transition: transform 0.35s ease;
+
+    @media (prefers-reduced-motion: reduce) {
+        transition: none;
+    }
+}
+
+.slide {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    flex: 0 0 100%;
+    width: 100%;
+    padding: 4px;
+    box-sizing: border-box;
+}
+
+// Fixed aspect ratio so the track's height does not jump between a card with a
+// cover image and one still showing its palette. `contain` rather than `cover`:
+// these are screenshots of the whole widget, so letterboxing against the frame
+// beats cropping the bottom off a locator that isn't exactly 16:9.
+.shot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: 1px solid #f1f1f1;
+    border-radius: 8px;
+    background: #fafafa;
+    overflow: hidden;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+}
+
+.palette {
+    display: flex;
+    gap: 10px;
+    padding: 16px;
+}
+
+.swatch {
+    display: block;
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 6px;
+}
+
+.meta {
+    text-align: center;
+
+    h3 {
+        margin: 0;
+        color: #1f1f1f;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    p {
+        margin: 6px 0 0;
+        color: #888;
+        font-size: 13px;
+        line-height: 1.5;
+    }
+}
+
+.dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: #dcdcdc;
+    cursor: pointer;
+    transition: background 0.2s ease-in-out, transform 0.2s ease-in-out;
+
+    &:hover {
+        background: #bdbdbd;
+    }
+}
+
+.dotActive {
+    background: #185fa5;
+    transform: scale(1.25);
+
+    &:hover {
+        background: #185fa5;
+    }
+}

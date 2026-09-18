@@ -40,6 +40,7 @@ import { toast } from 'react-toastify';
 import { MAXIMUM_RESULTS_SHOWN, ZOOM_LEVELS } from '@/utils/constant';
 import { DISTANCE_UNITS, getSearchRadiiOptions, convertDistance } from '@/utils/distance';
 import AIWidgetConfigurator from '@/components/ai/AIWidgetConfigurator';
+import ColorTemplates from '@/components/Dashboard/ColorTemplates';
 
 const ALLOWED_IMAGE_TYPES = ['image/png', 'image/svg+xml', 'image/gif', 'image/jpeg'];
 const MAX_IMAGE_SIZE = 500 * 1024; // 500KB
@@ -842,7 +843,7 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
 
                             <Section
                                 icon={<LuAlignEndHorizontal />}
-                                title="Mobile Tabs View"
+                                title="Tabs View"
                                 isOpen={openSections.mobileView}
                                 onToggle={() => toggleSection('mobileView')}
                             >
@@ -868,6 +869,13 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                                     onChange={(v) => updateGroup('mobileView', 'active_background', v)}
                                 />
                             </Section>
+
+                            <ColorTemplates
+                                settings={settings}
+                                setSettings={setSettings}
+                                features={features}
+                                setFeatures={setFeatures}
+                            />
                         </div>
                         <div className={styles.settings}>
                             <AIWidgetConfigurator
