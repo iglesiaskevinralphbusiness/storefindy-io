@@ -308,7 +308,7 @@ export const formStyles = `
     justify-content: center;
     gap: 5px;
     text-align: center;
-    padding: 13px 0;
+    padding: 0 0 13px;
     cursor: pointer;
 }
 .search-method-selector .search-tab-item.active {
