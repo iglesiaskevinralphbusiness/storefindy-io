@@ -1053,6 +1053,7 @@ export default function Locator({
         if(user_plan !== 'business') return '';
         if(features.form_style === 'style-2') return 'form-style-2';
         if(features.form_style === 'style-3') return 'form-style-3';
+        if(features.form_style === 'style-4') return 'form-style-4';
         return '';
     }
 

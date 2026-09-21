@@ -38,7 +38,7 @@ const BORDERS = ['rounded', 'pill', 'square'];
 const WRAPPER_BORDERS = ['none', ...BORDERS];
 const PIN_TYPES = ['standard', 'custom'];
 const PIN_SIZES = ['small', 'medium', 'large'];
-const FORM_STYLES = ['style-1', 'style-2', 'style-3'];
+const FORM_STYLES = ['style-1', 'style-2', 'style-3', 'style-4'];
 const SEARCH_METHODS = ['search-by-address', 'search-by-ai', ''];
 const FONT_FAMILIES = [
     'system-ui, sans-serif', 'Arial, sans-serif', 'Helvetica, sans-serif',

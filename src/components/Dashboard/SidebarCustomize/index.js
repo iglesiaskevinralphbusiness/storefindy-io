@@ -900,9 +900,10 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                                 value={features.form_style}
                                 onChange={(v) => updateFeatures('form_style', v)}
                                 options={[
-                                    { code: 'style-1', label: 'Style 1' },
-                                    { code: 'style-2', label: 'Style 2' },
-                                    { code: 'style-3', label: 'Style 3' },
+                                    { code: 'style-1', label: 'Standard' },
+                                    { code: 'style-2', label: 'Standard (right panel)' },
+                                    { code: 'style-3', label: 'Standard (floating panel)' },
+                                    { code: 'style-4', label: 'Standard (full width buttons)' },
                                 ]}
                                 note={user_plan !== 'business' ? 'Only available on Business plan' : ''}
                                 disabled={user_plan !== 'business'}
@@ -953,18 +954,18 @@ export default function SidebarCustomize({ user_plan, settings, setSettings, fea
                                 onChange={(v) => updateFeatures('show_filters', v)}
                             />
                             <Checkbox
+                                label="Show search radius"
+                                name="show_radius"
+                                description="Display a combobox to select the search radius on the form"
+                                checked={features.show_radius}
+                                onChange={(v) => updateFeatures('show_radius', v)}
+                            />
+                            <Checkbox
                                 label="Show store hours"
                                 name="show_store_hours"
                                 description="Display opening hours on each store card for all locations"
                                 checked={features.show_store_hours}
                                 onChange={(v) => updateFeatures('show_store_hours', v)}
-                            />
-                            <Checkbox
-                                label="Show combobox radius"
-                                name="show_radius"
-                                description="Display a combobox to select the search radius on the form"
-                                checked={features.show_radius}
-                                onChange={(v) => updateFeatures('show_radius', v)}
                             />
                             <Checkbox
                                 label="Show radius indicator on the map"

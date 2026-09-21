@@ -910,8 +910,34 @@ export const formStyle2Styles = `
     .form-style-3 .mapboxgl-ctrl-top-left {
         left: unset;
         right: 10px;
-    }
+    }   
 }
+
+/* Style 4 */
+.form-style-4.locator .results ul.results-list > li {
+    padding: 16px 0 0;
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+    overflow: hidden;
+}
+.form-style-4.locator .results ul.results-list > li .title {
+    padding-left: 13px;
+    padding-right: 13px;
+}
+.form-style-4.locator .results ul.results-list > li .details {
+    padding-left: 31px;
+    padding-right: 13px;
+}
+.form-style-4.locator .results ul.results-list > li .actions {
+    gap: 0;
+}
+.form-style-4.locator .results ul.results-list > li .actions a {
+    max-width: unset;
+}
+.form-style-4.locator .locator-sidebar .inputs {
+    gap: 0;
+}
+
+
 `;
 
 export const userDefinedStyles = `

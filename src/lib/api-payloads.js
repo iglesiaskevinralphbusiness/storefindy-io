@@ -624,7 +624,7 @@ const CUSTOMIZE_HEIGHTS = new Set(['small', 'medium', 'large']);
 const CUSTOMIZE_BORDERS = new Set(['none', 'rounded', 'pill', 'square']);
 const CUSTOMIZE_PIN_TYPES = new Set(['standard', 'custom']);
 const CUSTOMIZE_PIN_SIZES = new Set(['small', 'medium', 'large']);
-const CUSTOMIZE_FORM_STYLES = new Set(['style-1', 'style-2', 'style-3']);
+const CUSTOMIZE_FORM_STYLES = new Set(['style-1', 'style-2', 'style-3', 'style-4']);
 // Exactly the widths the customize sidebar offers. The widget writes this value
 // straight into `::-webkit-scrollbar { width }`, so an arbitrary string would be
 // a CSS value the merchant chose — these are the only ones accepted.
@@ -850,7 +850,7 @@ export function validateCustomizePayload(body, { plan = 'free' } = {}) {
         if (field === 'form_style') {
             const code = String(featureSource[field] ?? '').trim();
             if (!CUSTOMIZE_FORM_STYLES.has(code)) {
-                errors[field] = 'Form style must be style-1, style-2, or style-3';
+                errors[field] = 'Form style must be style-1, style-2, style-3, or style-4';
                 continue;
             }
             features[field] = code;
